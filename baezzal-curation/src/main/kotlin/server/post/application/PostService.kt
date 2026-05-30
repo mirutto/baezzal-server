@@ -1,37 +1,65 @@
 package server.post.application
 
-import global.error.BadRequestException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import server.post.domain.Post
+import server.post.implementation.PostEventPublisher
 import server.post.implementation.PostImageUploader
+import server.post.implementation.PostValidator
+import server.post.implementation.PostWriter
+import server.posttag.implementation.PostTagWriter
+import server.tag.implementation.TagResolver
 import java.util.UUID
 
 @Service
 class PostService(
     private val postImageUploader: PostImageUploader,
+    private val postValidator: PostValidator,
+    private val postWriter: PostWriter,
+    private val postTagWriter: PostTagWriter,
+    private val tagResolver: TagResolver,
+    private val postEventPublisher: PostEventPublisher,
 ) {
+    @Transactional
+    fun create(command: CreatePostCommand): CreatePostResult {
+        val imageUrl = command.imageUrl.trim()
+        val description = command.description.trim()
+
+        postValidator.validateImageUrl(imageUrl)
+
+        val post = postWriter.write(
+            Post(
+                imageUrl = imageUrl,
+                description = description,
+                teamId = postValidator.normalizeTeamId(command.teamId),
+            ),
+        )
+        val tags = tagResolver.resolveAll(command.tagTitles)
+
+        postTagWriter.writeAll(post.id, tags)
+
+        postEventPublisher.publishCreated(post)
+
+        return CreatePostResult(
+            post = post,
+            tags = tags,
+        )
+    }
+
     fun createImageUploadUrl(command: CreatePostImageUploadUrlCommand): PostImageUploadUrlResult {
-        val prefix = POST_IMAGE_PREFIX
-        val fileName = UUID.randomUUID().toString()
         val contentType = command.contentType.trim().lowercase()
-        validate(contentType)
+        postValidator.validateImageContentType(contentType)
 
         return PostImageUploadUrlResult.from(
             postImageUploader.createPresignedUploadUrl(
-                prefix = prefix,
-                fileName = fileName,
+                prefix = POST_IMAGE_PREFIX,
+                fileName = UUID.randomUUID().toString(),
                 contentType = contentType,
             ),
         )
     }
 
     companion object {
-        private const val IMAGE_CONTENT_TYPE_PREFIX = "image/"
         private const val POST_IMAGE_PREFIX = "posts"
-    }
-
-    private fun validate(contentType: String) {
-        if (!contentType.startsWith(IMAGE_CONTENT_TYPE_PREFIX)) {
-            throw BadRequestException("이미지 파일만 업로드할 수 있습니다")
-        }
     }
 }
