@@ -1,7 +1,7 @@
 package server.auth.infrastructure
 
 import org.springframework.stereotype.Component
-import server.auth.application.AuthTokenData
+import server.auth.domain.AuthTokens
 import server.cache.RedisCache
 import server.cache.RedisTakeCache
 
@@ -12,7 +12,7 @@ class AuthTicketCache(
 ) {
     fun set(
         ticket: String,
-        tokens: AuthTokenData,
+        tokens: AuthTokens,
         ttlMillis: Long,
     ) {
         redisCache.set(
@@ -22,8 +22,8 @@ class AuthTicketCache(
         )
     }
 
-    fun exchange(ticket: String): AuthTokenData? =
-        redisTakeCache.take(key(ticket), AuthTokenData::class.java)
+    fun exchange(ticket: String): AuthTokens? =
+        redisTakeCache.take(key(ticket), AuthTokens::class.java)
 
     private fun key(ticket: String): String = "auth:ticket:$ticket"
 }

@@ -7,12 +7,12 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import org.junit.jupiter.api.Test
-import server.auth.application.AuthTokenData
 import server.auth.implementation.AuthTicketExchanger
 import server.auth.implementation.AuthTicketIssuer
 import server.auth.implementation.AuthTokenIssuer
 import server.auth.implementation.RefreshTokenVerifier
 import server.auth.implementation.RefreshTokenWriter
+import server.auth.domain.AuthTokens
 import server.member.domain.Member
 import server.member.domain.MemberProvider
 import server.member.domain.MemberRole
@@ -54,7 +54,7 @@ class AuthServiceTest {
             type = TokenType.REFRESH,
         )
         every { memberReader.readById(1L) } returns member
-        every { authTokenIssuer.issue(1L, MemberRole.USER.name) } returns AuthTokenData(
+        every { authTokenIssuer.issue(1L, MemberRole.USER.name) } returns AuthTokens(
             accessToken = "new-access-token",
             refreshToken = "new-refresh-token",
         )

@@ -1,5 +1,6 @@
 package server.auth.implementation
 
+import global.error.UnauthorizedException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -7,7 +8,6 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import server.auth.infrastructure.RefreshTokenCache
 import server.token.AuthPrincipal
-import server.token.InvalidTokenException
 import server.token.TokenProvider
 import server.token.TokenType
 
@@ -35,7 +35,7 @@ class RefreshTokenVerifierTest {
             tokenProvider.decodeToken(refreshToken)
         } returns AuthPrincipal(memberId = 1L, type = TokenType.ACCESS, role = "USER")
 
-        shouldThrow<InvalidTokenException> {
+        shouldThrow<UnauthorizedException> {
             refreshTokenVerifier.verify(refreshToken)
         }
     }
@@ -48,7 +48,7 @@ class RefreshTokenVerifierTest {
         } returns AuthPrincipal(memberId = 1L, type = TokenType.REFRESH)
         every { refreshTokenCache.get(1L) } returns "different-token"
 
-        shouldThrow<InvalidTokenException> {
+        shouldThrow<UnauthorizedException> {
             refreshTokenVerifier.verify(refreshToken)
         }
     }

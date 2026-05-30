@@ -18,10 +18,7 @@ class EventPublisher(
         eventId: String = UUID.randomUUID().toString(),
     ) {
         publish(
-            type =
-                requireNotNull(event::class.simpleName) {
-                    "event type must not be null"
-                },
+            type = eventTypeOf(event),
             payloadJson = objectMapper.writeValueAsString(event),
             eventId = eventId,
         )
@@ -32,8 +29,7 @@ class EventPublisher(
         payloadJson: String,
         eventId: String = UUID.randomUUID().toString(),
     ) {
-        require(type.isNotBlank()) { "type must not be blank" }
-        require(eventId.isNotBlank()) { "eventId must not be blank" }
+        validate(type, eventId)
 
         val record =
             StreamRecords
@@ -47,6 +43,21 @@ class EventPublisher(
                 ).withStreamKey(messagingProperties.defaultChannel)
 
         redis.opsForStream<String, String>().add(record)
-            ?: throw IllegalStateException("Redis XADD returned null")
+            ?: throw MessagingException("Redis XADD returned null")
+    }
+
+    private fun eventTypeOf(event: Any): String =
+        event::class.simpleName ?: throw MessagingException("event type must not be null")
+
+    private fun validate(
+        type: String,
+        eventId: String,
+    ) {
+        if (type.isBlank()) {
+            throw MessagingException("type must not be blank")
+        }
+        if (eventId.isBlank()) {
+            throw MessagingException("eventId must not be blank")
+        }
     }
 }

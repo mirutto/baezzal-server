@@ -1,8 +1,7 @@
-package server.auth.infrastructure
+package server.auth.presentation
 
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.core.user.OAuth2User
-import server.member.domain.MemberRole
 import java.util.UUID
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
@@ -10,7 +9,7 @@ import kotlin.reflect.full.memberProperties
 sealed class Oauth2SocialUser : OAuth2User {
     data class Authenticated(
         val memberId: Long,
-        val role: MemberRole,
+        val role: String,
     ) : Oauth2SocialUser()
 
     data class HasError(

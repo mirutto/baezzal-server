@@ -1,5 +1,6 @@
 package server.auth.application
 
+import global.error.NotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import server.auth.implementation.AuthTicketExchanger
@@ -8,7 +9,6 @@ import server.auth.implementation.AuthTokenIssuer
 import server.auth.implementation.RefreshTokenVerifier
 import server.auth.implementation.RefreshTokenWriter
 import server.member.domain.Member
-import server.member.domain.MemberRole
 import server.member.implementation.MemberReader
 import server.member.implementation.MemberWriter
 
@@ -24,14 +24,19 @@ class AuthService(
 ) {
 
     @Transactional
-    fun upsert(oauth2Attributes: Oauth2Attributes): MemberPrincipal {
+    fun upsert(
+        registrationId: String,
+        attributes: Map<String, Any>,
+    ): Oauth2LoginResult {
+        val oauth2Attributes = Oauth2Attributes.from(registrationId, attributes)
+
         memberReader.readByProvider(
             oauth2Attributes.provider,
-            oauth2Attributes.providerKey
+            oauth2Attributes.providerKey,
         )?.let {
-            return MemberPrincipal(
+            return Oauth2LoginResult(
                 memberId = it.id,
-                role = it.role,
+                role = it.role.name,
             )
         }
 
@@ -42,19 +47,19 @@ class AuthService(
         )
         val saved = memberWriter.write(member)
 
-        return MemberPrincipal(
+        return Oauth2LoginResult(
             memberId = saved.id,
-            role = saved.role,
+            role = saved.role.name,
         )
     }
 
     fun issueLoginTicket(
         memberId: Long,
-        role: MemberRole,
+        role: String,
     ): String {
         val tokens = authTokenIssuer.issue(
             memberId = memberId,
-            role = role.name,
+            role = role,
         )
         refreshTokenWriter.write(
             memberId = memberId,
@@ -68,13 +73,18 @@ class AuthService(
     }
 
     fun exchangeTicket(ticket: String): AuthTokenData {
-        return authTicketExchanger.exchange(ticket)
+        val tokens = authTicketExchanger.exchange(ticket)
+
+        return AuthTokenData(
+            accessToken = tokens.accessToken,
+            refreshToken = tokens.refreshToken,
+        )
     }
 
     fun reissue(refreshToken: String): AuthTokenData {
         val principal = refreshTokenVerifier.verify(refreshToken)
         val member = memberReader.readById(principal.memberId)
-            ?: throw NoSuchElementException("회원을 찾을 수 없습니다")
+            ?: throw NotFoundException("회원을 찾을 수 없습니다")
         val tokens = authTokenIssuer.issue(
             memberId = member.id,
             role = member.role.name,

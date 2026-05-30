@@ -57,6 +57,7 @@ class CurationArchitectureTest {
                 "server..implementation..",
                 "server..infrastructure..",
                 "server..domain..",
+                "server..error..",
             )
 
     @ArchTest

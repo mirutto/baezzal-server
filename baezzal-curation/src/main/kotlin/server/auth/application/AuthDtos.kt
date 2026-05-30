@@ -1,7 +1,7 @@
 package server.auth.application
 
+import global.error.InternalServerErrorException
 import server.member.domain.MemberProvider
-import server.member.domain.MemberRole
 
 data class AuthTicketExchangeRequest(
     val ticket: String,
@@ -18,34 +18,38 @@ data class Oauth2Attributes(
 ) {
     companion object {
         fun from(
-            provider: MemberProvider,
+            providerName: String,
             attributes: Map<String, Any>
-        ): Oauth2Attributes = when (provider) {
-            MemberProvider.GOOGLE -> fromGoogle(attributes)
-            MemberProvider.KAKAO -> fromKakao(attributes)
-            MemberProvider.NAVER -> fromNaver(attributes)
+        ): Oauth2Attributes {
+            val provider = MemberProvider.from(providerName)
+
+            return when (provider) {
+                MemberProvider.GOOGLE -> fromGoogle(attributes)
+                MemberProvider.KAKAO -> fromKakao(attributes)
+                MemberProvider.NAVER -> fromNaver(attributes)
+            }
         }
 
         private fun fromGoogle(attr: Map<String, Any?>) = Oauth2Attributes(
             provider = MemberProvider.GOOGLE,
             providerKey = attr["sub"]?.toString()
-                ?: throw IllegalStateException("Invalid google login response format"),
+                ?: throw InternalServerErrorException("OAuth2 로그인 응답 형식이 올바르지 않습니다"),
         )
 
         private fun fromNaver(attr: Map<String, Any?>): Oauth2Attributes {
             val response = attr["response"] as? Map<String, Any?>
-                ?: throw IllegalStateException("Invalid naver login response format")
+                ?: throw InternalServerErrorException("OAuth2 로그인 응답 형식이 올바르지 않습니다")
 
             return Oauth2Attributes(
                 provider = MemberProvider.NAVER,
                 providerKey = response["id"]?.toString()
-                    ?: throw IllegalStateException("Invalid naver login response format"),
+                    ?: throw InternalServerErrorException("OAuth2 로그인 응답 형식이 올바르지 않습니다"),
             )
         }
 
         private fun fromKakao(attr: Map<String, Any?>): Oauth2Attributes {
             val providerKey = attr["id"]?.toString()
-                ?: throw IllegalStateException("Invalid kakao login response format")
+                ?: throw InternalServerErrorException("OAuth2 로그인 응답 형식이 올바르지 않습니다")
 
             return Oauth2Attributes(
                 provider = MemberProvider.KAKAO,
@@ -55,7 +59,7 @@ data class Oauth2Attributes(
     }
 }
 
-data class MemberPrincipal(
+data class Oauth2LoginResult(
     val memberId: Long,
-    val role: MemberRole,
+    val role: String,
 )

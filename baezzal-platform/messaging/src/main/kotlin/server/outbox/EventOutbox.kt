@@ -10,6 +10,7 @@ import jakarta.persistence.Index
 import jakarta.persistence.Table
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import server.messaging.MessagingException
 import java.time.LocalDateTime
 
 @Entity
@@ -59,7 +60,9 @@ class EventOutbox(
         get() = publishedAt != null
 
     fun markPublished(at: LocalDateTime = LocalDateTime.now()) {
-        check(!published) { "EventOutbox(id=$id) is already published" }
+        if (published) {
+            throw MessagingException("EventOutbox(id=$id) is already published")
+        }
         publishedAt = at
     }
 

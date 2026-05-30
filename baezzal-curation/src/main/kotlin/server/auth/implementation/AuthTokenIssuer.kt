@@ -1,7 +1,7 @@
 package server.auth.implementation
 
 import org.springframework.stereotype.Component
-import server.auth.application.AuthTokenData
+import server.auth.domain.AuthTokens
 import server.token.AuthPrincipal
 import server.token.TokenProvider
 
@@ -12,8 +12,8 @@ class AuthTokenIssuer(
     fun issue(
         memberId: Long,
         role: String,
-    ): AuthTokenData =
-        AuthTokenData(
+    ): AuthTokens =
+        AuthTokens(
             accessToken = tokenProvider.encodeToken(
                 principal = AuthPrincipal.accessToken(memberId, role),
                 ttl = ACCESS_TOKEN_TTL_MILLIS,

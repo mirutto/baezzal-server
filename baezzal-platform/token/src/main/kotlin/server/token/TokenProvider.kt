@@ -49,6 +49,9 @@ class TokenProvider(
 
     private fun decodeClaims(token: String) =
         try {
+            if (token.isBlank()) {
+                throw InvalidTokenException()
+            }
             Jwts.parser()
                 .verifyWith(key)
                 .build()
@@ -57,8 +60,6 @@ class TokenProvider(
         } catch (_: ExpiredJwtException) {
             throw ExpiredTokenException()
         } catch (_: JwtException) {
-            throw InvalidTokenException()
-        } catch (_: IllegalArgumentException) {
             throw InvalidTokenException()
         }
 

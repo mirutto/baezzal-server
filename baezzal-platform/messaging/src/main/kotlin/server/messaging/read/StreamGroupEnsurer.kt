@@ -3,6 +3,7 @@ package server.messaging.read
 import org.springframework.data.redis.connection.stream.ReadOffset
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Component
+import server.messaging.MessagingException
 import server.messaging.StreamSubscription
 import java.util.concurrent.ConcurrentHashMap
 
@@ -25,9 +26,8 @@ internal class StreamGroupEnsurer(
         try {
             redis.execute { connection ->
                 val rawKey =
-                    requireNotNull(
-                        redis.stringSerializer.serialize(subscription.channel),
-                    )
+                    redis.stringSerializer.serialize(subscription.channel)
+                        ?: throw MessagingException("channel serialization must not be null")
                 connection
                     .streamCommands()
                     .xGroupCreate(

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import server.messaging.MessagingException
 import server.messaging.MessagingProperties
 import java.util.UUID
 
@@ -15,10 +16,7 @@ class TransactionalEventPublisher(
 ) {
     @Transactional(propagation = Propagation.MANDATORY)
     fun publish(event: Any) {
-        val type =
-            requireNotNull(
-                event::class.simpleName,
-            ) { "event type must not be null" }
+        val type = event::class.simpleName ?: throw MessagingException("event type must not be null")
         val outbox =
             EventOutbox(
                 topic = messagingProperties.defaultChannel,

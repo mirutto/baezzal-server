@@ -1,8 +1,8 @@
 package server.auth.implementation
 
 import org.springframework.stereotype.Component
-import server.auth.application.AuthTokenData
 import server.auth.infrastructure.AuthTicketCache
+import server.auth.domain.AuthTokens
 import java.util.UUID
 
 @Component
@@ -16,7 +16,7 @@ class AuthTicketIssuer(
         val ticket = UUID.randomUUID().toString()
         authTicketCache.set(
             ticket = ticket,
-            tokens = AuthTokenData(
+            tokens = AuthTokens(
                 accessToken = accessToken,
                 refreshToken = refreshToken,
             ),

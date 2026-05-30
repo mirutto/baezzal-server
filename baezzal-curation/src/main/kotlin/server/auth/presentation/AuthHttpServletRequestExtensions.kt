@@ -1,8 +1,7 @@
 package server.auth.presentation
 
+import global.error.UnauthorizedException
 import jakarta.servlet.http.HttpServletRequest
-import org.springframework.core.env.Environment
-import server.token.InvalidTokenException
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -22,7 +21,7 @@ fun HttpServletRequest.requireRefreshToken(): String =
         ?.firstOrNull { it.name == REFRESH_TOKEN_COOKIE }
         ?.value
         ?.takeIf { it.isNotBlank() }
-        ?: throw InvalidTokenException()
+        ?: throw UnauthorizedException("INVALID_TOKEN")
 
 fun HttpServletRequest.resolveOauth2RedirectUrl(
     vararg param: Pair<String, String>,

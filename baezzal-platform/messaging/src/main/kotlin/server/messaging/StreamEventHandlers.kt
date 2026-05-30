@@ -133,21 +133,19 @@ internal class StreamEventHandlers(
                 invokeMethod(bean, method, payload)
             } else {
                 val tx =
-                    requireNotNull(transactionTemplate) {
+                    transactionTemplate ?: throw MessagingException(
                         "No PlatformTransactionManager for " +
                             "transactional event handler: " +
-                            "${targetClass.name}.${method.name}"
-                    }
+                            "${targetClass.name}.${method.name}",
+                    )
                 tx.executeWithoutResult { invokeMethod(bean, method, payload) }
             }
         }
 
+        val type = payloadClass.simpleName ?: throw MessagingException("payload type name must not be null")
         return StreamMessageHandler(
             subscription = subscription,
-            type =
-                requireNotNull(payloadClass.simpleName) {
-                    "payload type name must not be null"
-                },
+            type = type,
             payloadClass = payloadClass,
             handler = handler,
         )

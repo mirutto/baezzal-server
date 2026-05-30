@@ -1,5 +1,6 @@
 package server.auth.implementation
 
+import global.error.UnauthorizedException
 import org.springframework.stereotype.Component
 import server.auth.infrastructure.RefreshTokenCache
 import server.token.AuthPrincipal
@@ -13,16 +14,25 @@ class RefreshTokenVerifier(
     private val refreshTokenCache: RefreshTokenCache,
 ) {
     fun verify(refreshToken: String): AuthPrincipal {
-        val principal = tokenProvider.decodeToken(refreshToken)
+        val principal = decodeRefreshToken(refreshToken)
         if (principal.type != TokenType.REFRESH) {
-            throw InvalidTokenException()
+            invalidToken()
         }
 
         val cachedRefreshToken = refreshTokenCache.get(principal.memberId)
         if (cachedRefreshToken != refreshToken) {
-            throw InvalidTokenException()
+            invalidToken()
         }
 
         return principal
     }
+
+    private fun decodeRefreshToken(refreshToken: String): AuthPrincipal =
+        try {
+            tokenProvider.decodeToken(refreshToken)
+        } catch (_: InvalidTokenException) {
+            invalidToken()
+        }
+
+    private fun invalidToken(): Nothing = throw UnauthorizedException("INVALID_TOKEN")
 }
