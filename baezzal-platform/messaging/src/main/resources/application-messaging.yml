@@ -1,0 +1,3 @@
+redis:
+  messaging:
+    default-channel: baezzal-default
