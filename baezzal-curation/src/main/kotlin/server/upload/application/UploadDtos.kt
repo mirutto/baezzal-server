@@ -1,6 +1,6 @@
 package server.upload.application
 
-import server.image.upload.PresignedImageUploadUrl
+import server.objectstorage.PresignedUploadUrl
 
 data class CreateImageUploadUrlCommand(
     val fileName: String,
@@ -15,7 +15,7 @@ data class ImageUploadUrlResult(
     val expiresInSeconds: Int,
 ) {
     companion object {
-        fun from(imageUploadUrl: PresignedImageUploadUrl): ImageUploadUrlResult =
+        fun from(imageUploadUrl: PresignedUploadUrl): ImageUploadUrlResult =
             ImageUploadUrlResult(
                 objectKey = imageUploadUrl.objectKey,
                 uploadUrl = imageUploadUrl.uploadUrl,

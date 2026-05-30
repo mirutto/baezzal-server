@@ -1,6 +1,6 @@
-package server.image.upload
+package server.objectstorage
 
-data class PresignedImageUploadUrl(
+data class PresignedUploadUrl(
     val objectKey: String,
     val uploadUrl: String,
     val fileUrl: String,
