@@ -2,8 +2,12 @@ server:
   port: 8081
 
 spring:
+  config:
+    import: optional:file:.env[.properties]
   profiles:
     include:
       - jpa
       - redis
       - messaging
+      - jwt
+      - oauth

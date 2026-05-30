@@ -8,6 +8,6 @@ data class TeamData(
 ) {
     constructor(team: Team) : this(
         teamId = team.id,
-        name = team.name
+        name = team.name,
     )
 }

@@ -23,22 +23,35 @@ class CurationArchitectureTest {
     val curationLayerDependencies: ArchRule =
         layeredArchitecture()
             .consideringAllDependencies()
-            .layer("Presentation").definedBy("server..presentation..")
-            .layer("Application").definedBy("server..application..")
-            .layer("Implementation").definedBy("server..implementation..")
-            .layer("Infrastructure").definedBy("server..infrastructure..")
-            .layer("Domain").definedBy("server..domain..")
-            .whereLayer("Presentation").mayNotBeAccessedByAnyLayer()
-            .whereLayer("Application").mayOnlyBeAccessedByLayers("Presentation")
-            .whereLayer("Implementation").mayOnlyBeAccessedByLayers("Application")
-            .whereLayer("Infrastructure").mayOnlyBeAccessedByLayers("Implementation")
-            .whereLayer("Domain").mayOnlyBeAccessedByLayers("Application", "Implementation", "Infrastructure")
+            .layer("Presentation")
+            .definedBy("server..presentation..")
+            .layer("Application")
+            .definedBy("server..application..")
+            .layer("Implementation")
+            .definedBy("server..implementation..")
+            .layer("Infrastructure")
+            .definedBy("server..infrastructure..")
+            .layer("Domain")
+            .definedBy("server..domain..")
+            .whereLayer("Presentation")
+            .mayNotBeAccessedByAnyLayer()
+            .whereLayer("Application")
+            .mayOnlyBeAccessedByLayers("Presentation")
+            .whereLayer("Implementation")
+            .mayOnlyBeAccessedByLayers("Application")
+            .whereLayer("Infrastructure")
+            .mayOnlyBeAccessedByLayers("Implementation")
+            .whereLayer(
+                "Domain",
+            ).mayOnlyBeAccessedByLayers("Application", "Implementation", "Infrastructure")
 
     @ArchTest
     val classesShouldResideInAllowedLayerPackages: ArchRule =
         classes()
-            .that().resideInAPackage("server..")
-            .should().resideInAnyPackage(
+            .that()
+            .resideInAPackage("server..")
+            .should()
+            .resideInAnyPackage(
                 "server..presentation..",
                 "server..application..",
                 "server..implementation..",
@@ -49,35 +62,49 @@ class CurationArchitectureTest {
     @ArchTest
     val presentationClassesShouldEndWithController: ArchRule =
         classes()
-            .that().resideInAPackage("server..presentation..")
-            .and().areAnnotatedWith(RestController::class.java)
-            .should().haveSimpleNameEndingWith("Controller")
+            .that()
+            .resideInAPackage("server..presentation..")
+            .and()
+            .areAnnotatedWith(RestController::class.java)
+            .should()
+            .haveSimpleNameEndingWith("Controller")
 
     @ArchTest
     val presentationShouldNotDependOnDomain: ArchRule =
         classes()
-            .that().resideInAPackage("server..presentation..")
-            .should().onlyDependOnClassesThat()
+            .that()
+            .resideInAPackage("server..presentation..")
+            .should()
+            .onlyDependOnClassesThat()
             .resideOutsideOfPackage("server..domain..")
 
     @ArchTest
     val applicationServiceClassesShouldEndWithService: ArchRule =
         classes()
-            .that().resideInAPackage("server..application..")
-            .and().areAnnotatedWith(Service::class.java)
-            .should().haveSimpleNameEndingWith("Service")
+            .that()
+            .resideInAPackage("server..application..")
+            .and()
+            .areAnnotatedWith(Service::class.java)
+            .should()
+            .haveSimpleNameEndingWith("Service")
 
     @ArchTest
     val infrastructureComponentClassesShouldEndWithCache: ArchRule =
         classes()
-            .that().resideInAPackage("server..infrastructure..")
-            .and().areAnnotatedWith(Component::class.java)
-            .should().haveSimpleNameEndingWith("Cache")
+            .that()
+            .resideInAPackage("server..infrastructure..")
+            .and()
+            .areAnnotatedWith(Component::class.java)
+            .should()
+            .haveSimpleNameEndingWith("Cache")
 
     @ArchTest
     val infrastructureInterfaceClassesShouldEndWithRepository: ArchRule =
         classes()
-            .that().resideInAPackage("server..infrastructure..")
-            .and().areInterfaces()
-            .should().haveSimpleNameEndingWith("Repository")
+            .that()
+            .resideInAPackage("server..infrastructure..")
+            .and()
+            .areInterfaces()
+            .should()
+            .haveSimpleNameEndingWith("Repository")
 }

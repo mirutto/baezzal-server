@@ -15,3 +15,8 @@ include("baezzal-platform:image")
 include("baezzal-platform:queue")
 include("baezzal-platform:set")
 include("baezzal-platform:messaging")
+
+include("baezzal-config:jwt")
+include("baezzal-config:oauth")
+
+include("baezzal-platform:token")
