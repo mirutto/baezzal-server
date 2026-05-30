@@ -1,8 +1,6 @@
 package server.objectstorage
 
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldEndWith
-import io.kotest.matchers.string.shouldStartWith
 import io.minio.GetPresignedObjectUrlArgs
 import io.minio.MinioClient
 import io.minio.PutObjectArgs
@@ -18,12 +16,14 @@ class ObjectStorageTest {
     private val imageUploadProperties =
         ImageUploadProperties().apply {
             bucket = "baezzal-images"
-            prefix = "images"
             presignedExpirySeconds = 600
         }
     private val objectStorage = ObjectStorage(
         minioClient = minioClient,
-        minioProperties = MinioProperties(publicEndpoint = "https://s3.wowan.me"),
+        minioProperties = MinioProperties(
+            uploadEndpoint = "https://s3.wowan.me",
+            publicEndpoint = "https://static.wowan.me",
+        ),
         imageUploadProperties = imageUploadProperties,
     )
 
@@ -34,16 +34,16 @@ class ObjectStorageTest {
         every { minioClient.getPresignedObjectUrl(capture(presignedArgs)) } returns "https://s3.wowan.me/upload"
 
         val result = objectStorage.createPresignedImageUploadUrl(
+            prefix = "posts",
             fileName = "sample.PNG",
             contentType = "image/png",
         )
 
         result.uploadUrl shouldBe "https://s3.wowan.me/upload"
-        result.fileUrl shouldBe "https://s3.wowan.me/baezzal-images/${result.objectKey}"
+        result.fileUrl shouldBe "https://static.wowan.me/baezzal-images/${result.objectKey}"
         result.headers shouldBe mapOf("Content-Type" to "image/png")
         result.expiresInSeconds shouldBe 600
-        result.objectKey shouldStartWith "images/"
-        result.objectKey shouldEndWith ".png"
+        result.objectKey shouldBe "posts/sample.PNG"
         presignedArgs.captured.`object`() shouldBe result.objectKey
         verify(exactly = 1) { minioClient.bucketExists(any()) }
     }
@@ -56,14 +56,14 @@ class ObjectStorageTest {
 
         val result =
             objectStorage.uploadImage(
+                prefix = "profiles",
                 fileName = "photo.jpg",
                 contentType = "image/jpeg",
                 inputStream = "test".byteInputStream(),
                 size = 4,
             )
 
-        result shouldStartWith "https://s3.wowan.me/baezzal-images/images/"
-        result shouldEndWith ".jpg"
+        result shouldBe "https://static.wowan.me/baezzal-images/profiles/photo.jpg"
         putArgs.captured.contentType() shouldBe "image/jpeg"
     }
 }

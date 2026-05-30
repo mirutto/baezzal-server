@@ -12,9 +12,5 @@ spring:
       - messaging
       - jwt
       - oauth
-
-upload:
-  image:
-    bucket: ${UPLOAD_IMAGE_BUCKET:baezzal-images}
-    prefix: ${UPLOAD_IMAGE_PREFIX:images}
-    presigned-expiry-seconds: ${UPLOAD_IMAGE_PRESIGNED_EXPIRY_SECONDS:600}
+      - minio
+      - object-storage

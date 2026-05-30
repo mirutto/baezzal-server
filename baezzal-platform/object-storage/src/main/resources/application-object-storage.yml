@@ -1,0 +1,4 @@
+upload:
+    image:
+        bucket: ${UPLOAD_IMAGE_BUCKET:baezzal-images}
+        presigned-expiry-seconds: ${UPLOAD_IMAGE_PRESIGNED_EXPIRY_SECONDS:600}

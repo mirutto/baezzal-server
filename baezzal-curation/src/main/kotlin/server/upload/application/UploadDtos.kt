@@ -3,6 +3,7 @@ package server.upload.application
 import server.objectstorage.PresignedUploadUrl
 
 data class CreateImageUploadUrlCommand(
+    val prefix: String,
     val fileName: String,
     val contentType: String,
 )

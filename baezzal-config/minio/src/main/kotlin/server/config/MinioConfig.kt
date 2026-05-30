@@ -12,7 +12,7 @@ class MinioConfig {
     fun minioClient(properties: MinioProperties): MinioClient =
         MinioClient
             .builder()
-            .endpoint(properties.endpoint)
+            .endpoint(properties.uploadEndpoint)
             .credentials(properties.accessKey, properties.secretKey)
             .build()
 }

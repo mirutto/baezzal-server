@@ -24,3 +24,5 @@ naming:
 style:
   MagicNumber:
     active: false
+  ThrowsCount:
+    active: false

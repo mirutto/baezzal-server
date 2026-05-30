@@ -1,4 +1,4 @@
-package server.upload.presentation
+package server.upload.application
 
 import global.error.BadRequestException
 import io.kotest.assertions.throwables.shouldThrow
@@ -7,42 +7,42 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
-import server.objectstorage.ObjectStorage
 import server.objectstorage.PresignedUploadUrl
-import server.upload.application.CreateImageUploadUrlCommand
-import server.upload.application.ImageUploadUrlResult
+import server.upload.implementation.UploadImageUploader
 
-class UploadControllerTest {
-    private val objectStorage = mockk<ObjectStorage>()
-    private val uploadController = UploadController(objectStorage)
+class UploadServiceTest {
+    private val uploadImageUploader = mockk<UploadImageUploader>()
+    private val uploadService = UploadService(uploadImageUploader)
 
     @Test
     fun `이미지 presigned url 을 발급한다`() {
         val issued = PresignedUploadUrl(
-            objectKey = "images/2026-05-30/test.png",
+            objectKey = "profiles/profile.png",
             uploadUrl = "https://s3.wowan.me/put",
-            fileUrl = "https://s3.wowan.me/file",
+            fileUrl = "https://static.wowan.me/file",
             headers = mapOf("Content-Type" to "image/png"),
             expiresInSeconds = 600,
         )
         every {
-            objectStorage.createPresignedImageUploadUrl(
+            uploadImageUploader.createPresignedUploadUrl(
+                prefix = "profiles",
                 fileName = "profile.png",
                 contentType = "image/png",
             )
         } returns issued
 
-        val actual =
-            uploadController.createImageUploadUrl(
-                CreateImageUploadUrlCommand(
-                    fileName = " profile.png ",
-                    contentType = " IMAGE/PNG ",
-                ),
-            )
+        val actual = uploadService.createImageUploadUrl(
+            CreateImageUploadUrlCommand(
+                prefix = " profiles ",
+                fileName = " profile.png ",
+                contentType = " IMAGE/PNG ",
+            ),
+        )
 
-        actual.body shouldBe ImageUploadUrlResult.from(issued)
+        actual shouldBe ImageUploadUrlResult.from(issued)
         verify(exactly = 1) {
-            objectStorage.createPresignedImageUploadUrl(
+            uploadImageUploader.createPresignedUploadUrl(
+                prefix = "profiles",
                 fileName = "profile.png",
                 contentType = "image/png",
             )
@@ -50,10 +50,24 @@ class UploadControllerTest {
     }
 
     @Test
+    fun `빈 prefix 이면 예외가 발생한다`() {
+        shouldThrow<BadRequestException> {
+            uploadService.createImageUploadUrl(
+                CreateImageUploadUrlCommand(
+                    prefix = "   ",
+                    fileName = "profile.png",
+                    contentType = "image/png",
+                ),
+            )
+        }
+    }
+
+    @Test
     fun `빈 파일 이름이면 예외가 발생한다`() {
         shouldThrow<BadRequestException> {
-            uploadController.createImageUploadUrl(
+            uploadService.createImageUploadUrl(
                 CreateImageUploadUrlCommand(
+                    prefix = "profiles",
                     fileName = "   ",
                     contentType = "image/png",
                 ),
@@ -64,8 +78,9 @@ class UploadControllerTest {
     @Test
     fun `이미지가 아니면 예외가 발생한다`() {
         shouldThrow<BadRequestException> {
-            uploadController.createImageUploadUrl(
+            uploadService.createImageUploadUrl(
                 CreateImageUploadUrlCommand(
+                    prefix = "profiles",
                     fileName = "document.pdf",
                     contentType = "application/pdf",
                 ),

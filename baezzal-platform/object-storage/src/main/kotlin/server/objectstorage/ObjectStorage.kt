@@ -11,8 +11,6 @@ import server.config.MinioProperties
 import java.io.InputStream
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.time.LocalDate
-import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 @Component
@@ -22,12 +20,13 @@ class ObjectStorage(
     private val imageUploadProperties: ImageUploadProperties,
 ) {
     fun createPresignedImageUploadUrl(
+        prefix: String,
         fileName: String,
         contentType: String,
     ): PresignedUploadUrl {
         ensureBucketExists(imageUploadProperties.bucket)
 
-        val objectKey = createObjectKey(fileName)
+        val objectKey = createObjectKey(prefix, fileName)
         val uploadUrl =
             minioClient.getPresignedObjectUrl(
                 GetPresignedObjectUrlArgs
@@ -49,6 +48,7 @@ class ObjectStorage(
     }
 
     fun uploadImage(
+        prefix: String,
         fileName: String,
         contentType: String,
         inputStream: InputStream,
@@ -56,7 +56,7 @@ class ObjectStorage(
     ): String {
         ensureBucketExists(imageUploadProperties.bucket)
 
-        val objectKey = createObjectKey(fileName)
+        val objectKey = createObjectKey(prefix, fileName)
         minioClient.putObject(
             PutObjectArgs
                 .builder()
@@ -90,24 +90,13 @@ class ObjectStorage(
         )
     }
 
-    private fun createObjectKey(fileName: String): String {
-        val extension = fileName.substringAfterLast('.', "").lowercase()
-        val datePath = LocalDate.now().toString()
-        val normalizedPrefix = imageUploadProperties.prefix.trim('/').ifBlank { DEFAULT_PREFIX }
-        val uuid = UUID.randomUUID().toString()
-
-        return buildString {
-            append(normalizedPrefix)
-            append('/')
-            append(datePath)
-            append('/')
-            append(uuid)
-            if (extension.isNotBlank()) {
-                append('.')
-                append(extension)
-            }
-        }
-    }
+    private fun createObjectKey(
+        prefix: String,
+        fileName: String,
+    ): String =
+        listOf(prefix.trim('/'), fileName.trim('/'))
+            .filter { it.isNotBlank() }
+            .joinToString("/")
 
     private fun createFileUrl(
         bucket: String,
@@ -127,9 +116,7 @@ class ObjectStorage(
     private fun encodePathSegment(value: String): String =
         URLEncoder.encode(value, StandardCharsets.UTF_8)
             .replace("+", "%20")
-
     companion object {
         private const val CONTENT_TYPE_HEADER = "Content-Type"
-        private const val DEFAULT_PREFIX = "images"
     }
 }
