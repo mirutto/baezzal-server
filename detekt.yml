@@ -1,0 +1,26 @@
+config:
+  validation: true
+  warningsAsErrors: false
+
+processors:
+  active: true
+
+console-reports:
+  active: true
+  exclude:
+    - ProjectStatisticsReport
+    - ComplexityReport
+    - NotificationReport
+
+comments:
+  active: true
+  AbsentOrWrongFileLicense:
+    active: false
+
+naming:
+  MatchingDeclarationName:
+    active: false
+
+style:
+  MagicNumber:
+    active: false
