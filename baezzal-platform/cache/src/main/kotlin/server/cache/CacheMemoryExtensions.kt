@@ -2,16 +2,16 @@ package server.cache
 
 import com.fasterxml.jackson.core.type.TypeReference
 
-inline fun <reified T> RedisCache.get(key: String): T? = get(key, object : TypeReference<T>() {})
+inline fun <reified T> CacheMemory.get(key: String): T? = get(key, object : TypeReference<T>() {})
 
-fun <T> RedisCache.set(
+fun <T> CacheMemory.set(
     key: String,
     value: T,
 ) {
     set(key, value, null)
 }
 
-fun <T> RedisCache.setIfAbsent(
+fun <T> CacheMemory.setIfAbsent(
     key: String,
     value: T,
 ): Boolean = setIfAbsent(key, value, null)

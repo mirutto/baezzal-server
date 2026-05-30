@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
 @Component
-class RedisCache(
+class CacheMemory(
     private val redis: StringRedisTemplate,
     private val objectMapper: ObjectMapper,
 ) {

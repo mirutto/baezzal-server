@@ -15,11 +15,11 @@ import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.data.redis.core.ValueOperations
 import java.util.concurrent.TimeUnit
 
-class RedisCacheTest {
+class CacheMemoryTest {
     private val redis = mockk<StringRedisTemplate>()
     private val valueOps = mockk<ValueOperations<String, String>>()
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
-    private val cache = RedisCache(redis, objectMapper)
+    private val cache = CacheMemory(redis, objectMapper)
 
     init {
         every { redis.opsForValue() } returns valueOps

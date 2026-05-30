@@ -1,14 +1,14 @@
 package server.auth.infrastructure
 
 import org.springframework.stereotype.Component
-import server.cache.RedisCache
+import server.cache.CacheMemory
 
 @Component
 class RefreshTokenCache(
-    private val redisCache: RedisCache,
+    private val cacheMemory: CacheMemory,
 ) {
     fun get(memberId: Long): String? =
-        redisCache.get(
+        cacheMemory.get(
             key = key(memberId),
             type = String::class.java,
         )
@@ -18,7 +18,7 @@ class RefreshTokenCache(
         refreshToken: String,
         ttlMillis: Long,
     ) {
-        redisCache.set(
+        cacheMemory.set(
             key = key(memberId),
             value = refreshToken,
             ttlMillis = ttlMillis,

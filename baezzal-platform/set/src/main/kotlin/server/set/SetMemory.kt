@@ -4,7 +4,7 @@ import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Component
 
 @Component
-class RedisSet(
+class SetMemory(
     private val redis: StringRedisTemplate,
 ) {
     private val ops = redis.opsForSet()

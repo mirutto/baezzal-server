@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Test
 import org.springframework.data.redis.core.ListOperations
 import org.springframework.data.redis.core.StringRedisTemplate
 
-class RedisQueueTest {
+class QueueMemoryTest {
     private val redis = mockk<StringRedisTemplate>()
     private val ops = mockk<ListOperations<String, String>>()
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
-    private val queue by lazy { RedisQueue(redis, objectMapper) }
+    private val queue by lazy { QueueMemory(redis, objectMapper) }
 
     init {
         every { redis.opsForList() } returns ops

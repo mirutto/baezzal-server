@@ -6,7 +6,7 @@ import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Component
 
 @Component
-class RedisQueue(
+class QueueMemory(
     private val redis: StringRedisTemplate,
     private val objectMapper: ObjectMapper,
 ) {

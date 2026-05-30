@@ -2,12 +2,12 @@ package server.auth.infrastructure
 
 import org.springframework.stereotype.Component
 import server.auth.domain.AuthTicketPayload
-import server.cache.RedisCache
+import server.cache.CacheMemory
 import server.cache.RedisTakeCache
 
 @Component
 class AuthTicketCache(
-    private val redisCache: RedisCache,
+    private val cacheMemory: CacheMemory,
     private val redisTakeCache: RedisTakeCache,
 ) {
     fun set(
@@ -15,7 +15,7 @@ class AuthTicketCache(
         payload: AuthTicketPayload,
         ttlMillis: Long,
     ) {
-        redisCache.set(
+        cacheMemory.set(
             key = key(ticket),
             value = payload,
             ttlMillis = ttlMillis,
