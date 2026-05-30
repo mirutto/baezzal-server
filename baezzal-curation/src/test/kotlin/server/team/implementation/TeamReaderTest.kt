@@ -7,6 +7,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import org.junit.jupiter.api.Test
+import org.springframework.data.repository.findByIdOrNull
 import server.team.domain.Team
 import server.team.infrastructure.TeamCache
 import server.team.infrastructure.TeamRepository
@@ -15,6 +16,17 @@ class TeamReaderTest {
     private val teamRepository = mockk<TeamRepository>()
     private val teamCache = mockk<TeamCache>()
     private val teamReader = TeamReader(teamRepository, teamCache)
+
+    @Test
+    fun `team id 로 단건 조회한다`() {
+        val team = Team(id = 1L, name = "A", sortOrder = 1)
+        every { teamRepository.findByIdOrNull(1L) } returns team
+
+        val result = teamReader.readById(1L)
+
+        result shouldBe team
+        verify(exactly = 1) { teamRepository.findByIdOrNull(1L) }
+    }
 
     @Test
     fun `캐시가 있으면 DB 조회 없이 반환한다`() {

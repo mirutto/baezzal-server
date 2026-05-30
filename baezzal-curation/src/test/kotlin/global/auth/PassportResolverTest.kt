@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.core.MethodParameter
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.ServletWebRequest
-import server.member.domain.MemberRole
 import server.token.AuthPrincipal
 import server.token.TokenProvider
 import server.token.TokenType
@@ -50,7 +49,7 @@ class PassportResolverTest {
         every { tokenProvider.decodeToken("access-token") } returns AuthPrincipal(
             memberId = 1L,
             type = TokenType.ACCESS,
-            role = MemberRole.USER.name,
+            role = "USER",
         )
 
         val result = passportResolver.resolveArgument(
@@ -60,7 +59,7 @@ class PassportResolverTest {
             null,
         )
 
-        result shouldBe Passport(memberId = 1L, role = MemberRole.USER)
+        result shouldBe Passport(memberId = 1L, role = "USER")
     }
 
     @Test

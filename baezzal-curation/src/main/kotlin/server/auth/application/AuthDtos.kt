@@ -3,13 +3,19 @@ package server.auth.application
 import global.error.InternalServerErrorException
 import server.member.domain.MemberProvider
 
-data class AuthTicketExchangeRequest(
+data class AuthTicketExchangeCommand(
     val ticket: String,
 )
 
-data class AuthTokenData(
+data class AuthTokenResult(
     val accessToken: String,
     val refreshToken: String,
+)
+
+data class AuthTicketExchangeResult(
+    val accessToken: String,
+    val refreshToken: String,
+    val needsOnboarding: Boolean,
 )
 
 data class Oauth2Attributes(

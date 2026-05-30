@@ -8,7 +8,6 @@ import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
-import server.member.domain.MemberRole
 import server.token.ExpiredTokenException
 import server.token.InvalidTokenException
 import server.token.TokenProvider
@@ -47,7 +46,7 @@ class PassportResolver(
 
         return Passport(
             memberId = principal.memberId,
-            role = runCatching { MemberRole.valueOf(role) }.getOrElse { invalidToken() },
+            role = role,
         )
     }
 

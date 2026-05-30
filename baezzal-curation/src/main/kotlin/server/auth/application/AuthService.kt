@@ -67,21 +67,25 @@ class AuthService(
         )
 
         return authTicketIssuer.issue(
+            memberId = memberId,
             accessToken = tokens.accessToken,
             refreshToken = tokens.refreshToken,
         )
     }
 
-    fun exchangeTicket(ticket: String): AuthTokenData {
-        val tokens = authTicketExchanger.exchange(ticket)
+    fun exchangeTicket(ticket: String): AuthTicketExchangeResult {
+        val payload = authTicketExchanger.exchange(ticket)
+        val member = memberReader.readById(payload.memberId)
+            ?: throw NotFoundException("회원을 찾을 수 없습니다")
 
-        return AuthTokenData(
-            accessToken = tokens.accessToken,
-            refreshToken = tokens.refreshToken,
+        return AuthTicketExchangeResult(
+            accessToken = payload.accessToken,
+            refreshToken = payload.refreshToken,
+            needsOnboarding = member.nickname.isBlank(),
         )
     }
 
-    fun reissue(refreshToken: String): AuthTokenData {
+    fun reissue(refreshToken: String): AuthTokenResult {
         val principal = refreshTokenVerifier.verify(refreshToken)
         val member = memberReader.readById(principal.memberId)
             ?: throw NotFoundException("회원을 찾을 수 없습니다")
@@ -94,7 +98,7 @@ class AuthService(
             refreshToken = tokens.refreshToken,
         )
 
-        return AuthTokenData(
+        return AuthTokenResult(
             accessToken = tokens.accessToken,
             refreshToken = tokens.refreshToken,
         )

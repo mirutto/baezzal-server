@@ -12,8 +12,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import server.auth.application.AuthService
-import server.auth.application.AuthTicketExchangeRequest
-import server.auth.application.AuthTokenData
+import server.auth.application.AuthTicketExchangeCommand
+import server.auth.application.AuthTicketExchangeResult
+import server.auth.application.AuthTokenResult
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -36,11 +37,11 @@ class AuthController(
 
     @PostMapping("/ticket/exchange")
     fun exchangeTicket(
-        @RequestBody request: AuthTicketExchangeRequest,
+        @RequestBody command: AuthTicketExchangeCommand,
         httpRequest: HttpServletRequest,
         response: HttpServletResponse,
-    ): ApiResponse<AuthTokenData> {
-        val authToken = authService.exchangeTicket(request.ticket)
+    ): ApiResponse<AuthTicketExchangeResult> {
+        val authToken = authService.exchangeTicket(command.ticket)
         response.appendAuthCookies(
             accessToken = authToken.accessToken,
             refreshToken = authToken.refreshToken,
@@ -53,7 +54,7 @@ class AuthController(
     fun reissueToken(
         request: HttpServletRequest,
         response: HttpServletResponse,
-    ): ApiResponse<AuthTokenData> {
+    ): ApiResponse<AuthTokenResult> {
         val authToken = authService.reissue(request.requireRefreshToken())
         response.appendAuthCookies(
             accessToken = authToken.accessToken,

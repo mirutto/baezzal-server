@@ -1,8 +1,8 @@
 package server.auth.implementation
 
 import org.springframework.stereotype.Component
+import server.auth.domain.AuthTicketPayload
 import server.auth.infrastructure.AuthTicketCache
-import server.auth.domain.AuthTokens
 import java.util.UUID
 
 @Component
@@ -10,13 +10,15 @@ class AuthTicketIssuer(
     private val authTicketCache: AuthTicketCache,
 ) {
     fun issue(
+        memberId: Long,
         accessToken: String,
         refreshToken: String,
     ): String {
         val ticket = UUID.randomUUID().toString()
         authTicketCache.set(
             ticket = ticket,
-            tokens = AuthTokens(
+            payload = AuthTicketPayload(
+                memberId = memberId,
                 accessToken = accessToken,
                 refreshToken = refreshToken,
             ),

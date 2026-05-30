@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":baezzal-config:redis"))
     implementation(project(":baezzal-config:oauth"))
     implementation(project(":baezzal-platform:cache"))
+    implementation(project(":baezzal-platform:image"))
     implementation(project(":baezzal-platform:queue"))
     implementation(project(":baezzal-platform:set"))
     implementation(project(":baezzal-platform:messaging"))

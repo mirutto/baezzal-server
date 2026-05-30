@@ -1,3 +1,4 @@
 dependencies {
-    implementation("metadata-extractor:metadata-extractor:2.19.0")
+    implementation(project(":baezzal-config:minio"))
+    implementation("com.drewnoakes:metadata-extractor:2.19.0")
 }

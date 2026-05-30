@@ -98,6 +98,8 @@ class CurationArchitectureTest {
             .areAnnotatedWith(Component::class.java)
             .should()
             .haveSimpleNameEndingWith("Cache")
+            .orShould()
+            .haveSimpleNameEndingWith("Storage")
 
     @ArchTest
     val infrastructureInterfaceClassesShouldEndWithRepository: ArchRule =

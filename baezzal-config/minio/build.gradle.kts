@@ -1,3 +1,3 @@
 dependencies {
-    implementation("io.minio:minio:8.5.7")
+    api("io.minio:minio:8.5.7")
 }

@@ -37,12 +37,19 @@ class Member(
     @Column(name = "provider_key", nullable = false, length = 255)
     val providerKey: String,
 
+    @Column(name = "preferred_team_id")
+    var preferredTeamId: Long? = null,
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
     val role: MemberRole = MemberRole.USER,
 ) : BaseEntity() {
     fun updateNickname(nickname: String) {
         this.nickname = nickname
+    }
+
+    fun updatePreferredTeam(preferredTeamId: Long?) {
+        this.preferredTeamId = preferredTeamId
     }
 
     override fun equals(other: Any?): Boolean {

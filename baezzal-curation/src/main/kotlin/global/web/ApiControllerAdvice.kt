@@ -20,57 +20,57 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 class ApiControllerAdvice {
     private val logger = KotlinLogging.logger {}
 
-    data class ErrorResponse(
+    data class ErrorResult(
         val status: Int,
         val message: String,
     )
 
     @ExceptionHandler(BindException::class)
-    fun handleBindException(request: HttpServletRequest): ResponseEntity<ErrorResponse> =
+    fun handleBindException(request: HttpServletRequest): ResponseEntity<ErrorResult> =
         badRequest(request, "요청 값이 올바르지 않습니다")
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handle(request: HttpServletRequest): ResponseEntity<ErrorResponse> =
+    fun handle(request: HttpServletRequest): ResponseEntity<ErrorResult> =
         badRequest(request, "요청 값이 올바르지 않습니다")
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
-    fun handleNotReadable(request: HttpServletRequest): ResponseEntity<ErrorResponse> =
+    fun handleNotReadable(request: HttpServletRequest): ResponseEntity<ErrorResult> =
         badRequest(request, "요청 본문(JSON)이 올바르지 않습니다")
 
     @ExceptionHandler(MissingServletRequestParameterException::class)
-    fun handleMissingValue(request: HttpServletRequest): ResponseEntity<ErrorResponse> =
+    fun handleMissingValue(request: HttpServletRequest): ResponseEntity<ErrorResult> =
         badRequest(request, "필수 값이 누락되었습니다")
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
-    fun handleMethodNotAllowed(request: HttpServletRequest): ResponseEntity<ErrorResponse> =
+    fun handleMethodNotAllowed(request: HttpServletRequest): ResponseEntity<ErrorResult> =
         error(request, HttpStatus.METHOD_NOT_ALLOWED, "지원하지 않는 HTTP 메서드입니다")
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException::class)
-    fun handleUnsupportedMediaType(request: HttpServletRequest): ResponseEntity<ErrorResponse> =
+    fun handleUnsupportedMediaType(request: HttpServletRequest): ResponseEntity<ErrorResult> =
         error(request, HttpStatus.UNSUPPORTED_MEDIA_TYPE, "지원하지 않는 Content-Type 입니다")
 
     @ExceptionHandler(HttpMediaTypeNotAcceptableException::class)
-    fun handleNotAcceptable(request: HttpServletRequest): ResponseEntity<ErrorResponse> =
+    fun handleNotAcceptable(request: HttpServletRequest): ResponseEntity<ErrorResult> =
         error(request, HttpStatus.NOT_ACCEPTABLE, "지원하지 않는 응답 형식입니다")
 
     @ExceptionHandler(BaseException::class)
     fun handleBaseException(
         request: HttpServletRequest,
         e: BaseException,
-    ): ResponseEntity<ErrorResponse> =
+    ): ResponseEntity<ErrorResult> =
         error(request, e.status, e.message ?: "서버 오류가 발생했습니다", e)
 
     @ExceptionHandler(Exception::class)
     fun handleException(
         request: HttpServletRequest,
         e: Exception,
-    ): ResponseEntity<ErrorResponse> =
+    ): ResponseEntity<ErrorResult> =
         error(request, HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다", e)
 
     private fun badRequest(
         request: HttpServletRequest,
         message: String,
-    ): ResponseEntity<ErrorResponse> =
+    ): ResponseEntity<ErrorResult> =
         error(request, HttpStatus.BAD_REQUEST, message)
 
     private fun error(
@@ -78,8 +78,8 @@ class ApiControllerAdvice {
         status: HttpStatus,
         message: String,
         exception: Exception? = null,
-    ): ResponseEntity<ErrorResponse> =
-        ResponseEntity.status(status).body(ErrorResponse(status = status.value(), message = message)).also {
+    ): ResponseEntity<ErrorResult> =
+        ResponseEntity.status(status).body(ErrorResult(status = status.value(), message = message)).also {
             log(request, status, message, exception)
         }
 

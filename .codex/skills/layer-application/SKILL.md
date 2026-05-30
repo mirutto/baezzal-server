@@ -30,6 +30,7 @@ Use this skill with `layer-architecture` when working on
 - Service classes should end with `Service`.
 - Group DTOs in `**Dtos` files.
 - Group application events in `**Events` files.
+- Follow `.codex/rules/dto-naming.md` for DTO suffix naming.
 - Prefer secondary constructors and factory methods for DTO mapping.
 
 ## Guardrails

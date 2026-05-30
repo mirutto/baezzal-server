@@ -7,6 +7,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import org.junit.jupiter.api.Test
+import server.auth.domain.AuthTicketPayload
 import server.auth.implementation.AuthTicketExchanger
 import server.auth.implementation.AuthTicketIssuer
 import server.auth.implementation.AuthTokenIssuer
@@ -40,6 +41,36 @@ class AuthServiceTest {
     )
 
     @Test
+    fun `ticket 을 교환할 때 닉네임이 비어 있으면 온보딩 필요 여부를 함께 반환한다`() {
+        val accessToken = "access-token"
+        val refreshToken = "refresh-token"
+        val member = Member(
+            id = 1L,
+            nickname = "",
+            provider = MemberProvider.GOOGLE,
+            providerKey = "provider-key",
+            preferredTeamId = null,
+            role = MemberRole.USER,
+        )
+        every { authTicketExchanger.exchange("ticket") } returns AuthTicketPayload(
+            memberId = 1L,
+            accessToken = accessToken,
+            refreshToken = refreshToken,
+        )
+        every { memberReader.readById(1L) } returns member
+
+        val result = authService.exchangeTicket("ticket")
+
+        result shouldBe AuthTicketExchangeResult(
+            accessToken = accessToken,
+            refreshToken = refreshToken,
+            needsOnboarding = true,
+        )
+        verify(exactly = 1) { authTicketExchanger.exchange("ticket") }
+        verify(exactly = 1) { memberReader.readById(1L) }
+    }
+
+    @Test
     fun `refresh token 으로 access token 과 refresh token 을 재발급한다`() {
         val refreshToken = "refresh-token"
         val member = Member(
@@ -47,6 +78,7 @@ class AuthServiceTest {
             nickname = "tester",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
+            preferredTeamId = null,
             role = MemberRole.USER,
         )
         every { refreshTokenVerifier.verify(refreshToken) } returns AuthPrincipal(
@@ -64,7 +96,7 @@ class AuthServiceTest {
 
         val result = authService.reissue(refreshToken)
 
-        result shouldBe AuthTokenData(
+        result shouldBe AuthTokenResult(
             accessToken = "new-access-token",
             refreshToken = "new-refresh-token",
         )
