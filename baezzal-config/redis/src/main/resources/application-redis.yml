@@ -1,0 +1,8 @@
+redis:
+  connection:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    database: ${REDIS_DATABASE:0}
+    username: ${REDIS_USERNAME:}
+    password: ${REDIS_PASSWORD:}
+    timeout: ${REDIS_TIMEOUT:30s}
