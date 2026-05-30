@@ -1,0 +1,7 @@
+interface:
+  display_name: "Layer Architecture"
+  short_description: "Curation layer structure and dependency rules"
+  default_prompt: "Use $layer-architecture to apply the baezzal-curation layer package, dependency, and exposure rules."
+
+policy:
+  allow_implicit_invocation: true

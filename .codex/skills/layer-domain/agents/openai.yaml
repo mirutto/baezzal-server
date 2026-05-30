@@ -1,0 +1,7 @@
+interface:
+  display_name: "Layer Domain"
+  short_description: "Domain entity modeling guidance"
+  default_prompt: "Use $layer-domain to apply the baezzal-curation domain-entity and dependency boundary rules."
+
+policy:
+  allow_implicit_invocation: true

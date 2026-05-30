@@ -1,0 +1,7 @@
+interface:
+  display_name: "Layer Infrastructure"
+  short_description: "Infrastructure adapter and repository guidance"
+  default_prompt: "Use $layer-infrastructure to apply feature-owned repository, cache, and adapter rules in baezzal-curation."
+
+policy:
+  allow_implicit_invocation: true

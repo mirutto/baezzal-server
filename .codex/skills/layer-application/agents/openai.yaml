@@ -1,0 +1,7 @@
+interface:
+  display_name: "Layer Application"
+  short_description: "Application-layer business flow guidance"
+  default_prompt: "Use $layer-application to keep business flow, DTO mapping, and service orchestration clear in baezzal-curation."
+
+policy:
+  allow_implicit_invocation: true

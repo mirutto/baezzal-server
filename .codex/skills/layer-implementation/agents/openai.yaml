@@ -1,0 +1,7 @@
+interface:
+  display_name: "Layer Implementation"
+  short_description: "Implementation-layer action component guidance"
+  default_prompt: "Use $layer-implementation to apply focused action-component rules for baezzal-curation implementation code."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Layer Presentation"
+  short_description: "Presentation-layer entrypoint guidance"
+  default_prompt: "Use $layer-presentation to apply the controller, event handler, and DTO entrypoint rules in baezzal-curation."
+
+policy:
+  allow_implicit_invocation: true
