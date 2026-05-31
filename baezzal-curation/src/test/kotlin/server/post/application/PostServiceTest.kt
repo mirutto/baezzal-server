@@ -13,6 +13,7 @@ import server.objectstorage.PresignedUploadUrl
 import server.post.domain.Post
 import server.post.implementation.PostEventPublisher
 import server.post.implementation.PostImageUploader
+import server.post.implementation.PostImageUrlRecorder
 import server.post.implementation.PostValidator
 import server.post.implementation.PostWriter
 import server.posttag.implementation.PostTagWriter
@@ -21,6 +22,7 @@ import server.tag.implementation.TagResolver
 
 class PostServiceTest {
     private val postImageUploader = mockk<PostImageUploader>()
+    private val postImageUrlRecorder = mockk<PostImageUrlRecorder>()
     private val postValidator = mockk<PostValidator>()
     private val postWriter = mockk<PostWriter>()
     private val postTagWriter = mockk<PostTagWriter>()
@@ -28,6 +30,7 @@ class PostServiceTest {
     private val postEventPublisher = mockk<PostEventPublisher>()
     private val postService = PostService(
         postImageUploader = postImageUploader,
+        postImageUrlRecorder = postImageUrlRecorder,
         postValidator = postValidator,
         postWriter = postWriter,
         postTagWriter = postTagWriter,
@@ -155,6 +158,7 @@ class PostServiceTest {
                 contentType = "image/png",
             )
         } returns issued
+        every { postImageUrlRecorder.record("https://static.wowan.me/file", 600) } returns Unit
 
         val actual = postService.createImageUploadUrl(
             CreatePostImageUploadUrlCommand(
@@ -164,6 +168,7 @@ class PostServiceTest {
 
         actual shouldBe PostImageUploadUrlResult.from(issued)
         UUID_REGEX.matches(fileName.captured) shouldBe true
+        verify(exactly = 1) { postImageUrlRecorder.record("https://static.wowan.me/file", 600) }
     }
 
     @Test

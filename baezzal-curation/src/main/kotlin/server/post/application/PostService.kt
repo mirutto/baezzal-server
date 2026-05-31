@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional
 import server.post.domain.Post
 import server.post.implementation.PostEventPublisher
 import server.post.implementation.PostImageUploader
+import server.post.implementation.PostImageUrlRecorder
 import server.post.implementation.PostValidator
 import server.post.implementation.PostWriter
 import server.posttag.implementation.PostTagWriter
@@ -14,6 +15,7 @@ import java.util.UUID
 @Service
 class PostService(
     private val postImageUploader: PostImageUploader,
+    private val postImageUrlRecorder: PostImageUrlRecorder,
     private val postValidator: PostValidator,
     private val postWriter: PostWriter,
     private val postTagWriter: PostTagWriter,
@@ -50,13 +52,16 @@ class PostService(
         val contentType = command.contentType.trim().lowercase()
         postValidator.validateImageContentType(contentType)
 
-        return PostImageUploadUrlResult.from(
+        val uploadUrl =
             postImageUploader.createPresignedUploadUrl(
                 prefix = POST_IMAGE_PREFIX,
                 fileName = UUID.randomUUID().toString(),
                 contentType = contentType,
-            ),
-        )
+            )
+
+        postImageUrlRecorder.record(uploadUrl.fileUrl, uploadUrl.expiresInSeconds)
+
+        return PostImageUploadUrlResult.from(uploadUrl)
     }
 
     companion object {
