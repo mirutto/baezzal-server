@@ -25,5 +25,9 @@ class RefreshTokenCache(
         )
     }
 
+    fun delete(memberId: Long) {
+        cacheMemory.evict(key(memberId))
+    }
+
     private fun key(memberId: Long): String = "auth:refresh:$memberId"
 }

@@ -39,7 +39,7 @@ class PassportResolver(
             } catch (_: InvalidTokenException) {
                 invalidToken()
             } catch (_: ExpiredTokenException) {
-                invalidToken()
+                expiredToken()
             }.takeIf { it.type == TokenType.ACCESS && it.role != null }
                 ?: invalidToken()
         val role = principal.role ?: invalidToken()
@@ -50,7 +50,9 @@ class PassportResolver(
         )
     }
 
-    private fun invalidToken(): Nothing = throw UnauthorizedException("INVALID_TOKEN")
+    private fun invalidToken(): Nothing = throw UnauthorizedException("LOGIN_AGAIN")
+
+    private fun expiredToken(): Nothing = throw UnauthorizedException("TOKEN_EXPIRED")
 
     companion object {
         private const val AUTHORIZATION_HEADER = "Authorization"

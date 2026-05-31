@@ -8,6 +8,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import server.auth.infrastructure.RefreshTokenCache
 import server.token.AuthPrincipal
+import server.token.ExpiredTokenException
 import server.token.TokenProvider
 import server.token.TokenType
 
@@ -35,9 +36,11 @@ class RefreshTokenVerifierTest {
             tokenProvider.decodeToken(refreshToken)
         } returns AuthPrincipal(memberId = 1L, type = TokenType.ACCESS, role = "USER")
 
-        shouldThrow<UnauthorizedException> {
+        val result = shouldThrow<UnauthorizedException> {
             refreshTokenVerifier.verify(refreshToken)
         }
+
+        result.message shouldBe "LOGIN_AGAIN"
     }
 
     @Test
@@ -48,8 +51,22 @@ class RefreshTokenVerifierTest {
         } returns AuthPrincipal(memberId = 1L, type = TokenType.REFRESH)
         every { refreshTokenCache.get(1L) } returns "different-token"
 
-        shouldThrow<UnauthorizedException> {
+        val result = shouldThrow<UnauthorizedException> {
             refreshTokenVerifier.verify(refreshToken)
         }
+
+        result.message shouldBe "LOGIN_AGAIN"
+    }
+
+    @Test
+    fun `만료된 refresh token 이면 TOKEN_EXPIRED 예외가 발생한다`() {
+        val refreshToken = "expired-refresh-token"
+        every { tokenProvider.decodeToken(refreshToken) } throws ExpiredTokenException()
+
+        val result = shouldThrow<UnauthorizedException> {
+            refreshTokenVerifier.verify(refreshToken)
+        }
+
+        result.message shouldBe "TOKEN_EXPIRED"
     }
 }

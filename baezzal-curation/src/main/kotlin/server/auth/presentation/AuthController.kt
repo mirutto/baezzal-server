@@ -1,9 +1,12 @@
 package server.auth.presentation
 
+import global.auth.Passport
+import global.auth.RequestPassport
 import global.web.ApiResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -62,5 +65,16 @@ class AuthController(
             secure = request.isSecure,
         )
         return ApiResponse.of(authToken)
+    }
+
+    @DeleteMapping("/logout")
+    fun logout(
+        @RequestPassport passport: Passport,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ): ApiResponse<Unit> {
+        authService.logout(passport.memberId)
+        response.expireAuthCookies(secure = request.isSecure)
+        return ApiResponse.of(status = HttpStatus.NO_CONTENT)
     }
 }

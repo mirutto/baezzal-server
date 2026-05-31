@@ -21,7 +21,7 @@ fun HttpServletRequest.requireRefreshToken(): String =
         ?.firstOrNull { it.name == REFRESH_TOKEN_COOKIE }
         ?.value
         ?.takeIf { it.isNotBlank() }
-        ?: throw UnauthorizedException("INVALID_TOKEN")
+        ?: throw UnauthorizedException("LOGIN_AGAIN")
 
 fun HttpServletRequest.resolveOauth2RedirectUrl(
     vararg param: Pair<String, String>,

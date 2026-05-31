@@ -36,6 +36,29 @@ fun HttpServletResponse.appendAuthCookies(
     )
 }
 
+fun HttpServletResponse.expireAuthCookies(
+    secure: Boolean,
+) {
+    addHeader(
+        HttpHeaders.SET_COOKIE,
+        createCookie(
+            name = ACCESS_TOKEN_COOKIE,
+            value = "",
+            maxAge = 0,
+            secure = secure,
+        ).toString(),
+    )
+    addHeader(
+        HttpHeaders.SET_COOKIE,
+        createCookie(
+            name = REFRESH_TOKEN_COOKIE,
+            value = "",
+            maxAge = 0,
+            secure = secure,
+        ).toString(),
+    )
+}
+
 fun HttpServletResponse.appendOauth2RedirectUriCookie(
     redirectUri: String,
     secure: Boolean,

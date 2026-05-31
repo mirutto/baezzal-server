@@ -11,6 +11,7 @@ import server.auth.domain.AuthTicketPayload
 import server.auth.implementation.AuthTicketExchanger
 import server.auth.implementation.AuthTicketIssuer
 import server.auth.implementation.AuthTokenIssuer
+import server.auth.implementation.RefreshTokenRemover
 import server.auth.implementation.RefreshTokenVerifier
 import server.auth.implementation.RefreshTokenWriter
 import server.auth.domain.AuthTokens
@@ -30,6 +31,7 @@ class AuthServiceTest {
     private val authTokenIssuer = mockk<AuthTokenIssuer>()
     private val refreshTokenVerifier = mockk<RefreshTokenVerifier>()
     private val refreshTokenWriter = mockk<RefreshTokenWriter>()
+    private val refreshTokenRemover = mockk<RefreshTokenRemover>()
     private val authService = AuthService(
         memberReader = memberReader,
         memberWriter = memberWriter,
@@ -38,6 +40,7 @@ class AuthServiceTest {
         authTokenIssuer = authTokenIssuer,
         refreshTokenVerifier = refreshTokenVerifier,
         refreshTokenWriter = refreshTokenWriter,
+        refreshTokenRemover = refreshTokenRemover,
     )
 
     @Test
@@ -164,5 +167,14 @@ class AuthServiceTest {
         verify(exactly = 1) { memberReader.readById(1L) }
         verify(exactly = 1) { authTokenIssuer.issue(1L, MemberRole.USER.name) }
         verify(exactly = 1) { refreshTokenWriter.write(1L, "new-refresh-token") }
+    }
+
+    @Test
+    fun `member id 로 로그아웃한다`() {
+        every { refreshTokenRemover.remove(1L) } just runs
+
+        authService.logout(1L)
+
+        verify(exactly = 1) { refreshTokenRemover.remove(1L) }
     }
 }

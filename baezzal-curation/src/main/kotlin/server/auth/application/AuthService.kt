@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 import server.auth.implementation.AuthTicketExchanger
 import server.auth.implementation.AuthTicketIssuer
 import server.auth.implementation.AuthTokenIssuer
+import server.auth.implementation.RefreshTokenRemover
 import server.auth.implementation.RefreshTokenVerifier
 import server.auth.implementation.RefreshTokenWriter
 import server.member.domain.Member
@@ -21,6 +22,7 @@ class AuthService(
     private val authTokenIssuer: AuthTokenIssuer,
     private val refreshTokenVerifier: RefreshTokenVerifier,
     private val refreshTokenWriter: RefreshTokenWriter,
+    private val refreshTokenRemover: RefreshTokenRemover,
 ) {
 
     @Transactional
@@ -102,5 +104,9 @@ class AuthService(
             accessToken = tokens.accessToken,
             refreshToken = tokens.refreshToken,
         )
+    }
+
+    fun logout(memberId: Long) {
+        refreshTokenRemover.remove(memberId)
     }
 }

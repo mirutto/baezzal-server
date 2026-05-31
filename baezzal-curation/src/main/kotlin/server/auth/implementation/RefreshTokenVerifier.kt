@@ -4,6 +4,7 @@ import global.error.UnauthorizedException
 import org.springframework.stereotype.Component
 import server.auth.infrastructure.RefreshTokenCache
 import server.token.AuthPrincipal
+import server.token.ExpiredTokenException
 import server.token.InvalidTokenException
 import server.token.TokenProvider
 import server.token.TokenType
@@ -32,7 +33,11 @@ class RefreshTokenVerifier(
             tokenProvider.decodeToken(refreshToken)
         } catch (_: InvalidTokenException) {
             invalidToken()
+        } catch (_: ExpiredTokenException) {
+            expiredToken()
         }
 
-    private fun invalidToken(): Nothing = throw UnauthorizedException("INVALID_TOKEN")
+    private fun invalidToken(): Nothing = throw UnauthorizedException("LOGIN_AGAIN")
+
+    private fun expiredToken(): Nothing = throw UnauthorizedException("TOKEN_EXPIRED")
 }

@@ -10,6 +10,7 @@ import org.springframework.core.MethodParameter
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.ServletWebRequest
 import server.token.AuthPrincipal
+import server.token.ExpiredTokenException
 import server.token.TokenProvider
 import server.token.TokenType
 
@@ -66,7 +67,7 @@ class PassportResolverTest {
     fun `Authorization 헤더가 없으면 예외가 발생한다`() {
         val request = MockHttpServletRequest()
 
-        shouldThrow<UnauthorizedException> {
+        val result = shouldThrow<UnauthorizedException> {
             passportResolver.resolveArgument(
                 passportParameter,
                 null,
@@ -74,6 +75,8 @@ class PassportResolverTest {
                 null,
             )
         }
+
+        result.message shouldBe "LOGIN_AGAIN"
     }
 
     @Test
@@ -86,7 +89,7 @@ class PassportResolverTest {
             type = TokenType.REFRESH,
         )
 
-        shouldThrow<UnauthorizedException> {
+        val result = shouldThrow<UnauthorizedException> {
             passportResolver.resolveArgument(
                 passportParameter,
                 null,
@@ -94,6 +97,8 @@ class PassportResolverTest {
                 null,
             )
         }
+
+        result.message shouldBe "LOGIN_AGAIN"
     }
 
     @Test
@@ -107,7 +112,7 @@ class PassportResolverTest {
             role = null,
         )
 
-        shouldThrow<UnauthorizedException> {
+        val result = shouldThrow<UnauthorizedException> {
             passportResolver.resolveArgument(
                 passportParameter,
                 null,
@@ -115,6 +120,27 @@ class PassportResolverTest {
                 null,
             )
         }
+
+        result.message shouldBe "LOGIN_AGAIN"
+    }
+
+    @Test
+    fun `만료된 access token 이면 TOKEN_EXPIRED 예외가 발생한다`() {
+        val request = MockHttpServletRequest().apply {
+            addHeader("Authorization", "Bearer expired-access-token")
+        }
+        every { tokenProvider.decodeToken("expired-access-token") } throws ExpiredTokenException()
+
+        val result = shouldThrow<UnauthorizedException> {
+            passportResolver.resolveArgument(
+                passportParameter,
+                null,
+                ServletWebRequest(request),
+                null,
+            )
+        }
+
+        result.message shouldBe "TOKEN_EXPIRED"
     }
 
     private fun methodParameter(methodName: String): MethodParameter =
