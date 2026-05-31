@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":baezzal-config:oauth"))
     implementation(project(":baezzal-platform:cache"))
     implementation(project(":baezzal-platform:image"))
+    implementation(project(":baezzal-platform:lock"))
     implementation(project(":baezzal-platform:object-storage"))
     implementation(project(":baezzal-platform:queue"))
     implementation(project(":baezzal-platform:set"))
