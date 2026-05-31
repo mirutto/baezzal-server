@@ -1,4 +1,4 @@
-package server.post.implementation
+package server.post.domain
 
 data class PostCreatedEvent(
     val postId: Long,

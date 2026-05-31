@@ -7,6 +7,7 @@ import io.mockk.slot
 import org.junit.jupiter.api.Test
 import server.outbox.TransactionalEventPublisher
 import server.post.domain.Post
+import server.post.domain.PostCreatedEvent
 
 class PostEventPublisherTest {
     private val transactionalEventPublisher = mockk<TransactionalEventPublisher>()
