@@ -4,6 +4,7 @@ import global.error.NotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import server.member.domain.Member
+import server.member.implementation.MemberNicknameGenerator
 import server.member.implementation.MemberReader
 import server.team.implementation.TeamReader
 
@@ -11,6 +12,7 @@ import server.team.implementation.TeamReader
 class MemberService(
     private val memberReader: MemberReader,
     private val teamReader: TeamReader,
+    private val memberNicknameGenerator: MemberNicknameGenerator,
 ) {
     @Transactional
     fun onboarding(
@@ -20,7 +22,9 @@ class MemberService(
         val member = readMember(memberId)
         val preferredTeamId = validatePreferredTeamId(command.preferredTeamId)
 
-        member.updateNickname(command.nickname)
+        val randomNickname =
+            memberNicknameGenerator.generateRandomNickname(command.preferredTeamId)
+        member.updateNickname(randomNickname)
         member.updatePreferredTeam(preferredTeamId)
 
         return MemberData(

@@ -1,8 +1,7 @@
 package server.member.application
 
 data class MemberOnboardingCommand(
-    val nickname: String,
-    val preferredTeamId: Long?,
+    val preferredTeamId: Long,
 )
 
 data class MemberNicknameUpdateCommand(

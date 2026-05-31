@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import server.member.domain.Member
 import server.member.domain.MemberProvider
 import server.member.domain.MemberRole
+import server.member.implementation.MemberNicknameGenerator
 import server.member.implementation.MemberReader
 import server.team.domain.Team
 import server.team.implementation.TeamReader
@@ -17,13 +18,15 @@ import server.team.implementation.TeamReader
 class MemberServiceTest {
     private val memberReader = mockk<MemberReader>()
     private val teamReader = mockk<TeamReader>()
+    private val memberNicknameGenerator = mockk<MemberNicknameGenerator>()
     private val memberService = MemberService(
         memberReader = memberReader,
         teamReader = teamReader,
+        memberNicknameGenerator = memberNicknameGenerator,
     )
 
     @Test
-    fun `온보딩에서 nickname 과 preferred team 을 함께 수정한다`() {
+    fun `온보딩에서 생성된 nickname 과 preferred team 을 함께 수정한다`() {
         val member = member(
             nickname = "before",
             preferredTeamId = null,
@@ -34,21 +37,22 @@ class MemberServiceTest {
             name = "LG",
             sortOrder = 1,
         )
+        every { memberNicknameGenerator.generateRandomNickname(2L) } returns "홈런왕 쌍둥이"
 
         val result = memberService.onboarding(
             memberId = 1L,
             command = MemberOnboardingCommand(
-                nickname = "after",
                 preferredTeamId = 2L,
             ),
         )
 
         result shouldBe MemberData(
-            nickname = "after",
+            nickname = "홈런왕 쌍둥이",
             preferredTeamId = 2L,
         )
-        member.nickname shouldBe "after"
+        member.nickname shouldBe "홈런왕 쌍둥이"
         member.preferredTeamId shouldBe 2L
+        verify(exactly = 1) { memberNicknameGenerator.generateRandomNickname(2L) }
     }
 
     @Test
@@ -69,6 +73,7 @@ class MemberServiceTest {
             preferredTeamId = 3L,
         )
         member.nickname shouldBe "after"
+        verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
         verify(exactly = 0) { teamReader.readById(any()) }
     }
 
@@ -90,6 +95,7 @@ class MemberServiceTest {
             preferredTeamId = null,
         )
         member.preferredTeamId shouldBe null
+        verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
         verify(exactly = 0) { teamReader.readById(any()) }
     }
 
