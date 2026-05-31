@@ -36,6 +36,8 @@ for Kotlin + Spring Data JPA projects.
 - Map `LocalDateTime` explicitly to `DATETIME(6)` so microsecond precision is preserved consistently.
 - Model required columns as non-null only when object construction and persistence lifecycle make it safe.
 - Use `lateinit` only when the project already accepts that tradeoff and the lifecycle is safe.
+- For this project, do not model inter-entity relationships with JPA association mappings such as `@ManyToOne`, `@OneToMany`, `@OneToOne`, or `@ManyToMany`.
+- Store only the related entity ID as a scalar field such as `authorId` or `memberId`, and resolve the target entity explicitly in repositories or application services when needed.
 - Verify `kotlin("plugin.jpa")` or equivalent no-arg support when JPA entities exist.
 - Verify classes and members are compatible with proxying where needed.
 
@@ -180,6 +182,7 @@ class ReservationService(private val repo: ReservationRepository) {
 
 ## Common ORM Traps
 
+- **Association mapping in this project:** if a relationship would normally be modeled as an entity reference, keep only the foreign-key ID field instead. Do not introduce object associations just for navigation convenience.
 - **Bidirectional associations:** maintain both sides in domain methods. Half-updated graphs cause subtle bugs.
 - **`orphanRemoval` vs cascade remove:** not interchangeable. Explain lifecycle semantics before choosing.
 - **Lazy load triggers:** `toString`, debug logging, JSON serialization, and IDE inspection can all trigger lazy loads.

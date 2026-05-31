@@ -10,6 +10,7 @@ import server.image.CompressedImage
 import server.image.ImageMetadata
 import server.image.ImageUrlReader
 import server.thumbnail.implementation.ThumbnailCompressor
+import server.thumbnail.implementation.ThumbnailEventPublisher
 import server.thumbnail.implementation.ThumbnailMetadataExtractor
 import server.thumbnail.implementation.ThumbnailUploader
 
@@ -18,11 +19,13 @@ class ThumbnailServiceTest {
     private val thumbnailMetadataExtractor = mockk<ThumbnailMetadataExtractor>()
     private val thumbnailCompressor = mockk<ThumbnailCompressor>()
     private val thumbnailUploader = mockk<ThumbnailUploader>()
+    private val thumbnailEventPublisher = mockk<ThumbnailEventPublisher>()
     private val thumbnailService = ThumbnailService(
         imageUrlReader = imageUrlReader,
         thumbnailMetadataExtractor = thumbnailMetadataExtractor,
         thumbnailCompressor = thumbnailCompressor,
         thumbnailUploader = thumbnailUploader,
+        thumbnailEventPublisher = thumbnailEventPublisher,
     )
 
     @Test
@@ -48,14 +51,15 @@ class ThumbnailServiceTest {
         every { thumbnailMetadataExtractor.extract(sourceBytes) } returns metadata
         every { thumbnailCompressor.compress(sourceBytes, metadata) } returns compressedImage
         every { thumbnailUploader.upload(capture(fileName), compressedImage) } returns thumbnailUrl
+        every { thumbnailEventPublisher.publishUploaded(1L, thumbnailUrl) } returns Unit
 
-        val result = thumbnailService.createThumbnail(imageUrl)
+        thumbnailService.createThumbnail(1L, imageUrl)
 
-        result shouldBe thumbnailUrl
         fileName.captured.substringAfterLast('.') shouldBe "webp"
         verify(exactly = 1) { imageUrlReader.readBytes(imageUrl) }
         verify(exactly = 1) { thumbnailMetadataExtractor.extract(sourceBytes) }
         verify(exactly = 1) { thumbnailCompressor.compress(sourceBytes, metadata) }
         verify(exactly = 1) { thumbnailUploader.upload(any(), compressedImage) }
+        verify(exactly = 1) { thumbnailEventPublisher.publishUploaded(1L, thumbnailUrl) }
     }
 }
