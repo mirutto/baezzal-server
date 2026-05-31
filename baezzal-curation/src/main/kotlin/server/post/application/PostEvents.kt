@@ -1,4 +1,4 @@
-package server.thumbnail.applicaiton
+package server.post.application
 
 data class PostCreatedEvent(
     val postId: Long,

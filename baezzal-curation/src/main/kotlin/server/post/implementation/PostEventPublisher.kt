@@ -2,8 +2,8 @@ package server.post.implementation
 
 import org.springframework.stereotype.Component
 import server.outbox.TransactionalEventPublisher
+import server.post.application.PostCreatedEvent
 import server.post.domain.Post
-import server.post.domain.PostCreatedEvent
 
 @Component
 class PostEventPublisher(

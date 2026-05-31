@@ -2,7 +2,7 @@ package server.thumbnail.implementation
 
 import org.springframework.stereotype.Component
 import server.outbox.TransactionalEventPublisher
-import server.thumbnail.domain.ThumbnailUpdatedEvent
+import server.thumbnail.applicaiton.ThumbnailUpdatedEvent
 
 @Component
 class ThumbnailEventPublisher(

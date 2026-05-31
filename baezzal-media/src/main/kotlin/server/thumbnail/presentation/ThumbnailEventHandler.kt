@@ -3,7 +3,7 @@ package server.thumbnail.presentation
 import org.springframework.stereotype.Component
 import server.messaging.annotation.EventHandler
 import server.thumbnail.applicaiton.ThumbnailService
-import server.thumbnail.domain.PostCreatedEvent
+import server.thumbnail.applicaiton.PostCreatedEvent
 
 @Component
 class ThumbnailEventHandler(

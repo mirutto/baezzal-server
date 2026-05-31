@@ -14,6 +14,7 @@ import server.post.domain.Post
 import server.post.implementation.PostEventPublisher
 import server.post.implementation.PostImageUploader
 import server.post.implementation.PostImageUrlRecorder
+import server.post.implementation.PostReader
 import server.post.implementation.PostValidator
 import server.post.implementation.PostWriter
 import server.posttag.implementation.PostTagWriter
@@ -24,6 +25,7 @@ class PostServiceTest {
     private val postImageUploader = mockk<PostImageUploader>()
     private val postImageUrlRecorder = mockk<PostImageUrlRecorder>()
     private val postValidator = mockk<PostValidator>()
+    private val postReader = mockk<PostReader>()
     private val postWriter = mockk<PostWriter>()
     private val postTagWriter = mockk<PostTagWriter>()
     private val tagResolver = mockk<TagResolver>()
@@ -32,6 +34,7 @@ class PostServiceTest {
         postImageUploader = postImageUploader,
         postImageUrlRecorder = postImageUrlRecorder,
         postValidator = postValidator,
+        postReader = postReader,
         postWriter = postWriter,
         postTagWriter = postTagWriter,
         tagResolver = tagResolver,
@@ -181,6 +184,36 @@ class PostServiceTest {
         actual shouldBe PostImageUploadUrlResult.from(issued)
         UUID_REGEX.matches(fileName.captured) shouldBe true
         verify(exactly = 1) { postImageUrlRecorder.record("https://static.wowan.me/file", 600) }
+    }
+
+    @Test
+    fun `thumbnail 을 업데이트한다`() {
+        val post = Post(
+            id = 100L,
+            memberId = 7L,
+            imageUrl = "https://cdn.example.com/post.png",
+        )
+        every { postReader.readById(100L) } returns post
+
+        postService.updateThumbnail(
+            postId = 100L,
+            thumbnailUrl = " https://static.wowan.me/thumbnails/post.webp ",
+        )
+
+        post.thumbnailUrl shouldBe "https://static.wowan.me/thumbnails/post.webp"
+        post.thumbnailStatus.name shouldBe "SUCCESS"
+    }
+
+    @Test
+    fun `thumbnail 업데이트 대상 post 가 없으면 예외가 발생한다`() {
+        every { postReader.readById(999L) } returns null
+
+        shouldThrow<NotFoundException> {
+            postService.updateThumbnail(
+                postId = 999L,
+                thumbnailUrl = "https://static.wowan.me/thumbnails/post.webp",
+            )
+        }
     }
 
     @Test
