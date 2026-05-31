@@ -19,6 +19,7 @@ class SecurityConfig {
     ): SecurityFilterChain {
         http
             .csrf { it.disable() }
+            .cors {}
             .authorizeHttpRequests { requests ->
                 requests.anyRequest().permitAll()
             }.oauth2Login { oauth2 ->
