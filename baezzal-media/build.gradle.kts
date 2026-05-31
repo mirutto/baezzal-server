@@ -3,4 +3,5 @@ dependencies {
     implementation("org.springframework:spring-tx")
 
     implementation(project(":baezzal-platform:image"))
+    implementation(project(":baezzal-platform:object-storage"))
 }
