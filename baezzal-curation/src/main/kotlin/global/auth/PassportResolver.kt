@@ -28,10 +28,7 @@ class PassportResolver(
         binderFactory: WebDataBinderFactory?,
     ): Any {
         val authorization = webRequest.getNativeRequest(HttpServletRequest::class.java)
-            ?.getHeader(AUTHORIZATION_HEADER)
-            ?.takeIf { it.startsWith(BEARER_PREFIX) }
-            ?.removePrefix(BEARER_PREFIX)
-            ?.takeIf { it.isNotBlank() }
+            ?.resolveAccessToken()
             ?: invalidToken()
         val principal =
             try {
@@ -54,7 +51,18 @@ class PassportResolver(
 
     private fun expiredToken(): Nothing = throw UnauthorizedException("TOKEN_EXPIRED")
 
+    private fun HttpServletRequest.resolveAccessToken(): String? =
+        cookies
+            ?.firstOrNull { it.name == ACCESS_TOKEN_COOKIE }
+            ?.value
+            ?.takeIf { it.isNotBlank() }
+            ?: getHeader(AUTHORIZATION_HEADER)
+                ?.takeIf { it.startsWith(BEARER_PREFIX) }
+                ?.removePrefix(BEARER_PREFIX)
+                ?.takeIf { it.isNotBlank() }
+
     companion object {
+        private const val ACCESS_TOKEN_COOKIE = "access_token"
         private const val AUTHORIZATION_HEADER = "Authorization"
         private const val BEARER_PREFIX = "Bearer "
     }
