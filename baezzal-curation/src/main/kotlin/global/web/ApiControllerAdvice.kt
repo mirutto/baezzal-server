@@ -14,6 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import server.lock.LockException
 
 @Suppress("TooManyFunctions")
 @RestControllerAdvice(basePackages = ["server"])
@@ -59,6 +60,13 @@ class ApiControllerAdvice {
         e: BaseException,
     ): ResponseEntity<ErrorResult> =
         error(request, e.status, e.message ?: "서버 오류가 발생했습니다", e)
+
+    @ExceptionHandler(LockException::class)
+    fun handleLockException(
+        request: HttpServletRequest,
+        e: LockException,
+    ): ResponseEntity<ErrorResult> =
+        error(request, HttpStatus.CONFLICT, "동시에 처리 중인 요청입니다. 잠시 후 다시 시도해주세요", e)
 
     @ExceptionHandler(Exception::class)
     fun handleException(
