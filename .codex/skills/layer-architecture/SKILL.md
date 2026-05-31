@@ -43,6 +43,8 @@ or style conventions beyond what is written here.
 - `application` may access `implementation` and `domain`.
 - `implementation` may access `infrastructure` and `domain`.
 - `infrastructure` may access `domain`.
+- `infrastructure` may also access DTO classes in `application` when a feature adapter needs to consume or produce the application contract shape.
+- Do not treat that DTO exception as permission for `infrastructure` to depend on application services or use-case flow.
 - `domain` must not depend on other feature layers.
 - Do not bypass intermediate layers just because a dependency is technically available.
 

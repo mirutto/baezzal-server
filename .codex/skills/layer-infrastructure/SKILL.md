@@ -22,12 +22,14 @@ Use this skill with `layer-architecture` when working on
 - Define repositories, caches, and external client adapters owned by the feature.
 - Encapsulate feature-specific persistence or integration access.
 - Translate low-level infrastructure behavior into a form usable by `implementation`.
+- Depend on `application` DTOs when the adapter boundary intentionally uses those DTOs as its contract shape.
 
 ## Guardrails
 
 - Do not push business flow here.
 - Do not let upper layers depend on raw framework APIs when a feature adapter should exist.
 - Keep infrastructure concerns explicit instead of smearing them across `application`.
+- Do not depend on application services or use-case orchestration from this layer. The allowed upward dependency is DTOs only.
 - If logic is about use-case sequencing rather than integration access, move it up out of this layer.
 
 ## Working Style

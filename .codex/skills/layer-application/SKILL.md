@@ -37,6 +37,7 @@ Use this skill with `layer-architecture` when working on
 
 - Do not let this layer know which concrete infrastructure is used.
 - Do not pull repository, cache, or external client details into application flow.
+- If `infrastructure` depends on an application DTO, keep that DTO as a contract type only and avoid leaking infrastructure execution concerns back into the application service.
 - Do not hide business flow behind overly generic helper abstractions.
 - When detailed implementation logic starts to dominate a service, move it to `implementation`.
 
