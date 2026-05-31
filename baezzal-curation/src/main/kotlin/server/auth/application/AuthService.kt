@@ -81,7 +81,7 @@ class AuthService(
         return AuthTicketExchangeResult(
             accessToken = payload.accessToken,
             refreshToken = payload.refreshToken,
-            needsOnboarding = member.nickname.isBlank(),
+            needsOnboarding = member.isNew(),
         )
     }
 

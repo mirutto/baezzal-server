@@ -44,6 +44,8 @@ class Member(
     @Column(name = "role", nullable = false, length = 20)
     val role: MemberRole = MemberRole.USER,
 ) : BaseEntity() {
+    fun isNew(): Boolean = nickname.isBlank() || preferredTeamId == null
+
     fun updateNickname(nickname: String) {
         this.nickname = nickname
     }
