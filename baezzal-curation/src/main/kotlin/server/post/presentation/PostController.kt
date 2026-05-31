@@ -1,5 +1,7 @@
 package server.post.presentation
 
+import global.auth.Passport
+import global.auth.RequestPassport
 import global.web.ApiResponse
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -18,11 +20,23 @@ class PostController(
 ) {
     @PostMapping
     fun create(
+        @RequestPassport passport: Passport,
         @RequestBody command: CreatePostCommand,
-    ): ApiResponse<CreatePostResult> = ApiResponse.of(postService.create(command))
+    ): ApiResponse<CreatePostResult> = ApiResponse.of(
+        postService.create(
+            memberId = passport.memberId,
+            command = command,
+        ),
+    )
 
     @PostMapping("/image/presigned-url")
     fun createImageUploadUrl(
+        @RequestPassport passport: Passport,
         @RequestBody command: CreatePostImageUploadUrlCommand,
-    ): ApiResponse<PostImageUploadUrlResult> = ApiResponse.of(postService.createImageUploadUrl(command))
+    ): ApiResponse<PostImageUploadUrlResult> = ApiResponse.of(
+        postService.createImageUploadUrl(
+            memberId = passport.memberId,
+            command = command,
+        ),
+    )
 }

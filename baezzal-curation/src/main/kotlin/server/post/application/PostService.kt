@@ -23,7 +23,10 @@ class PostService(
     private val postEventPublisher: PostEventPublisher,
 ) {
     @Transactional
-    fun create(command: CreatePostCommand): CreatePostResult {
+    fun create(
+        memberId: Long,
+        command: CreatePostCommand,
+    ): CreatePostResult {
         val imageUrl = command.imageUrl.trim()
         val description = command.description.trim()
 
@@ -31,6 +34,7 @@ class PostService(
 
         val post = postWriter.write(
             Post(
+                memberId = memberId,
                 imageUrl = imageUrl,
                 description = description,
                 teamId = postValidator.normalizeTeamId(command.teamId),
@@ -48,7 +52,11 @@ class PostService(
         )
     }
 
-    fun createImageUploadUrl(command: CreatePostImageUploadUrlCommand): PostImageUploadUrlResult {
+    fun createImageUploadUrl(
+        memberId: Long,
+        command: CreatePostImageUploadUrlCommand,
+    ): PostImageUploadUrlResult {
+        require(memberId > 0)
         val contentType = command.contentType.trim().lowercase()
         postValidator.validateImageContentType(contentType)
 

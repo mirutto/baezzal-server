@@ -21,6 +21,7 @@ class PostEventPublisherTest {
         postEventPublisher.publishCreated(
             Post(
                 id = 1L,
+                memberId = 1L,
                 imageUrl = "https://cdn.example.com/post.png",
             ),
         )

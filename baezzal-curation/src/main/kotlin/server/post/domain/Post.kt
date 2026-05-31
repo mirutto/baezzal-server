@@ -18,6 +18,9 @@ class Post(
     @Column(name = "post_id", nullable = false)
     val id: Long = 0,
 
+    @Column(name = "member_id", nullable = false)
+    val memberId: Long,
+
     @Column(name = "image_url", nullable = false, length = 2048)
     val imageUrl: String,
 

@@ -13,6 +13,7 @@ data class CreatePostCommand(
 
 data class CreatePostResult(
     val postId: Long,
+    val memberId: Long,
     val imageUrl: String,
     val thumbnailUrl: String,
     val thumbnailStatus: String,
@@ -25,6 +26,7 @@ data class CreatePostResult(
         tags: List<Tag>,
     ) : this(
         postId = post.id,
+        memberId = post.memberId,
         imageUrl = post.imageUrl,
         thumbnailUrl = post.thumbnailUrl,
         thumbnailStatus = post.thumbnailStatus.name,

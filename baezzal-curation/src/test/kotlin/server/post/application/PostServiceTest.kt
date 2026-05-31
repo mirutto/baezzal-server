@@ -50,6 +50,7 @@ class PostServiceTest {
         every { postValidator.normalizeTeamId(2L) } returns 2L
         every { postWriter.write(capture(savedPost)) } returns Post(
             id = 100L,
+            memberId = 7L,
             imageUrl = "https://cdn.example.com/post.png",
             description = "경기 후기",
             teamId = 2L,
@@ -59,7 +60,8 @@ class PostServiceTest {
         every { postEventPublisher.publishCreated(any()) } returns Unit
 
         val result = postService.create(
-            CreatePostCommand(
+            memberId = 7L,
+            command = CreatePostCommand(
                 imageUrl = " https://cdn.example.com/post.png ",
                 description = " 경기 후기 ",
                 teamId = 2L,
@@ -69,6 +71,7 @@ class PostServiceTest {
 
         result shouldBe CreatePostResult(
             postId = 100L,
+            memberId = 7L,
             imageUrl = "https://cdn.example.com/post.png",
             thumbnailUrl = "",
             thumbnailStatus = "PENDING",
@@ -76,12 +79,14 @@ class PostServiceTest {
             teamId = 2L,
             tagTitles = listOf("KBO", "잠실"),
         )
+        savedPost.captured.memberId shouldBe 7L
         savedPost.captured.teamId shouldBe 2L
         savedPost.captured.description shouldBe "경기 후기"
         verify(exactly = 1) {
             postEventPublisher.publishCreated(
                 Post(
                     id = 100L,
+                    memberId = 7L,
                     imageUrl = "https://cdn.example.com/post.png",
                     description = "경기 후기",
                     teamId = 2L,
@@ -98,6 +103,7 @@ class PostServiceTest {
         every { postValidator.normalizeTeamId(0L) } returns null
         every { postWriter.write(capture(savedPost)) } returns Post(
             id = 101L,
+            memberId = 9L,
             imageUrl = "https://cdn.example.com/post.png",
             teamId = null,
         )
@@ -106,18 +112,22 @@ class PostServiceTest {
         every { postEventPublisher.publishCreated(any()) } returns Unit
 
         val result = postService.create(
-            CreatePostCommand(
+            memberId = 9L,
+            command = CreatePostCommand(
                 imageUrl = "https://cdn.example.com/post.png",
                 teamId = 0L,
             ),
         )
 
         result.teamId shouldBe null
+        result.memberId shouldBe 9L
+        savedPost.captured.memberId shouldBe 9L
         savedPost.captured.teamId shouldBe null
         verify(exactly = 1) {
             postEventPublisher.publishCreated(
                 Post(
                     id = 101L,
+                    memberId = 9L,
                     imageUrl = "https://cdn.example.com/post.png",
                     teamId = null,
                 ),
@@ -132,7 +142,8 @@ class PostServiceTest {
 
         shouldThrow<NotFoundException> {
             postService.create(
-                CreatePostCommand(
+                memberId = 3L,
+                command = CreatePostCommand(
                     imageUrl = "https://cdn.example.com/post.png",
                     teamId = 99L,
                 ),
@@ -161,7 +172,8 @@ class PostServiceTest {
         every { postImageUrlRecorder.record("https://static.wowan.me/file", 600) } returns Unit
 
         val actual = postService.createImageUploadUrl(
-            CreatePostImageUploadUrlCommand(
+            memberId = 7L,
+            command = CreatePostImageUploadUrlCommand(
                 contentType = " IMAGE/PNG ",
             ),
         )
@@ -178,7 +190,8 @@ class PostServiceTest {
 
         shouldThrow<BadRequestException> {
             postService.createImageUploadUrl(
-                CreatePostImageUploadUrlCommand(
+                memberId = 7L,
+                command = CreatePostImageUploadUrlCommand(
                     contentType = "application/pdf",
                 ),
             )
@@ -191,7 +204,8 @@ class PostServiceTest {
 
         shouldThrow<BadRequestException> {
             postService.create(
-                CreatePostCommand(
+                memberId = 5L,
+                command = CreatePostCommand(
                     imageUrl = "   ",
                 ),
             )
