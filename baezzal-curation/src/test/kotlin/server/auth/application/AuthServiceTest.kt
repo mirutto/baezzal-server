@@ -170,11 +170,16 @@ class AuthServiceTest {
     }
 
     @Test
-    fun `member id 로 로그아웃한다`() {
+    fun `refresh token 으로 로그아웃한다`() {
+        every { refreshTokenVerifier.verify("refresh-token") } returns AuthPrincipal(
+            memberId = 1L,
+            type = TokenType.REFRESH,
+        )
         every { refreshTokenRemover.remove(1L) } just runs
 
-        authService.logout(1L)
+        authService.logout("refresh-token")
 
+        verify(exactly = 1) { refreshTokenVerifier.verify("refresh-token") }
         verify(exactly = 1) { refreshTokenRemover.remove(1L) }
     }
 }

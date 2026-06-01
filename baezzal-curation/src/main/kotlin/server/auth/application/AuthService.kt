@@ -106,7 +106,8 @@ class AuthService(
         )
     }
 
-    fun logout(memberId: Long) {
-        refreshTokenRemover.remove(memberId)
+    fun logout(refreshToken: String) {
+        val principal = refreshTokenVerifier.verify(refreshToken)
+        refreshTokenRemover.remove(principal.memberId)
     }
 }

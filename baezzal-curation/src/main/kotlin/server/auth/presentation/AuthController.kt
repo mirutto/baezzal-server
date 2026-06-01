@@ -1,7 +1,5 @@
 package server.auth.presentation
 
-import global.auth.Passport
-import global.auth.RequestPassport
 import global.web.ApiResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import server.auth.application.AuthService
+import server.auth.application.AuthLogoutCommand
 import server.auth.application.AuthTicketExchangeCommand
 import server.auth.application.AuthTicketExchangeResult
 import server.auth.application.AuthTokenReissueCommand
@@ -57,9 +56,9 @@ class AuthController(
 
     @DeleteMapping("/logout")
     fun logout(
-        @RequestPassport passport: Passport,
+        @RequestBody command: AuthLogoutCommand,
     ): ApiResponse<Unit> {
-        authService.logout(passport.memberId)
+        authService.logout(command.refreshToken)
         return ApiResponse.of(status = HttpStatus.NO_CONTENT)
     }
 }

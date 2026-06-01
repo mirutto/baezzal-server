@@ -11,6 +11,10 @@ data class AuthTokenReissueCommand(
     val refreshToken: String,
 )
 
+data class AuthLogoutCommand(
+    val refreshToken: String,
+)
+
 data class AuthTokenResult(
     val accessToken: String,
     val refreshToken: String,
