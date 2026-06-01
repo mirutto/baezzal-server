@@ -5,8 +5,6 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
-import jakarta.servlet.http.Cookie
 import org.junit.jupiter.api.Test
 import org.springframework.core.MethodParameter
 import org.springframework.mock.web.MockHttpServletRequest
@@ -64,49 +62,6 @@ class PassportResolverTest {
         )
 
         result shouldBe Passport(memberId = 1L, role = "USER")
-    }
-
-    @Test
-    fun `access_token 쿠키가 있으면 Authorization 헤더보다 우선한다`() {
-        val request = MockHttpServletRequest().apply {
-            setCookies(Cookie("access_token", "cookie-access-token"))
-            addHeader("Authorization", "Bearer header-access-token")
-        }
-        every { tokenProvider.decodeToken("cookie-access-token") } returns AuthPrincipal(
-            memberId = 1L,
-            type = TokenType.ACCESS,
-            role = "USER",
-        )
-
-        val result = passportResolver.resolveArgument(
-            passportParameter,
-            null,
-            ServletWebRequest(request),
-            null,
-        )
-
-        result shouldBe Passport(memberId = 1L, role = "USER")
-    }
-
-    @Test
-    fun `access_token 쿠키가 있으면 유효한 Authorization 헤더가 있어도 헤더는 무시한다`() {
-        val request = MockHttpServletRequest().apply {
-            setCookies(Cookie("access_token", "invalid-cookie-token"))
-            addHeader("Authorization", "Bearer access-token")
-        }
-        every { tokenProvider.decodeToken("invalid-cookie-token") } throws InvalidTokenException()
-
-        val result = shouldThrow<UnauthorizedException> {
-            passportResolver.resolveArgument(
-                passportParameter,
-                null,
-                ServletWebRequest(request),
-                null,
-            )
-        }
-
-        result.message shouldBe "LOGIN_AGAIN"
-        verify(exactly = 0) { tokenProvider.decodeToken("access-token") }
     }
 
     @Test

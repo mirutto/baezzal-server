@@ -7,6 +7,10 @@ data class AuthTicketExchangeCommand(
     val ticket: String,
 )
 
+data class AuthTokenReissueCommand(
+    val refreshToken: String,
+)
+
 data class AuthTokenResult(
     val accessToken: String,
     val refreshToken: String,

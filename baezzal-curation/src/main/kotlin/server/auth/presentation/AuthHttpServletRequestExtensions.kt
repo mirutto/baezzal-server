@@ -7,7 +7,6 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 private const val OAUTH2_REDIRECT_URI_COOKIE = "oauth2_redirect_uri"
-private const val REFRESH_TOKEN_COOKIE = "refresh_token"
 
 fun HttpServletRequest.oauth2RedirectUri(): String? =
     cookies
@@ -16,13 +15,6 @@ fun HttpServletRequest.oauth2RedirectUri(): String? =
         ?.takeIf { it.isNotBlank() }
         ?.let(::decode)
 
-fun HttpServletRequest.requireRefreshToken(): String =
-    cookies
-        ?.firstOrNull { it.name == REFRESH_TOKEN_COOKIE }
-        ?.value
-        ?.takeIf { it.isNotBlank() }
-        ?: throw UnauthorizedException("LOGIN_AGAIN")
-
 fun HttpServletRequest.resolveOauth2RedirectUrl(
     vararg param: Pair<String, String>,
 ): String {
@@ -30,6 +22,7 @@ fun HttpServletRequest.resolveOauth2RedirectUrl(
         "${encode(key)}=${encode(value)}"
     }
     val baseUrl = oauth2RedirectUri()
+        ?: throw UnauthorizedException("로그인 리다이렉트 경로가 없습니다")
     return "$baseUrl?$queryParams"
 }
 

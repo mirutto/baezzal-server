@@ -6,58 +6,8 @@ import org.springframework.http.ResponseCookie
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-private const val ACCESS_TOKEN_COOKIE = "access_token"
-private const val REFRESH_TOKEN_COOKIE = "refresh_token"
 private const val OAUTH2_REDIRECT_URI_COOKIE = "oauth2_redirect_uri"
 private const val COOKIE_MAX_AGE = 7 * 24 * 60 * 60L
-
-fun HttpServletResponse.appendAuthCookies(
-    accessToken: String,
-    refreshToken: String,
-    secure: Boolean,
-) {
-    addHeader(
-        HttpHeaders.SET_COOKIE,
-        createCookie(
-            name = ACCESS_TOKEN_COOKIE,
-            value = accessToken,
-            maxAge = COOKIE_MAX_AGE,
-            secure = secure,
-        ).toString(),
-    )
-    addHeader(
-        HttpHeaders.SET_COOKIE,
-        createCookie(
-            name = REFRESH_TOKEN_COOKIE,
-            value = refreshToken,
-            maxAge = COOKIE_MAX_AGE,
-            secure = secure,
-        ).toString(),
-    )
-}
-
-fun HttpServletResponse.expireAuthCookies(
-    secure: Boolean,
-) {
-    addHeader(
-        HttpHeaders.SET_COOKIE,
-        createCookie(
-            name = ACCESS_TOKEN_COOKIE,
-            value = "",
-            maxAge = 0,
-            secure = secure,
-        ).toString(),
-    )
-    addHeader(
-        HttpHeaders.SET_COOKIE,
-        createCookie(
-            name = REFRESH_TOKEN_COOKIE,
-            value = "",
-            maxAge = 0,
-            secure = secure,
-        ).toString(),
-    )
-}
 
 fun HttpServletResponse.appendOauth2RedirectUriCookie(
     redirectUri: String,

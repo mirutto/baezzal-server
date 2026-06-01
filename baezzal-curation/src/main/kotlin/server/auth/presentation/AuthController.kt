@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 import server.auth.application.AuthService
 import server.auth.application.AuthTicketExchangeCommand
 import server.auth.application.AuthTicketExchangeResult
+import server.auth.application.AuthTokenReissueCommand
 import server.auth.application.AuthTokenResult
 
 @RestController
@@ -41,40 +42,24 @@ class AuthController(
     @PostMapping("/ticket/exchange")
     fun exchangeTicket(
         @RequestBody command: AuthTicketExchangeCommand,
-        httpRequest: HttpServletRequest,
-        response: HttpServletResponse,
     ): ApiResponse<AuthTicketExchangeResult> {
         val authToken = authService.exchangeTicket(command.ticket)
-        response.appendAuthCookies(
-            accessToken = authToken.accessToken,
-            refreshToken = authToken.refreshToken,
-            secure = httpRequest.isSecure,
-        )
         return ApiResponse.of(authToken)
     }
 
     @PostMapping("/token/reissue")
     fun reissueToken(
-        request: HttpServletRequest,
-        response: HttpServletResponse,
+        @RequestBody command: AuthTokenReissueCommand,
     ): ApiResponse<AuthTokenResult> {
-        val authToken = authService.reissue(request.requireRefreshToken())
-        response.appendAuthCookies(
-            accessToken = authToken.accessToken,
-            refreshToken = authToken.refreshToken,
-            secure = request.isSecure,
-        )
+        val authToken = authService.reissue(command.refreshToken)
         return ApiResponse.of(authToken)
     }
 
     @DeleteMapping("/logout")
     fun logout(
         @RequestPassport passport: Passport,
-        request: HttpServletRequest,
-        response: HttpServletResponse,
     ): ApiResponse<Unit> {
         authService.logout(passport.memberId)
-        response.expireAuthCookies(secure = request.isSecure)
         return ApiResponse.of(status = HttpStatus.NO_CONTENT)
     }
 }
