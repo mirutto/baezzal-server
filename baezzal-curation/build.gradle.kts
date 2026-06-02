@@ -18,4 +18,5 @@ dependencies {
     implementation(project(":baezzal-platform:set"))
     implementation(project(":baezzal-platform:messaging"))
     implementation(project(":baezzal-platform:token"))
+    implementation(project(":baezzal-platform:web"))
 }

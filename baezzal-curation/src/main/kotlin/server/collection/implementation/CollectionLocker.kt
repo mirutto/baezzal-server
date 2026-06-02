@@ -1,5 +1,6 @@
 package server.collection.implementation
 
+import global.lock.withConflictLock
 import org.springframework.stereotype.Component
 import server.lock.KeyedLock
 
@@ -10,5 +11,5 @@ class CollectionLocker(
     fun <T> withLock(
         collectionId: Long,
         action: () -> T,
-    ): T = keyedLock.withLock("lock:collection:$collectionId", action)
+    ): T = keyedLock.withConflictLock("lock:collection:$collectionId", action)
 }

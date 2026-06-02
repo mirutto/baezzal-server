@@ -18,6 +18,7 @@ include("baezzal-platform:object-storage")
 include("baezzal-platform:queue")
 include("baezzal-platform:set")
 include("baezzal-platform:messaging")
+include("baezzal-platform:web")
 
 include("baezzal-config:jwt")
 include("baezzal-config:oauth")

@@ -1,5 +1,6 @@
 package server.collectionpost.implementation
 
+import global.lock.withConflictLock
 import org.springframework.stereotype.Component
 import server.lock.KeyedLock
 
@@ -11,7 +12,7 @@ class CollectionPostLocker(
         collectionId: Long,
         postId: Long,
         action: () -> T,
-    ): T = keyedLock.withLock(key(collectionId, postId), action)
+    ): T = keyedLock.withConflictLock(key(collectionId, postId), action)
 
     private fun key(
         collectionId: Long,
