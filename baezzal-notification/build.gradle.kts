@@ -5,6 +5,7 @@ dependencies {
 
     implementation(project(":baezzal-config:jpa"))
     implementation(project(":baezzal-config:mysql"))
+    implementation(project(":baezzal-config:fcm"))
     implementation(project(":baezzal-config:jwt"))
     implementation(project(":baezzal-config:swagger"))
     implementation(project(":baezzal-platform:messaging"))
