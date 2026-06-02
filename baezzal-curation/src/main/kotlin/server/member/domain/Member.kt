@@ -37,6 +37,9 @@ class Member(
     @Column(name = "provider_key", nullable = false, length = 255)
     val providerKey: String,
 
+    @Column(name = "thumbnail", nullable = false, length = 500)
+    var profileImage: String,
+
     @Column(name = "preferred_team_id")
     var preferredTeamId: Long? = null,
 
@@ -44,6 +47,10 @@ class Member(
     @Column(name = "role", nullable = false, length = 20)
     val role: MemberRole = MemberRole.USER,
 ) : BaseEntity() {
+    companion object {
+        const val DEFAULT_PROFILE_IMAGE_URL = "https://static.wowan.me/baezzal/images/default-thumbnail.png"
+    }
+
     fun isNew(): Boolean = nickname.isBlank() || preferredTeamId == null
 
     fun updateNickname(nickname: String) {
@@ -52,6 +59,10 @@ class Member(
 
     fun updatePreferredTeam(preferredTeamId: Long?) {
         this.preferredTeamId = preferredTeamId
+    }
+
+    fun updateProfileImage(profileImage: String) {
+        this.profileImage = profileImage
     }
 
     override fun equals(other: Any?): Boolean {

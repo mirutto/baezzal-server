@@ -7,9 +7,12 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import server.member.application.CreateMemberProfileImageUploadUrlCommand
 import server.member.application.MemberData
 import server.member.application.MemberNicknameUpdateCommand
 import server.member.application.MemberOnboardingCommand
+import server.member.application.MemberProfileImageUpdateCommand
+import server.member.application.MemberProfileImageUploadUrlResult
 import server.member.application.MemberPreferredTeamUpdateCommand
 import server.member.application.MemberService
 
@@ -46,6 +49,28 @@ class MemberController(
         @RequestBody command: MemberPreferredTeamUpdateCommand,
     ): ApiResponse<MemberData> = ApiResponse.of(
         memberService.updatePreferredTeam(
+            memberId = passport.memberId,
+            command = command,
+        ),
+    )
+
+    @PostMapping("/profile-image")
+    fun updateProfileImage(
+        @RequestPassport passport: Passport,
+        @RequestBody command: MemberProfileImageUpdateCommand,
+    ): ApiResponse<MemberData> = ApiResponse.of(
+        memberService.updateProfileImage(
+            memberId = passport.memberId,
+            command = command,
+        ),
+    )
+
+    @PostMapping("/profile-image/presigned-url")
+    fun createProfileImageUploadUrl(
+        @RequestPassport passport: Passport,
+        @RequestBody command: CreateMemberProfileImageUploadUrlCommand,
+    ): ApiResponse<MemberProfileImageUploadUrlResult> = ApiResponse.of(
+        memberService.createProfileImageUploadUrl(
             memberId = passport.memberId,
             command = command,
         ),

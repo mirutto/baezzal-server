@@ -149,6 +149,7 @@ class FollowServiceTest {
         nickname = "member-$id",
         provider = MemberProvider.GOOGLE,
         providerKey = "provider-key-$id",
+        profileImage = "",
         role = MemberRole.USER,
     )
 }

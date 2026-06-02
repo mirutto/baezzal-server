@@ -52,6 +52,7 @@ class AuthServiceTest {
             nickname = "",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
+            profileImage = "",
             preferredTeamId = null,
             role = MemberRole.USER,
         )
@@ -82,6 +83,7 @@ class AuthServiceTest {
             nickname = "tester",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
+            profileImage = "",
             preferredTeamId = null,
             role = MemberRole.USER,
         )
@@ -112,6 +114,7 @@ class AuthServiceTest {
             nickname = "tester",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
+            profileImage = "",
             preferredTeamId = 9L,
             role = MemberRole.USER,
         )
@@ -141,6 +144,7 @@ class AuthServiceTest {
             nickname = "tester",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
+            profileImage = "",
             preferredTeamId = 9L,
             role = MemberRole.USER,
         )
@@ -181,5 +185,24 @@ class AuthServiceTest {
 
         verify(exactly = 1) { refreshTokenVerifier.verify("refresh-token") }
         verify(exactly = 1) { refreshTokenRemover.remove(1L) }
+    }
+
+    @Test
+    fun `oauth 회원이 처음 생성될 때 profile image 는 기본 이미지로 저장한다`() {
+        every { memberReader.readByProvider(MemberProvider.GOOGLE, "provider-key") } returns null
+        every { memberWriter.write(any()) } answers { firstArg() }
+
+        authService.upsert(
+            registrationId = "google",
+            attributes = mapOf(
+                "sub" to "provider-key",
+            ),
+        )
+
+        verify(exactly = 1) {
+            memberWriter.write(withArg { member ->
+                member.profileImage shouldBe Member.DEFAULT_PROFILE_IMAGE_URL
+            })
+        }
     }
 }

@@ -46,6 +46,7 @@ class AuthService(
             nickname = "",
             provider = oauth2Attributes.provider,
             providerKey = oauth2Attributes.providerKey,
+            profileImage = Member.DEFAULT_PROFILE_IMAGE_URL,
         )
         val saved = memberWriter.write(member)
 
