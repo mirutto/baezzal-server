@@ -19,6 +19,7 @@ class PassportResolverTest {
     private val tokenProvider = mockk<TokenProvider>()
     private val passportResolver = PassportResolver(tokenProvider)
     private val passportParameter = methodParameter("withPassport")
+    private val nullablePassportParameter = methodParameter("withNullablePassport")
     private val plainPassportParameter = methodParameter("withoutAnnotation")
     private val stringParameter = methodParameter("withString")
 
@@ -81,6 +82,20 @@ class PassportResolverTest {
     }
 
     @Test
+    fun `nullable Passport 이고 Authorization 헤더가 없으면 null 을 반환한다`() {
+        val request = MockHttpServletRequest()
+
+        val result = passportResolver.resolveArgument(
+            nullablePassportParameter,
+            null,
+            ServletWebRequest(request),
+            null,
+        )
+
+        result shouldBe null
+    }
+
+    @Test
     fun `refresh token 이면 예외가 발생한다`() {
         val request = MockHttpServletRequest().apply {
             addHeader("Authorization", "Bearer refresh-token")
@@ -100,6 +115,23 @@ class PassportResolverTest {
         }
 
         result.message shouldBe "LOGIN_AGAIN"
+    }
+
+    @Test
+    fun `nullable Passport 이고 유효하지 않은 token 이면 null 을 반환한다`() {
+        val request = MockHttpServletRequest().apply {
+            addHeader("Authorization", "Bearer invalid-token")
+        }
+        every { tokenProvider.decodeToken("invalid-token") } throws InvalidTokenException()
+
+        val result = passportResolver.resolveArgument(
+            nullablePassportParameter,
+            null,
+            ServletWebRequest(request),
+            null,
+        )
+
+        result shouldBe null
     }
 
     @Test
@@ -155,13 +187,15 @@ class PassportResolverTest {
 
     private fun methodParameterTypes(methodName: String): Array<Class<*>> =
         when (methodName) {
-            "withPassport", "withoutAnnotation" -> arrayOf(Passport::class.java)
+            "withPassport", "withNullablePassport", "withoutAnnotation" -> arrayOf(Passport::class.java)
             "withString" -> arrayOf(String::class.java)
             else -> error("unknown method: $methodName")
         }
 
     private class TestController {
         fun withPassport(@RequestPassport passport: Passport) = passport
+
+        fun withNullablePassport(@RequestPassport passport: Passport?) = passport
 
         fun withoutAnnotation(passport: Passport) = passport
 
