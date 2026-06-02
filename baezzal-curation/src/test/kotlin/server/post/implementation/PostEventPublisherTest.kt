@@ -7,6 +7,7 @@ import io.mockk.slot
 import org.junit.jupiter.api.Test
 import server.outbox.TransactionalEventPublisher
 import server.post.application.PostCreatedEvent
+import server.post.domain.ImageAsset
 import server.post.domain.Post
 
 class PostEventPublisherTest {
@@ -22,7 +23,7 @@ class PostEventPublisherTest {
             Post(
                 id = 1L,
                 memberId = 1L,
-                imageUrl = "https://cdn.example.com/post.png",
+                originalImage = ImageAsset(url = "https://cdn.example.com/post.png"),
             ),
         )
 

@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import org.junit.jupiter.api.Test
 import server.messaging.EventPublisher
+import server.thumbnail.applicaiton.ImageAssetEvent
 import server.thumbnail.applicaiton.ThumbnailUpdatedEvent
 
 class ThumbnailEventPublisherTest {
@@ -19,12 +20,34 @@ class ThumbnailEventPublisherTest {
 
         thumbnailEventPublisher.publishUploaded(
             postId = 1L,
-            thumbnailUrl = "https://static.wowan.me/thumbnails/result.webp",
+            originalImage = ImageAssetEvent(
+                url = "https://cdn.example.com/post.png",
+                width = 1280,
+                height = 720,
+                aspectRatio = 1280.0 / 720.0,
+            ),
+            thumbnailImage = ImageAssetEvent(
+                url = "https://static.wowan.me/thumbnails/result.webp",
+                width = 320,
+                height = 180,
+                aspectRatio = 320.0 / 180.0,
+            ),
         )
 
         publishedEvent.captured shouldBe ThumbnailUpdatedEvent(
             postId = 1L,
-            thumbnailUrl = "https://static.wowan.me/thumbnails/result.webp",
+            originalImage = ImageAssetEvent(
+                url = "https://cdn.example.com/post.png",
+                width = 1280,
+                height = 720,
+                aspectRatio = 1280.0 / 720.0,
+            ),
+            thumbnailImage = ImageAssetEvent(
+                url = "https://static.wowan.me/thumbnails/result.webp",
+                width = 320,
+                height = 180,
+                aspectRatio = 320.0 / 180.0,
+            ),
         )
     }
 }

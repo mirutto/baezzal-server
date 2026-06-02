@@ -23,12 +23,30 @@ class ThumbnailService(
         val imageBytes = imageUrlReader.readBytes(imageUrl)
         val metadata = thumbnailMetadataExtractor.extract(imageBytes)
         val thumbnailImage = thumbnailCompressor.compress(imageBytes, metadata)
+        val thumbnailMetadata = thumbnailMetadataExtractor.extract(thumbnailImage.bytes)
 
         val thumbnailUrl = thumbnailUploader.upload(
             fileName = "${UUID.randomUUID()}.${thumbnailImage.fileExtension}",
             image = thumbnailImage,
         )
 
-        thumbnailEventPublisher.publishUploaded(portId, thumbnailUrl)
+        thumbnailEventPublisher.publishUploaded(
+            postId = portId,
+            originalImage = ImageAssetEvent(
+                url = imageUrl,
+                width = metadata.width,
+                height = metadata.height,
+                aspectRatio = metadata.toAspectRatio(),
+            ),
+            thumbnailImage = ImageAssetEvent(
+                url = thumbnailUrl,
+                width = thumbnailMetadata.width,
+                height = thumbnailMetadata.height,
+                aspectRatio = thumbnailMetadata.toAspectRatio(),
+            ),
+        )
     }
 }
+
+private fun server.image.ImageMetadata.toAspectRatio(): Double =
+    width.toDouble() / height.toDouble()

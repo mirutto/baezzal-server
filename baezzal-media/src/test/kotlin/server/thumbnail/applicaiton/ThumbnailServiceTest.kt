@@ -28,9 +28,11 @@ class ThumbnailServiceTest {
         thumbnailEventPublisher = thumbnailEventPublisher,
     )
 
+    private val imageUrl = "https://cdn.example.com/post-image.png"
+    private val thumbnailUrl = "https://static.wowan.me/thumbnails/result.webp"
+
     @Test
     fun `이미지 추출 압축 업로드 순서로 썸네일 url 을 반환한다`() {
-        val imageUrl = "https://cdn.example.com/post-image.png"
         val sourceBytes = "source-image".encodeToByteArray()
         val metadata = ImageMetadata(
             width = 1280,
@@ -44,14 +46,22 @@ class ThumbnailServiceTest {
             contentType = "image/webp",
             fileExtension = "webp",
         )
+        val thumbnailMetadata = ImageMetadata(
+            width = 320,
+            height = 180,
+            mimeType = "image/webp",
+            fileExtension = "webp",
+            orientation = 1,
+        )
         val fileName = slot<String>()
         val thumbnailUrl = "https://static.wowan.me/thumbnails/result.webp"
 
         every { imageUrlReader.readBytes(imageUrl) } returns sourceBytes
         every { thumbnailMetadataExtractor.extract(sourceBytes) } returns metadata
         every { thumbnailCompressor.compress(sourceBytes, metadata) } returns compressedImage
+        every { thumbnailMetadataExtractor.extract(compressedImage.bytes) } returns thumbnailMetadata
         every { thumbnailUploader.upload(capture(fileName), compressedImage) } returns thumbnailUrl
-        every { thumbnailEventPublisher.publishUploaded(1L, thumbnailUrl) } returns Unit
+        every { thumbnailEventPublisher.publishUploaded(1L, originalImageEvent(), thumbnailImageEvent()) } returns Unit
 
         thumbnailService.createThumbnail(1L, imageUrl)
 
@@ -59,7 +69,22 @@ class ThumbnailServiceTest {
         verify(exactly = 1) { imageUrlReader.readBytes(imageUrl) }
         verify(exactly = 1) { thumbnailMetadataExtractor.extract(sourceBytes) }
         verify(exactly = 1) { thumbnailCompressor.compress(sourceBytes, metadata) }
+        verify(exactly = 1) { thumbnailMetadataExtractor.extract(compressedImage.bytes) }
         verify(exactly = 1) { thumbnailUploader.upload(any(), compressedImage) }
-        verify(exactly = 1) { thumbnailEventPublisher.publishUploaded(1L, thumbnailUrl) }
+        verify(exactly = 1) { thumbnailEventPublisher.publishUploaded(1L, originalImageEvent(), thumbnailImageEvent()) }
     }
+
+    private fun originalImageEvent(): ImageAssetEvent = ImageAssetEvent(
+        url = imageUrl,
+        width = 1280,
+        height = 720,
+        aspectRatio = 1280.0 / 720.0,
+    )
+
+    private fun thumbnailImageEvent(): ImageAssetEvent = ImageAssetEvent(
+        url = thumbnailUrl,
+        width = 320,
+        height = 180,
+        aspectRatio = 320.0 / 180.0,
+    )
 }

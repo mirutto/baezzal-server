@@ -19,6 +19,7 @@ import server.collectionpost.implementation.CollectionPostLocker
 import server.collectionpost.implementation.CollectionPostReader
 import server.collectionpost.implementation.CollectionPostRemover
 import server.collectionpost.implementation.CollectionPostWriter
+import server.post.domain.ImageAsset
 import server.post.domain.Post
 import server.post.implementation.PostReader
 
@@ -142,7 +143,7 @@ class CollectionServiceTest {
         every { postReader.readById(10L) } returns Post(
             id = 10L,
             memberId = 3L,
-            imageUrl = "https://cdn.example.com/posts/10.png",
+            originalImage = ImageAsset(url = "https://cdn.example.com/posts/10.png"),
         )
         every { collectionPostReader.exists(1L, 10L) } returns false
         every { collectionPostWriter.write(capture(savedCollectionPost)) } answers { firstArg() }
@@ -169,7 +170,7 @@ class CollectionServiceTest {
         every { postReader.readById(10L) } returns Post(
             id = 10L,
             memberId = 3L,
-            imageUrl = "https://cdn.example.com/posts/10.png",
+            originalImage = ImageAsset(url = "https://cdn.example.com/posts/10.png"),
         )
         every { collectionPostReader.exists(1L, 10L) } returns true
 

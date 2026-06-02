@@ -12,9 +12,6 @@ class PostEventHandler(
 
     @EventHandler("update-thumbnail")
     fun updateThumbnail(event: ThumbnailUpdatedEvent) {
-        postService.updateThumbnail(
-            postId = event.postId,
-            thumbnailUrl = event.thumbnailUrl,
-        )
+        postService.updateThumbnail(event)
     }
 }

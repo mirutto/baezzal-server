@@ -1,7 +1,10 @@
 package server.post.domain
 
 import global.entity.BaseEntity
+import jakarta.persistence.AttributeOverride
+import jakarta.persistence.AttributeOverrides
 import jakarta.persistence.Column
+import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -21,11 +24,23 @@ class Post(
     @Column(name = "member_id", nullable = false)
     val memberId: Long,
 
-    @Column(name = "image_url", nullable = false, length = 2048)
-    val imageUrl: String,
+    @Embedded
+    @AttributeOverrides(
+        AttributeOverride(name = "url", column = Column(name = "image_url", nullable = false, length = 2048)),
+        AttributeOverride(name = "width", column = Column(name = "image_width")),
+        AttributeOverride(name = "height", column = Column(name = "image_height")),
+        AttributeOverride(name = "aspectRatio", column = Column(name = "image_aspect_ratio")),
+    )
+    var originalImage: ImageAsset,
 
-    @Column(name = "thumbnail_url", nullable = false, length = 2048)
-    var thumbnailUrl: String = "",
+    @Embedded
+    @AttributeOverrides(
+        AttributeOverride(name = "url", column = Column(name = "thumbnail_url", nullable = false, length = 2048)),
+        AttributeOverride(name = "width", column = Column(name = "thumbnail_width")),
+        AttributeOverride(name = "height", column = Column(name = "thumbnail_height")),
+        AttributeOverride(name = "aspectRatio", column = Column(name = "thumbnail_aspect_ratio")),
+    )
+    var thumbnailImage: ImageAsset = ImageAsset(),
 
     @Enumerated(EnumType.STRING)
     @Column(name = "thumbnail_status", nullable = false, length = 20)
@@ -37,8 +52,18 @@ class Post(
     @Column(name = "team_id")
     var teamId: Long? = null,
 ) : BaseEntity() {
-    fun completeThumbnail(thumbnailUrl: String) {
-        this.thumbnailUrl = thumbnailUrl
+    val imageUrl: String
+        get() = originalImage.url
+
+    val thumbnailUrl: String
+        get() = thumbnailImage.url
+
+    fun completeThumbnail(
+        originalImage: ImageAsset,
+        thumbnailImage: ImageAsset,
+    ) {
+        this.originalImage = originalImage
+        this.thumbnailImage = thumbnailImage
         this.thumbnailStatus = ThumbnailStatus.SUCCESS
     }
 
