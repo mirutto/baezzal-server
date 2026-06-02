@@ -39,7 +39,7 @@ class NotificationDevice(
     @Column(name = "platform", nullable = false, length = 20)
     var platform: NotificationPlatform,
 
-    @Column(name = "token", nullable = false, length = 2048)
+    @Column(name = "token", nullable = false, length = 511)
     val token: String,
 
     @Column(name = "enabled", nullable = false)
