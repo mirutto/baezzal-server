@@ -18,6 +18,12 @@ class MemberService(
     private val memberProfileImageValidator: MemberProfileImageValidator,
     private val memberProfileImageUrlRecorder: MemberProfileImageUrlRecorder,
 ) {
+    @Transactional(readOnly = true)
+    fun getMe(memberId: Long): MemberMeResult {
+        val member = readMember(memberId)
+        return MemberMeResult(member)
+    }
+
     @Transactional
     fun onboarding(
         memberId: Long,

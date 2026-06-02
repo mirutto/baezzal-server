@@ -3,11 +3,13 @@ package server.member.presentation
 import global.auth.Passport
 import global.auth.RequestPassport
 import global.web.ApiResponse
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import server.member.application.MemberData
+import server.member.application.MemberMeResult
 import server.member.application.MemberNicknameUpdateCommand
 import server.member.application.MemberOnboardingCommand
 import server.member.application.MemberProfileImageUpdateCommand
@@ -19,6 +21,13 @@ import server.member.application.MemberService
 class MemberController(
     private val memberService: MemberService,
 ) {
+    @GetMapping("/me")
+    fun getMe(
+        @RequestPassport passport: Passport,
+    ): ApiResponse<MemberMeResult> = ApiResponse.of(
+        memberService.getMe(passport.memberId),
+    )
+
     @PostMapping("/onboarding")
     fun updateOnboarding(
         @RequestPassport passport: Passport,

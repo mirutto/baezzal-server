@@ -37,7 +37,7 @@ class Member(
     @Column(name = "provider_key", nullable = false, length = 255)
     val providerKey: String,
 
-    @Column(name = "thumbnail", nullable = false, length = 500)
+    @Column(name = "profile_image", nullable = false, length = 500)
     var profileImage: String,
 
     @Column(name = "preferred_team_id")

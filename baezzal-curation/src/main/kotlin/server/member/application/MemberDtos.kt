@@ -29,3 +29,17 @@ data class MemberData(
         profileImage = member.profileImage,
     )
 }
+
+data class MemberMeResult(
+    val nickname: String,
+    val profileImage: String,
+    val preferredTeamId: Long?,
+    val needsOnboarding: Boolean,
+) {
+    constructor(member: Member) : this(
+        nickname = member.nickname,
+        profileImage = member.profileImage,
+        preferredTeamId = member.preferredTeamId,
+        needsOnboarding = member.isNew(),
+    )
+}

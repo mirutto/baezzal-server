@@ -33,6 +33,45 @@ class MemberServiceTest {
     )
 
     @Test
+    fun `내 정보를 조회한다`() {
+        val member = member(
+            nickname = "tester",
+            preferredTeamId = 3L,
+            profileImage = "https://example.com/profile.png",
+        )
+        every { memberReader.readById(1L) } returns member
+
+        val result = memberService.getMe(1L)
+
+        result shouldBe MemberMeResult(
+            nickname = "tester",
+            profileImage = "https://example.com/profile.png",
+            preferredTeamId = 3L,
+            needsOnboarding = false,
+        )
+        verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
+        verify(exactly = 0) { teamReader.readById(any()) }
+    }
+
+    @Test
+    fun `선호 팀이 없으면 온보딩이 필요하다`() {
+        val member = member(
+            nickname = "tester",
+            preferredTeamId = null,
+        )
+        every { memberReader.readById(1L) } returns member
+
+        val result = memberService.getMe(1L)
+
+        result shouldBe MemberMeResult(
+            nickname = "tester",
+            profileImage = "",
+            preferredTeamId = null,
+            needsOnboarding = true,
+        )
+    }
+
+    @Test
     fun `온보딩에서 생성된 nickname 과 preferred team 을 함께 수정한다`() {
         val member = member(
             nickname = "before",
@@ -186,12 +225,13 @@ class MemberServiceTest {
     private fun member(
         nickname: String,
         preferredTeamId: Long?,
+        profileImage: String = "",
     ): Member = Member(
         id = 1L,
         nickname = nickname,
         provider = MemberProvider.GOOGLE,
         providerKey = "provider-key",
-        profileImage = "",
+        profileImage = profileImage,
         preferredTeamId = preferredTeamId,
         role = MemberRole.USER,
     )
