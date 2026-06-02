@@ -1,11 +1,11 @@
-package server.post.implementation
+package server.upload.implementation
 
 import org.springframework.stereotype.Component
 import server.objectstorage.ObjectStorage
 import server.objectstorage.PresignedUploadUrl
 
 @Component
-class PostImageUploader(
+class MediaUploadUrlIssuer(
     private val objectStorage: ObjectStorage,
 ) {
     fun createPresignedUploadUrl(

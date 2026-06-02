@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import server.post.application.CreatePostCommand
 import server.post.application.CreatePostResult
-import server.post.application.CreatePostImageUploadUrlCommand
-import server.post.application.PostImageUploadUrlResult
 import server.post.application.PostService
 
 @RestController
@@ -24,17 +22,6 @@ class PostController(
         @RequestBody command: CreatePostCommand,
     ): ApiResponse<CreatePostResult> = ApiResponse.of(
         postService.create(
-            memberId = passport.memberId,
-            command = command,
-        ),
-    )
-
-    @PostMapping("/image/presigned-url")
-    fun createImageUploadUrl(
-        @RequestPassport passport: Passport,
-        @RequestBody command: CreatePostImageUploadUrlCommand,
-    ): ApiResponse<PostImageUploadUrlResult> = ApiResponse.of(
-        postService.createImageUploadUrl(
             memberId = passport.memberId,
             command = command,
         ),

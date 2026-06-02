@@ -1,22 +1,22 @@
 package server.member.application
 
-import global.error.BadRequestException
 import global.error.NotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import server.member.domain.Member
 import server.member.implementation.MemberNicknameGenerator
-import server.member.implementation.MemberProfileImageUploader
+import server.member.implementation.MemberProfileImageUrlRecorder
+import server.member.implementation.MemberProfileImageValidator
 import server.member.implementation.MemberReader
 import server.team.implementation.TeamReader
-import java.util.UUID
 
 @Service
 class MemberService(
     private val memberReader: MemberReader,
     private val teamReader: TeamReader,
     private val memberNicknameGenerator: MemberNicknameGenerator,
-    private val memberProfileImageUploader: MemberProfileImageUploader,
+    private val memberProfileImageValidator: MemberProfileImageValidator,
+    private val memberProfileImageUrlRecorder: MemberProfileImageUrlRecorder,
 ) {
     @Transactional
     fun onboarding(
@@ -63,28 +63,20 @@ class MemberService(
         memberId: Long,
         command: MemberProfileImageUpdateCommand,
     ): MemberData {
+        val profileImage = command.profileImage.trim()
         val member = readMember(memberId)
-        member.updateProfileImage(command.profileImage)
+        memberProfileImageValidator.validateImageUrl(profileImage)
+        member.updateProfileImage(profileImage)
 
         return MemberData(member)
     }
 
-    fun createProfileImageUploadUrl(
-        memberId: Long,
-        command: CreateMemberProfileImageUploadUrlCommand,
-    ): MemberProfileImageUploadUrlResult {
-        require(memberId > 0)
-        val contentType = command.contentType.trim().lowercase()
-        validateImageContentType(contentType)
+    fun recordIssuedProfileImageUrl(event: MediaUploadUrlIssuedEvent) {
+        if (event.prefix != PROFILE_IMAGE_PREFIX) {
+            return
+        }
 
-        val uploadUrl =
-            memberProfileImageUploader.createPresignedUploadUrl(
-                prefix = PROFILE_IMAGE_PREFIX,
-                fileName = UUID.randomUUID().toString(),
-                contentType = contentType,
-            )
-
-        return MemberProfileImageUploadUrlResult.from(uploadUrl)
+        memberProfileImageUrlRecorder.record(event.fileUrl, event.expiresInSeconds)
     }
 
     private fun readMember(memberId: Long): Member =
@@ -102,14 +94,7 @@ class MemberService(
         return preferredTeamId
     }
 
-    private fun validateImageContentType(contentType: String) {
-        if (!contentType.startsWith(IMAGE_CONTENT_TYPE_PREFIX)) {
-            throw BadRequestException("이미지 파일만 업로드할 수 있습니다")
-        }
-    }
-
     companion object {
         private const val PROFILE_IMAGE_PREFIX = "profiles"
-        private const val IMAGE_CONTENT_TYPE_PREFIX = "image/"
     }
 }

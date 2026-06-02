@@ -21,12 +21,6 @@ class PostValidator(
         }
     }
 
-    fun validateImageContentType(contentType: String) {
-        if (!contentType.startsWith(IMAGE_CONTENT_TYPE_PREFIX)) {
-            throw BadRequestException("이미지 파일만 업로드할 수 있습니다")
-        }
-    }
-
     fun normalizeTeamId(teamId: Long?): Long? {
         val normalizedTeamId = teamId?.takeIf { it > 0 } ?: return null
 
@@ -34,9 +28,5 @@ class PostValidator(
             ?: throw NotFoundException("팀을 찾을 수 없습니다")
 
         return normalizedTeamId
-    }
-
-    companion object {
-        private const val IMAGE_CONTENT_TYPE_PREFIX = "image/"
     }
 }

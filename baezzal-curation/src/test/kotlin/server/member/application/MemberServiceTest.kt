@@ -1,21 +1,20 @@
 package server.member.application
 
-import global.error.BadRequestException
 import global.error.NotFoundException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Test
+import server.member.application.MediaUploadUrlIssuedEvent
 import server.member.domain.Member
 import server.member.domain.MemberProvider
 import server.member.domain.MemberRole
 import server.member.implementation.MemberNicknameGenerator
-import server.member.implementation.MemberProfileImageUploader
+import server.member.implementation.MemberProfileImageUrlRecorder
+import server.member.implementation.MemberProfileImageValidator
 import server.member.implementation.MemberReader
-import server.objectstorage.PresignedUploadUrl
 import server.team.domain.Team
 import server.team.implementation.TeamReader
 
@@ -23,12 +22,14 @@ class MemberServiceTest {
     private val memberReader = mockk<MemberReader>()
     private val teamReader = mockk<TeamReader>()
     private val memberNicknameGenerator = mockk<MemberNicknameGenerator>()
-    private val memberProfileImageUploader = mockk<MemberProfileImageUploader>()
+    private val memberProfileImageValidator = mockk<MemberProfileImageValidator>()
+    private val memberProfileImageUrlRecorder = mockk<MemberProfileImageUrlRecorder>()
     private val memberService = MemberService(
         memberReader = memberReader,
         teamReader = teamReader,
         memberNicknameGenerator = memberNicknameGenerator,
-        memberProfileImageUploader = memberProfileImageUploader,
+        memberProfileImageValidator = memberProfileImageValidator,
+        memberProfileImageUrlRecorder = memberProfileImageUrlRecorder,
     )
 
     @Test
@@ -115,6 +116,7 @@ class MemberServiceTest {
             preferredTeamId = 3L,
         )
         every { memberReader.readById(1L) } returns member
+        every { memberProfileImageValidator.validateImageUrl("https://example.com/thumbnail.png") } returns Unit
 
         val result = memberService.updateProfileImage(
             memberId = 1L,
@@ -126,54 +128,42 @@ class MemberServiceTest {
             preferredTeamId = 3L,
             profileImage = "https://example.com/thumbnail.png",
         )
+        verify(exactly = 1) {
+            memberProfileImageValidator.validateImageUrl("https://example.com/thumbnail.png")
+        }
         member.profileImage shouldBe "https://example.com/thumbnail.png"
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
         verify(exactly = 0) { teamReader.readById(any()) }
     }
 
     @Test
-    fun `profile image presigned url 을 발급한다`() {
-        val fileName = slot<String>()
-        val issued = PresignedUploadUrl(
-            objectKey = "profiles/123e4567-e89b-12d3-a456-426614174000",
-            uploadUrl = "https://s3.wowan.me/put",
-            fileUrl = "https://static.wowan.me/file",
-            headers = mapOf("Content-Type" to "image/png"),
-            expiresInSeconds = 600,
-        )
-        every {
-            memberProfileImageUploader.createPresignedUploadUrl(
-                prefix = "profiles",
-                fileName = capture(fileName),
-                contentType = "image/png",
-            )
-        } returns issued
+    fun `profile image prefix 로 발급된 image url 을 기록한다`() {
+        every { memberProfileImageUrlRecorder.record("https://static.wowan.me/file", 600) } returns Unit
 
-        val result = memberService.createProfileImageUploadUrl(
-            memberId = 1L,
-            command = CreateMemberProfileImageUploadUrlCommand(
-                contentType = " IMAGE/PNG ",
+        memberService.recordIssuedProfileImageUrl(
+            MediaUploadUrlIssuedEvent(
+                prefix = "profiles",
+                objectKey = "profiles/123e4567-e89b-12d3-a456-426614174000",
+                fileUrl = "https://static.wowan.me/file",
+                expiresInSeconds = 600,
             ),
         )
 
-        result shouldBe MemberProfileImageUploadUrlResult.from(issued)
-        UUID_REGEX.matches(fileName.captured) shouldBe true
+        verify(exactly = 1) { memberProfileImageUrlRecorder.record("https://static.wowan.me/file", 600) }
     }
 
     @Test
-    fun `profile image presigned url 발급 시 이미지가 아니면 예외가 발생한다`() {
-        shouldThrow<BadRequestException> {
-            memberService.createProfileImageUploadUrl(
-                memberId = 1L,
-                command = CreateMemberProfileImageUploadUrlCommand(
-                    contentType = "application/pdf",
-                ),
-            )
-        }
+    fun `profile image prefix 가 아니면 image url 을 기록하지 않는다`() {
+        memberService.recordIssuedProfileImageUrl(
+            MediaUploadUrlIssuedEvent(
+                prefix = "posts",
+                objectKey = "posts/123e4567-e89b-12d3-a456-426614174000",
+                fileUrl = "https://static.wowan.me/file",
+                expiresInSeconds = 600,
+            ),
+        )
 
-        verify(exactly = 0) {
-            memberProfileImageUploader.createPresignedUploadUrl(any(), any(), any())
-        }
+        verify(exactly = 0) { memberProfileImageUrlRecorder.record(any(), any()) }
     }
 
     @Test
@@ -205,9 +195,4 @@ class MemberServiceTest {
         preferredTeamId = preferredTeamId,
         role = MemberRole.USER,
     )
-
-    companion object {
-        private val UUID_REGEX =
-            Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
-    }
 }

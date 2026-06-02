@@ -9,10 +9,9 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Test
-import server.objectstorage.PresignedUploadUrl
+import server.post.application.MediaUploadUrlIssuedEvent
 import server.post.domain.Post
 import server.post.implementation.PostEventPublisher
-import server.post.implementation.PostImageUploader
 import server.post.implementation.PostImageUrlRecorder
 import server.post.implementation.PostReader
 import server.post.implementation.PostValidator
@@ -22,7 +21,6 @@ import server.tag.domain.Tag
 import server.tag.implementation.TagResolver
 
 class PostServiceTest {
-    private val postImageUploader = mockk<PostImageUploader>()
     private val postImageUrlRecorder = mockk<PostImageUrlRecorder>()
     private val postValidator = mockk<PostValidator>()
     private val postReader = mockk<PostReader>()
@@ -31,7 +29,6 @@ class PostServiceTest {
     private val tagResolver = mockk<TagResolver>()
     private val postEventPublisher = mockk<PostEventPublisher>()
     private val postService = PostService(
-        postImageUploader = postImageUploader,
         postImageUrlRecorder = postImageUrlRecorder,
         postValidator = postValidator,
         postReader = postReader,
@@ -155,35 +152,33 @@ class PostServiceTest {
     }
 
     @Test
-    fun `post 이미지 presigned url 을 발급한다`() {
-        val fileName = slot<String>()
-        val issued = PresignedUploadUrl(
-            objectKey = "posts/123e4567-e89b-12d3-a456-426614174000",
-            uploadUrl = "https://s3.wowan.me/put",
-            fileUrl = "https://static.wowan.me/file",
-            headers = mapOf("Content-Type" to "image/png"),
-            expiresInSeconds = 600,
-        )
-        every { postValidator.validateImageContentType("image/png") } returns Unit
-        every {
-            postImageUploader.createPresignedUploadUrl(
-                prefix = "posts",
-                fileName = capture(fileName),
-                contentType = "image/png",
-            )
-        } returns issued
+    fun `post prefix 로 발급된 image url 을 기록한다`() {
         every { postImageUrlRecorder.record("https://static.wowan.me/file", 600) } returns Unit
 
-        val actual = postService.createImageUploadUrl(
-            memberId = 7L,
-            command = CreatePostImageUploadUrlCommand(
-                contentType = " IMAGE/PNG ",
+        postService.recordIssuedImageUrl(
+            MediaUploadUrlIssuedEvent(
+                prefix = "posts",
+                objectKey = "posts/123e4567-e89b-12d3-a456-426614174000",
+                fileUrl = "https://static.wowan.me/file",
+                expiresInSeconds = 600,
             ),
         )
 
-        actual shouldBe PostImageUploadUrlResult.from(issued)
-        UUID_REGEX.matches(fileName.captured) shouldBe true
         verify(exactly = 1) { postImageUrlRecorder.record("https://static.wowan.me/file", 600) }
+    }
+
+    @Test
+    fun `post prefix 가 아니면 image url 을 기록하지 않는다`() {
+        postService.recordIssuedImageUrl(
+            MediaUploadUrlIssuedEvent(
+                prefix = "profiles",
+                objectKey = "profiles/123e4567-e89b-12d3-a456-426614174000",
+                fileUrl = "https://static.wowan.me/file",
+                expiresInSeconds = 600,
+            ),
+        )
+
+        verify(exactly = 0) { postImageUrlRecorder.record(any(), any()) }
     }
 
     @Test
@@ -217,21 +212,6 @@ class PostServiceTest {
     }
 
     @Test
-    fun `이미지가 아니면 예외가 발생한다`() {
-        every { postValidator.validateImageContentType("application/pdf") } throws
-            BadRequestException("이미지 파일만 업로드할 수 있습니다")
-
-        shouldThrow<BadRequestException> {
-            postService.createImageUploadUrl(
-                memberId = 7L,
-                command = CreatePostImageUploadUrlCommand(
-                    contentType = "application/pdf",
-                ),
-            )
-        }
-    }
-
-    @Test
     fun `image url 이 비어 있으면 예외가 발생한다`() {
         every { postValidator.validateImageUrl("") } throws BadRequestException("imageUrl 은 비어 있을 수 없습니다")
 
@@ -248,10 +228,5 @@ class PostServiceTest {
         verify(exactly = 0) { tagResolver.resolveAll(any()) }
         verify(exactly = 0) { postTagWriter.writeAll(any<Long>(), any<List<Tag>>()) }
         verify(exactly = 0) { postEventPublisher.publishCreated(any()) }
-    }
-
-    companion object {
-        private val UUID_REGEX =
-            Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
     }
 }
