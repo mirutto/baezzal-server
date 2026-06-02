@@ -326,4 +326,31 @@ class PostServiceTest {
         teamId = teamId,
         tagTitles = tagTitles,
     )
+
+    private fun postData(
+        postId: Long,
+        memberId: Long,
+        teamId: Long?,
+        description: String,
+        tagTitles: List<String>,
+        originalWidth: Int? = null,
+        originalHeight: Int? = null,
+        originalAspectRatio: Double? = null,
+    ): PostData = PostData(
+        postId = postId,
+        memberId = memberId,
+        imageUrl = originalImageUrl,
+        originalImage = imageAssetData(
+            url = originalImageUrl,
+            width = originalWidth,
+            height = originalHeight,
+            aspectRatio = originalAspectRatio,
+        ),
+        thumbnailUrl = "",
+        thumbnailImage = imageAssetData(url = ""),
+        thumbnailStatus = "PENDING",
+        description = description,
+        teamId = teamId,
+        tagTitles = tagTitles,
+    )
 }

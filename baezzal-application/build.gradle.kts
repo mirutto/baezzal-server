@@ -8,6 +8,7 @@ tasks.getByName("jar") {
 
 dependencies {
     implementation(project(":baezzal-curation"))
+    implementation(project(":baezzal-feed"))
     implementation(project(":baezzal-media"))
     implementation(project(":baezzal-notification"))
 }

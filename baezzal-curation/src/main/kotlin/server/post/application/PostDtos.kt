@@ -14,6 +14,35 @@ data class CreatePostCommand(
     val tagTitles: List<String> = emptyList(),
 )
 
+data class PostData(
+    val postId: Long,
+    val memberId: Long,
+    val imageUrl: String,
+    val originalImage: ImageAssetData,
+    val thumbnailUrl: String,
+    val thumbnailImage: ImageAssetData,
+    val thumbnailStatus: String,
+    val description: String,
+    val teamId: Long?,
+    val tagTitles: List<String>,
+) {
+    constructor(
+        post: Post,
+        tagTitles: List<String>,
+    ) : this(
+        postId = post.id,
+        memberId = post.memberId,
+        imageUrl = post.originalImage.url,
+        originalImage = ImageAssetData(post.originalImage),
+        thumbnailUrl = post.thumbnailImage.url,
+        thumbnailImage = ImageAssetData(post.thumbnailImage),
+        thumbnailStatus = post.thumbnailStatus.name,
+        description = post.description,
+        teamId = post.teamId,
+        tagTitles = tagTitles,
+    )
+}
+
 data class CreatePostResult(
     val postId: Long,
     val memberId: Long,
@@ -29,17 +58,19 @@ data class CreatePostResult(
     constructor(
         post: Post,
         tags: List<Tag>,
-    ) : this(
-        postId = post.id,
+    ) : this(PostData(post, tags.map(Tag::title)))
+
+    constructor(post: PostData) : this(
+        postId = post.postId,
         memberId = post.memberId,
-        imageUrl = post.originalImage.url,
-        originalImage = ImageAssetData(post.originalImage),
-        thumbnailUrl = post.thumbnailImage.url,
-        thumbnailImage = ImageAssetData(post.thumbnailImage),
-        thumbnailStatus = post.thumbnailStatus.name,
+        imageUrl = post.imageUrl,
+        originalImage = post.originalImage,
+        thumbnailUrl = post.thumbnailUrl,
+        thumbnailImage = post.thumbnailImage,
+        thumbnailStatus = post.thumbnailStatus,
         description = post.description,
         teamId = post.teamId,
-        tagTitles = tags.map(Tag::title),
+        tagTitles = post.tagTitles,
     )
 }
 
