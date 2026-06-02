@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import server.post.domain.Post
 import server.post.implementation.PostEventPublisher
-import server.post.implementation.PostImageUrlRecorder
 import server.post.implementation.PostReader
 import server.post.implementation.PostValidator
 import server.post.implementation.PostWriter
@@ -14,7 +13,6 @@ import server.tag.implementation.TagResolver
 
 @Service
 class PostService(
-    private val postImageUrlRecorder: PostImageUrlRecorder,
     private val postValidator: PostValidator,
     private val postReader: PostReader,
     private val postWriter: PostWriter,
@@ -58,17 +56,5 @@ class PostService(
             ?: throw NotFoundException("게시글을 찾을 수 없습니다")
 
         post.completeThumbnail(thumbnailUrl.trim())
-    }
-
-    fun recordIssuedImageUrl(event: MediaUploadUrlIssuedEvent) {
-        if (event.prefix != POST_IMAGE_PREFIX) {
-            return
-        }
-
-        postImageUrlRecorder.record(event.fileUrl, event.expiresInSeconds)
-    }
-
-    companion object {
-        private const val POST_IMAGE_PREFIX = "posts"
     }
 }

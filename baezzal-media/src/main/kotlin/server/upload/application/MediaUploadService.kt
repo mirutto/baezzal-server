@@ -3,14 +3,14 @@ package server.upload.application
 import global.error.BadRequestException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import server.upload.implementation.MediaUploadEventPublisher
+import server.upload.implementation.MediaUploadUrlRecorder
 import server.upload.implementation.MediaUploadUrlIssuer
 import java.util.UUID
 
 @Service
 class MediaUploadService(
     private val mediaUploadUrlIssuer: MediaUploadUrlIssuer,
-    private val mediaUploadEventPublisher: MediaUploadEventPublisher,
+    private val mediaUploadUrlRecorder: MediaUploadUrlRecorder,
 ) {
     @Transactional
     fun createUploadUrl(
@@ -31,13 +31,10 @@ class MediaUploadService(
                 contentType = contentType,
             )
 
-        mediaUploadEventPublisher.publishIssued(
-            MediaUploadUrlIssuedEvent(
-                prefix = prefix,
-                objectKey = uploadUrl.objectKey,
-                fileUrl = uploadUrl.fileUrl,
-                expiresInSeconds = uploadUrl.expiresInSeconds,
-            ),
+        mediaUploadUrlRecorder.recordIssued(
+            prefix = prefix,
+            fileUrl = uploadUrl.fileUrl,
+            expiresInSeconds = uploadUrl.expiresInSeconds,
         )
 
         return MediaUploadUrlResult.from(uploadUrl)

@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import server.member.domain.Member
 import server.member.implementation.MemberNicknameGenerator
-import server.member.implementation.MemberProfileImageUrlRecorder
 import server.member.implementation.MemberProfileImageValidator
 import server.member.implementation.MemberReader
 import server.team.implementation.TeamReader
@@ -16,7 +15,6 @@ class MemberService(
     private val teamReader: TeamReader,
     private val memberNicknameGenerator: MemberNicknameGenerator,
     private val memberProfileImageValidator: MemberProfileImageValidator,
-    private val memberProfileImageUrlRecorder: MemberProfileImageUrlRecorder,
 ) {
     @Transactional(readOnly = true)
     fun getMe(memberId: Long): MemberMeResult {
@@ -77,14 +75,6 @@ class MemberService(
         return MemberData(member)
     }
 
-    fun recordIssuedProfileImageUrl(event: MediaUploadUrlIssuedEvent) {
-        if (event.prefix != PROFILE_IMAGE_PREFIX) {
-            return
-        }
-
-        memberProfileImageUrlRecorder.record(event.fileUrl, event.expiresInSeconds)
-    }
-
     private fun readMember(memberId: Long): Member =
         memberReader.readById(memberId)
             ?: throw NotFoundException("회원을 찾을 수 없습니다")
@@ -98,9 +88,5 @@ class MemberService(
             ?: throw NotFoundException("팀을 찾을 수 없습니다")
 
         return preferredTeamId
-    }
-
-    companion object {
-        private const val PROFILE_IMAGE_PREFIX = "profiles"
     }
 }

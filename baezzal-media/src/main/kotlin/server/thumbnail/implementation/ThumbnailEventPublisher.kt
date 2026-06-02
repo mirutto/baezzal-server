@@ -1,20 +1,17 @@
 package server.thumbnail.implementation
 
 import org.springframework.stereotype.Component
-import server.outbox.TransactionalEventPublisher
+import server.messaging.EventPublisher
 import server.thumbnail.applicaiton.ThumbnailUpdatedEvent
 
 @Component
 class ThumbnailEventPublisher(
-    private val transactionalEventPublisher: TransactionalEventPublisher
+    private val eventPublisher: EventPublisher,
 ) {
-
     fun publishUploaded(
         postId: Long,
         thumbnailUrl: String,
     ) {
-        transactionalEventPublisher.publish(
-            ThumbnailUpdatedEvent(postId, thumbnailUrl)
-        )
+        eventPublisher.publish(ThumbnailUpdatedEvent(postId, thumbnailUrl))
     }
 }

@@ -9,10 +9,8 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Test
-import server.post.application.MediaUploadUrlIssuedEvent
 import server.post.domain.Post
 import server.post.implementation.PostEventPublisher
-import server.post.implementation.PostImageUrlRecorder
 import server.post.implementation.PostReader
 import server.post.implementation.PostValidator
 import server.post.implementation.PostWriter
@@ -21,7 +19,6 @@ import server.tag.domain.Tag
 import server.tag.implementation.TagResolver
 
 class PostServiceTest {
-    private val postImageUrlRecorder = mockk<PostImageUrlRecorder>()
     private val postValidator = mockk<PostValidator>()
     private val postReader = mockk<PostReader>()
     private val postWriter = mockk<PostWriter>()
@@ -29,7 +26,6 @@ class PostServiceTest {
     private val tagResolver = mockk<TagResolver>()
     private val postEventPublisher = mockk<PostEventPublisher>()
     private val postService = PostService(
-        postImageUrlRecorder = postImageUrlRecorder,
         postValidator = postValidator,
         postReader = postReader,
         postWriter = postWriter,
@@ -149,36 +145,6 @@ class PostServiceTest {
                 ),
             )
         }
-    }
-
-    @Test
-    fun `post prefix 로 발급된 image url 을 기록한다`() {
-        every { postImageUrlRecorder.record("https://static.wowan.me/file", 600) } returns Unit
-
-        postService.recordIssuedImageUrl(
-            MediaUploadUrlIssuedEvent(
-                prefix = "posts",
-                objectKey = "posts/123e4567-e89b-12d3-a456-426614174000",
-                fileUrl = "https://static.wowan.me/file",
-                expiresInSeconds = 600,
-            ),
-        )
-
-        verify(exactly = 1) { postImageUrlRecorder.record("https://static.wowan.me/file", 600) }
-    }
-
-    @Test
-    fun `post prefix 가 아니면 image url 을 기록하지 않는다`() {
-        postService.recordIssuedImageUrl(
-            MediaUploadUrlIssuedEvent(
-                prefix = "profiles",
-                objectKey = "profiles/123e4567-e89b-12d3-a456-426614174000",
-                fileUrl = "https://static.wowan.me/file",
-                expiresInSeconds = 600,
-            ),
-        )
-
-        verify(exactly = 0) { postImageUrlRecorder.record(any(), any()) }
     }
 
     @Test
