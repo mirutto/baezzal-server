@@ -2,6 +2,8 @@ package server.feed.domain
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.time.LocalDateTime
@@ -40,8 +42,15 @@ class FeedPost(
     @Column(name = "thumbnail_aspect_ratio")
     val thumbnailAspectRatio: Double? = null,
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "thumbnail_status", nullable = false, length = 20)
+    val thumbnailStatus: FeedThumbnailStatus = FeedThumbnailStatus.PENDING,
+
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     val description: String = "",
+
+    @Column(name = "team_id")
+    val teamId: Long? = null,
 
     @Column(
         name = "created_at",

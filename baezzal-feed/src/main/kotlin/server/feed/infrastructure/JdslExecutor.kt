@@ -1,4 +1,4 @@
-package server.feed.implementation
+package server.feed.infrastructure
 
 import com.linecorp.kotlinjdsl.querymodel.jpql.JpqlQuery
 import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderContext

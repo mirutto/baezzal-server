@@ -14,4 +14,7 @@ class FeedTeam(
 
     @Column(name = "name", nullable = false, length = 255)
     val name: String = "",
+
+    @Column(name = "sort_order", nullable = false)
+    val sortOrder: Int = 0,
 )

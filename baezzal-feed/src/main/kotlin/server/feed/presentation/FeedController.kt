@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController
 import server.feed.application.FeedPostData
 import server.feed.application.FeedPostDetailData
 import server.feed.application.FeedService
+import server.feed.application.FeedTeamSummaryData
 
 @RestController
 @RequestMapping("/feed")
@@ -17,6 +18,11 @@ class FeedController(
     @GetMapping
     fun findAll(): ApiResponse<List<FeedPostData>> = ApiResponse.of(
         feedService.findAll(),
+    )
+
+    @GetMapping("/teams")
+    fun findTeams(): ApiResponse<List<FeedTeamSummaryData>> = ApiResponse.of(
+        feedService.findTeams(),
     )
 
     @GetMapping("/posts/{postId}")

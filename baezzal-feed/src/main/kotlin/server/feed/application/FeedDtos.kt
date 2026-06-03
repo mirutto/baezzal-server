@@ -6,6 +6,13 @@ data class FeedPostData(
     val thumbnail: FeedImageData,
 )
 
+data class FeedTeamSummaryData(
+    val teamId: Long,
+    val name: String,
+    val postCount: Long,
+    val thumbnailUrls: List<String>,
+)
+
 data class FeedPostDetailData(
     val postId: Long,
     val image: FeedImageData,
@@ -83,4 +90,19 @@ data class FeedMemberRowData(
     val nickname: String,
     val profileImage: String,
     val preferredTeamId: Long?,
+)
+
+data class FeedTeamSummaryRowData(
+    val teamId: Long,
+    val name: String,
+)
+
+data class FeedTeamPostCountRowData(
+    val teamId: Long,
+    val postCount: Long,
+)
+
+data class FeedTeamThumbnailRowData(
+    val teamId: Long,
+    val thumbnailUrl: String,
 )

@@ -18,6 +18,7 @@ import server.feed.domain.FeedPost
 import server.feed.domain.FeedPostTag
 import server.feed.domain.FeedTag
 import server.feed.domain.FeedTeam
+import server.feed.infrastructure.JdslExecutor
 
 @Component
 class FeedReader(
