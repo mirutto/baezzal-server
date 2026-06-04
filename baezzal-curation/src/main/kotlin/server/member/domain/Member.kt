@@ -48,7 +48,7 @@ class Member(
     val role: MemberRole = MemberRole.USER,
 ) : BaseEntity() {
     companion object {
-        const val DEFAULT_PROFILE_IMAGE_URL = "https://static.wowan.me/baezzal/images/default-thumbnail.png"
+        const val DEFAULT_PROFILE_IMAGE_URL = "https://static.wowan.me/baezzal/images/mirutto_default.png"
     }
 
     fun isNew(): Boolean = nickname.isBlank() || preferredTeamId == null
