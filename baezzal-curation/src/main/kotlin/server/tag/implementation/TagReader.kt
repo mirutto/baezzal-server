@@ -10,5 +10,14 @@ class TagReader(
     private val tagRepository: TagRepository,
 ) {
     @Transactional(readOnly = true)
+    fun readAllByIds(ids: Collection<Long>): List<Tag> {
+        if (ids.isEmpty()) {
+            return emptyList()
+        }
+
+        return tagRepository.findAllByIdIn(ids)
+    }
+
+    @Transactional(readOnly = true)
     fun readAllByTitles(titles: Collection<String>): List<Tag> = tagRepository.findAllByTitleIn(titles)
 }

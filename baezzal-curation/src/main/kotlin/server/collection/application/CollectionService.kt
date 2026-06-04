@@ -8,6 +8,7 @@ import server.collection.domain.Collection
 import server.collection.implementation.CollectionLocker
 import server.collection.implementation.CollectionReader
 import server.collection.implementation.CollectionRemover
+import server.collection.implementation.CollectionEventPublisher
 import server.collection.implementation.CollectionWriter
 import server.collectionpost.domain.CollectionPost
 import server.collectionpost.implementation.CollectionPostLocker
@@ -22,6 +23,7 @@ class CollectionService(
     private val collectionReader: CollectionReader,
     private val collectionRemover: CollectionRemover,
     private val collectionLocker: CollectionLocker,
+    private val collectionEventPublisher: CollectionEventPublisher,
     private val postReader: PostReader,
     private val collectionPostReader: CollectionPostReader,
     private val collectionPostWriter: CollectionPostWriter,
@@ -83,6 +85,11 @@ class CollectionService(
                     collectionId = collection.id,
                     postId = postId,
                 ),
+            )
+            collectionEventPublisher.publishPostAdded(
+                userId = memberId,
+                collectionId = collection.id,
+                postId = postId,
             )
 
             CollectionPostResult(

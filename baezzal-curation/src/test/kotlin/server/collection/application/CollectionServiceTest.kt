@@ -10,6 +10,7 @@ import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 import server.collection.domain.Collection
+import server.collection.implementation.CollectionEventPublisher
 import server.collection.implementation.CollectionLocker
 import server.collection.implementation.CollectionReader
 import server.collection.implementation.CollectionRemover
@@ -28,6 +29,7 @@ class CollectionServiceTest {
     private val collectionReader = mockk<CollectionReader>()
     private val collectionRemover = mockk<CollectionRemover>()
     private val collectionLocker = mockk<CollectionLocker>()
+    private val collectionEventPublisher = mockk<CollectionEventPublisher>()
     private val postReader = mockk<PostReader>()
     private val collectionPostReader = mockk<CollectionPostReader>()
     private val collectionPostWriter = mockk<CollectionPostWriter>()
@@ -38,6 +40,7 @@ class CollectionServiceTest {
         collectionReader = collectionReader,
         collectionRemover = collectionRemover,
         collectionLocker = collectionLocker,
+        collectionEventPublisher = collectionEventPublisher,
         postReader = postReader,
         collectionPostReader = collectionPostReader,
         collectionPostWriter = collectionPostWriter,
@@ -147,6 +150,7 @@ class CollectionServiceTest {
         )
         every { collectionPostReader.exists(1L, 10L) } returns false
         every { collectionPostWriter.write(capture(savedCollectionPost)) } answers { firstArg() }
+        every { collectionEventPublisher.publishPostAdded(7L, 1L, 10L) } returns Unit
 
         val result = collectionService.addPost(
             memberId = 7L,
@@ -162,6 +166,7 @@ class CollectionServiceTest {
         savedCollectionPost.captured.postId shouldBe 10L
         verify(exactly = 1) { collectionLocker.withLock(1L, any<() -> CollectionPostResult>()) }
         verify(exactly = 1) { collectionPostLocker.withLock(1L, 10L, any<() -> CollectionPostResult>()) }
+        verify(exactly = 1) { collectionEventPublisher.publishPostAdded(7L, 1L, 10L) }
     }
 
     @Test
