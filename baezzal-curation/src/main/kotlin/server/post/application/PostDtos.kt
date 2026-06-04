@@ -17,6 +17,7 @@ data class CreatePostCommand(
 data class PostData(
     val postId: Long,
     val memberId: Long,
+    val viewCount: Long,
     val imageUrl: String,
     val originalImage: ImageAssetData,
     val thumbnailUrl: String,
@@ -32,6 +33,7 @@ data class PostData(
     ) : this(
         postId = post.id,
         memberId = post.memberId,
+        viewCount = post.viewCount,
         imageUrl = post.originalImage.url,
         originalImage = ImageAssetData(post.originalImage),
         thumbnailUrl = post.thumbnailImage.url,
@@ -46,6 +48,7 @@ data class PostData(
 data class CreatePostResult(
     val postId: Long,
     val memberId: Long,
+    val viewCount: Long,
     val imageUrl: String,
     val originalImage: ImageAssetData,
     val thumbnailUrl: String,
@@ -63,6 +66,7 @@ data class CreatePostResult(
     constructor(post: PostData) : this(
         postId = post.postId,
         memberId = post.memberId,
+        viewCount = post.viewCount,
         imageUrl = post.imageUrl,
         originalImage = post.originalImage,
         thumbnailUrl = post.thumbnailUrl,
@@ -73,6 +77,11 @@ data class CreatePostResult(
         tagTitles = post.tagTitles,
     )
 }
+
+data class PostBatchResult(
+    val postCount: Int,
+    val viewCount: Long,
+)
 
 data class ImageAssetData(
     val url: String,

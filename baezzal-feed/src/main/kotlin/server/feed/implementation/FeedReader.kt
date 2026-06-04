@@ -31,6 +31,7 @@ class FeedReader(
                 jpql {
                     selectNew<FeedPostRowData>(
                         path(FeedPost::id),
+                        path(FeedPost::viewCount),
                         path(FeedPost::imageUrl),
                         path(FeedPost::imageWidth),
                         path(FeedPost::imageHeight),
@@ -57,6 +58,7 @@ class FeedReader(
 
         return FeedPostDetailData(
             postId = post.postId,
+            viewCount = post.viewCount,
             image = toFeedImageData(
                 url = post.imageUrl,
                 width = post.imageWidth,
@@ -105,6 +107,7 @@ class FeedReader(
                     selectNew<FeedPostDetailRowData>(
                         path(FeedPost::id),
                         path(FeedPost::memberId),
+                        path(FeedPost::viewCount),
                         path(FeedPost::imageUrl),
                         path(FeedPost::imageWidth),
                         path(FeedPost::imageHeight),

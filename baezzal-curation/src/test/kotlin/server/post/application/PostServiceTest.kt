@@ -312,6 +312,7 @@ class PostServiceTest {
     ): CreatePostResult = CreatePostResult(
         postId = postId,
         memberId = memberId,
+        viewCount = 0L,
         imageUrl = originalImageUrl,
         originalImage = imageAssetData(
             url = originalImageUrl,
@@ -339,6 +340,7 @@ class PostServiceTest {
     ): PostData = PostData(
         postId = postId,
         memberId = memberId,
+        viewCount = 0L,
         imageUrl = originalImageUrl,
         originalImage = imageAssetData(
             url = originalImageUrl,

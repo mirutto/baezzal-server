@@ -2,6 +2,7 @@ package server.feed.application
 
 data class FeedPostData(
     val postId: Long,
+    val viewCount: Long,
     val image: FeedImageData,
     val thumbnail: FeedImageData,
 )
@@ -15,6 +16,7 @@ data class FeedTeamSummaryData(
 
 data class FeedPostDetailData(
     val postId: Long,
+    val viewCount: Long,
     val image: FeedImageData,
     val thumbnail: FeedImageData,
     val author: FeedAuthorData,
@@ -44,6 +46,7 @@ data class FeedImageData(
 
 data class FeedPostRowData(
     val postId: Long,
+    val viewCount: Long,
     val imageUrl: String,
     val imageWidth: Int?,
     val imageHeight: Int?,
@@ -56,6 +59,7 @@ data class FeedPostRowData(
     fun toFeedPostData(): FeedPostData =
         FeedPostData(
             postId = postId,
+            viewCount = viewCount,
             image = FeedImageData(
                 url = imageUrl,
                 width = imageWidth,
@@ -74,6 +78,7 @@ data class FeedPostRowData(
 data class FeedPostDetailRowData(
     val postId: Long,
     val memberId: Long,
+    val viewCount: Long,
     val imageUrl: String,
     val imageWidth: Int?,
     val imageHeight: Int?,

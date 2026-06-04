@@ -17,6 +17,7 @@ class PostTest {
         post.thumbnailStatus shouldBe ThumbnailStatus.PENDING
         post.description shouldBe ""
         post.teamId shouldBe null
+        post.viewCount shouldBe 0L
         post.memberId shouldBe 1L
     }
 
@@ -48,5 +49,17 @@ class PostTest {
         post.thumbnailImage.width shouldBe 320
         post.thumbnailImage.height shouldBe 180
         post.thumbnailStatus shouldBe ThumbnailStatus.SUCCESS
+    }
+
+    @Test
+    fun `view count 를 증가시킨다`() {
+        val post = Post(
+            memberId = 1L,
+            originalImage = ImageAsset(url = "https://cdn.example.com/post.png"),
+        )
+
+        post.increaseViewCount(3L)
+
+        post.viewCount shouldBe 3L
     }
 }

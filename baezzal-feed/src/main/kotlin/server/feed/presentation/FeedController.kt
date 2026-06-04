@@ -1,5 +1,7 @@
 package server.feed.presentation
 
+import global.auth.Passport
+import global.auth.RequestPassport
 import global.web.ApiResponse
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -27,8 +29,12 @@ class FeedController(
 
     @GetMapping("/posts/{postId}")
     fun findById(
+        @RequestPassport passport: Passport?,
         @PathVariable postId: Long,
     ): ApiResponse<FeedPostDetailData> = ApiResponse.of(
-        feedService.findById(postId),
+        feedService.findById(
+            postId = postId,
+            memberId = passport?.memberId,
+        ),
     )
 }
