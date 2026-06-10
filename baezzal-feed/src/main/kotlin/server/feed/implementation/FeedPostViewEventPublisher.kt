@@ -1,19 +1,24 @@
 package server.feed.implementation
 
 import org.springframework.stereotype.Component
-import server.post.implementation.PostEventPublisher
+import server.feed.application.PostViewedEvent
+import server.messaging.EventPublisher
+import java.time.LocalDateTime
 
 @Component
 class FeedPostViewEventPublisher(
-    private val postEventPublisher: PostEventPublisher,
+    private val eventPublisher: EventPublisher,
 ) {
     fun publish(
         memberId: Long,
         postId: Long,
     ) {
-        postEventPublisher.publishViewed(
-            userId = memberId,
-            postId = postId,
+        eventPublisher.publish(
+            PostViewedEvent(
+                userId = memberId,
+                postId = postId,
+                viewedAt = LocalDateTime.now(),
+            )
         )
     }
 }

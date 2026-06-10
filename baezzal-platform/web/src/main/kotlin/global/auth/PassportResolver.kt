@@ -9,12 +9,10 @@ import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
 import server.token.ExpiredTokenException
-import server.token.AuthPrincipal
 import server.token.InvalidTokenException
 import server.token.TokenProvider
 import server.token.TokenType
-import kotlin.reflect.KFunction
-import kotlin.reflect.KParameter
+import kotlin.reflect.full.valueParameters
 import kotlin.reflect.jvm.kotlinFunction
 
 @Component
@@ -30,67 +28,58 @@ class PassportResolver(
         mavContainer: ModelAndViewContainer?,
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?,
-    ): Any? =
-        when (val result = resolvePassport(webRequest)) {
-            PassportResolutionResult.Invalid ->
-                nullableResultOrThrow(parameter.isNullablePassport(), "LOGIN_AGAIN")
-            PassportResolutionResult.Expired ->
-                nullableResultOrThrow(parameter.isNullablePassport(), "TOKEN_EXPIRED")
-            is PassportResolutionResult.Success -> result.passport
-        }
+    ): Any? {
+        val isNullable = parameter.isNullablePassport()
 
-    private fun resolvePassport(webRequest: NativeWebRequest): PassportResolutionResult =
-        webRequest.getNativeRequest(HttpServletRequest::class.java)
-            ?.resolveAccessToken()
-            ?.let(::decodePassport)
-            ?: PassportResolutionResult.Invalid
+        fun unauthorized(message: String = "LOGIN_AGAIN"): Any? =
+            if (isNullable) {
+                null
+            } else {
+                throw UnauthorizedException(message)
+            }
 
-    private fun decodePassport(authorization: String): PassportResolutionResult =
-        try {
-            tokenProvider.decodeToken(authorization).toPassportResolutionResult()
-        } catch (_: InvalidTokenException) {
-            PassportResolutionResult.Invalid
-        } catch (_: ExpiredTokenException) {
-            PassportResolutionResult.Expired
-        }
+        val result = webRequest.getNativeRequest(HttpServletRequest::class.java)
+            ?.let(::resolvePassport)
+            ?: PassportResolution.Unauthorized()
 
-    private fun AuthPrincipal.toPassportResolutionResult(): PassportResolutionResult {
-        val role = role
-
-        return if (type == TokenType.ACCESS && role != null) {
-            PassportResolutionResult.Success(
-                Passport(
-                    memberId = memberId,
-                    role = role,
-                ),
-            )
-        } else {
-            PassportResolutionResult.Invalid
+        return when (result) {
+            is PassportResolution.Success -> result.passport
+            is PassportResolution.Unauthorized -> unauthorized(result.message)
         }
     }
 
-    private fun nullableResultOrThrow(isNullablePassport: Boolean, message: String): Nothing? =
-        if (isNullablePassport) {
-            null
-        } else {
-            throw UnauthorizedException(message)
+    private fun resolvePassport(request: HttpServletRequest): PassportResolution {
+        val accessToken = request.resolveAccessToken()
+            ?: return PassportResolution.Unauthorized()
+
+        return try {
+            val principal = tokenProvider.decodeToken(accessToken)
+            val role = principal.role
+
+            if (principal.type == TokenType.ACCESS && role != null) {
+                PassportResolution.Success(
+                    Passport(
+                        memberId = principal.memberId,
+                        role = role,
+                    ),
+                )
+            } else {
+                PassportResolution.Unauthorized()
+            }
+        } catch (_: InvalidTokenException) {
+            PassportResolution.Unauthorized()
+        } catch (_: ExpiredTokenException) {
+            PassportResolution.Unauthorized("TOKEN_EXPIRED")
         }
+    }
 
     private fun MethodParameter.isNullablePassport(): Boolean =
-        executable.toKotlinFunction()
+        method
+            ?.kotlinFunction
             ?.valueParameters
             ?.getOrNull(parameterIndex)
             ?.type
             ?.isMarkedNullable == true
-
-    private fun java.lang.reflect.Executable.toKotlinFunction(): KFunction<*>? =
-        when (this) {
-            is java.lang.reflect.Method -> kotlinFunction
-            is java.lang.reflect.Constructor<*> -> null
-        }
-
-    private val KFunction<*>.valueParameters: List<KParameter>
-        get() = parameters.filter { it.kind == KParameter.Kind.VALUE }
 
     private fun HttpServletRequest.resolveAccessToken(): String? =
         getHeader(AUTHORIZATION_HEADER)
@@ -98,14 +87,14 @@ class PassportResolver(
             ?.removePrefix(BEARER_PREFIX)
             ?.takeIf { it.isNotBlank() }
 
-    private sealed interface PassportResolutionResult {
-        data object Invalid : PassportResolutionResult
-
-        data object Expired : PassportResolutionResult
-
+    private sealed interface PassportResolution {
         data class Success(
             val passport: Passport,
-        ) : PassportResolutionResult
+        ) : PassportResolution
+
+        data class Unauthorized(
+            val message: String = "LOGIN_AGAIN",
+        ) : PassportResolution
     }
 
     companion object {

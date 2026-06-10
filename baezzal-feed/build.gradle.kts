@@ -10,8 +10,8 @@ dependencies {
     implementation(project(":baezzal-config:mysql"))
     implementation(project(":baezzal-config:redis"))
     implementation(project(":baezzal-config:swagger"))
-    implementation(project(":baezzal-curation"))
     implementation(project(":baezzal-platform:cache"))
     implementation(project(":baezzal-platform:set"))
     implementation(project(":baezzal-platform:web"))
+    implementation(project(":baezzal-platform:messaging"))
 }
