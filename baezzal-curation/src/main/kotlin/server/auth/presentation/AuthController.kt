@@ -16,13 +16,16 @@ import server.auth.application.AuthService
 import server.auth.application.AuthLogoutCommand
 import server.auth.application.AuthTicketExchangeCommand
 import server.auth.application.AuthTicketExchangeResult
-import server.auth.application.AuthTokenReissueCommand
 import server.auth.application.AuthTokenResult
+import server.auth.application.AuthTokenReissueCommand
+import server.auth.application.Oauth2LoginStartCommand
+import server.auth.application.Oauth2Service
 
 @RestController
 @RequestMapping("/api/v1/auth")
 class AuthController(
     private val authService: AuthService,
+    private val oauth2Service: Oauth2Service,
 ) {
     @GetMapping("/oauth2/{provider}")
     fun startOauth2Login(
@@ -31,11 +34,19 @@ class AuthController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ) {
-        redirectUri
-            .let { response.appendOauth2RedirectUriCookie(it, secure = request.isSecure) }
+        val authorizationUri = oauth2Service.start(
+            Oauth2LoginStartCommand(
+                provider = provider,
+                redirectUri = redirectUri,
+                baseScheme = request.scheme,
+                baseHost = request.serverName,
+                basePort = request.serverPort,
+                basePath = request.contextPath,
+            ),
+        )
 
         response.status = HttpStatus.FOUND.value()
-        response.sendRedirect("/oauth2/authorization/$provider")
+        response.sendRedirect(authorizationUri)
     }
 
     @PostMapping("/ticket/exchange")

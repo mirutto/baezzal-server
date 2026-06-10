@@ -15,6 +15,15 @@ data class AuthLogoutCommand(
     val refreshToken: String,
 )
 
+data class Oauth2LoginStartCommand(
+    val provider: String,
+    val redirectUri: String,
+    val baseScheme: String,
+    val baseHost: String,
+    val basePort: Int,
+    val basePath: String,
+)
+
 data class AuthTokenResult(
     val accessToken: String,
     val refreshToken: String,
