@@ -1,6 +1,7 @@
 package server.member.domain
 
 import global.entity.BaseEntity
+import global.uuid.isUuid
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -10,11 +11,16 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import java.util.UUID
 
 @Entity
 @Table(
     name = "member",
     uniqueConstraints = [
+        UniqueConstraint(
+            name = "uk_member_username",
+            columnNames = ["username"],
+        ),
         UniqueConstraint(
             name = "uk_member_provider_provider_key",
             columnNames = ["provider", "provider_key"],
@@ -30,6 +36,9 @@ class Member(
     @Column(name = "nickname", nullable = false, length = 50)
     var nickname: String,
 
+    @Column(name = "username", nullable = false, length = 36)
+    var username: String,
+
     @Enumerated(EnumType.STRING)
     @Column(name = "provider", nullable = false, length = 20)
     val provider: MemberProvider,
@@ -39,6 +48,9 @@ class Member(
 
     @Column(name = "profile_image", nullable = false, length = 500)
     var profileImage: String,
+
+    @Column(name = "description", nullable = false, columnDefinition = "TEXT")
+    var description: String,
 
     @Column(name = "preferred_team_id")
     var preferredTeamId: Long? = null,
@@ -51,7 +63,7 @@ class Member(
         const val DEFAULT_PROFILE_IMAGE_URL = "https://static.wowan.me/baezzal/images/mirutto_default.png"
     }
 
-    fun isNew(): Boolean = nickname.isBlank() || preferredTeamId == null
+    fun isNew(): Boolean = nickname.isBlank() || preferredTeamId == null || username.isUuid()
 
     fun updateNickname(nickname: String) {
         this.nickname = nickname
@@ -63,6 +75,14 @@ class Member(
 
     fun updateProfileImage(profileImage: String) {
         this.profileImage = profileImage
+    }
+
+    fun updateUsername(username: String) {
+        this.username = username
+    }
+
+    fun updateDescription(description: String) {
+        this.description = description
     }
 
     override fun equals(other: Any?): Boolean {

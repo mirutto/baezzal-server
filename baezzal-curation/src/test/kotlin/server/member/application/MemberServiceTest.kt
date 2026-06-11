@@ -13,6 +13,7 @@ import server.member.domain.MemberRole
 import server.member.implementation.MemberNicknameGenerator
 import server.member.implementation.MemberProfileImageValidator
 import server.member.implementation.MemberReader
+import server.member.implementation.MemberUsernameGenerator
 import server.team.domain.Team
 import server.team.implementation.TeamReader
 
@@ -20,11 +21,13 @@ class MemberServiceTest {
     private val memberReader = mockk<MemberReader>()
     private val teamReader = mockk<TeamReader>()
     private val memberNicknameGenerator = mockk<MemberNicknameGenerator>()
+    private val memberUsernameGenerator = mockk<MemberUsernameGenerator>()
     private val memberProfileImageValidator = mockk<MemberProfileImageValidator>()
     private val memberService = MemberService(
         memberReader = memberReader,
         teamReader = teamReader,
         memberNicknameGenerator = memberNicknameGenerator,
+        memberUsernameGenerator = memberUsernameGenerator,
         memberProfileImageValidator = memberProfileImageValidator,
     )
 
@@ -41,6 +44,8 @@ class MemberServiceTest {
 
         result shouldBe MemberMeResult(
             nickname = "tester",
+            username = "tester-username",
+            description = "tester-description",
             profileImage = "https://example.com/profile.png",
             preferredTeamId = 3L,
             needsOnboarding = false,
@@ -61,6 +66,8 @@ class MemberServiceTest {
 
         result shouldBe MemberMeResult(
             nickname = "tester",
+            username = "tester-username",
+            description = "tester-description",
             profileImage = "",
             preferredTeamId = null,
             needsOnboarding = true,
@@ -80,6 +87,7 @@ class MemberServiceTest {
             sortOrder = 1,
         )
         every { memberNicknameGenerator.generateRandomNickname(2L) } returns "홈런왕 쌍둥이"
+        every { memberUsernameGenerator.generateRandomUsername(2L) } returns "lg-1234abcd"
 
         val result = memberService.onboarding(
             memberId = 1L,
@@ -90,12 +98,16 @@ class MemberServiceTest {
 
         result shouldBe MemberData(
             nickname = "홈런왕 쌍둥이",
+            username = "lg-1234abcd",
+            description = "before-description",
             preferredTeamId = 2L,
             profileImage = "",
         )
         member.nickname shouldBe "홈런왕 쌍둥이"
+        member.username shouldBe "lg-1234abcd"
         member.preferredTeamId shouldBe 2L
         verify(exactly = 1) { memberNicknameGenerator.generateRandomNickname(2L) }
+        verify(exactly = 1) { memberUsernameGenerator.generateRandomUsername(2L) }
     }
 
     @Test
@@ -113,11 +125,14 @@ class MemberServiceTest {
 
         result shouldBe MemberData(
             nickname = "after",
+            username = "before-username",
+            description = "before-description",
             preferredTeamId = 3L,
             profileImage = "",
         )
         member.nickname shouldBe "after"
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
+        verify(exactly = 0) { memberUsernameGenerator.generateRandomUsername(any()) }
         verify(exactly = 0) { teamReader.readById(any()) }
     }
 
@@ -136,11 +151,14 @@ class MemberServiceTest {
 
         result shouldBe MemberData(
             nickname = "tester",
+            username = "tester-username",
+            description = "tester-description",
             preferredTeamId = null,
             profileImage = "",
         )
         member.preferredTeamId shouldBe null
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
+        verify(exactly = 0) { memberUsernameGenerator.generateRandomUsername(any()) }
         verify(exactly = 0) { teamReader.readById(any()) }
     }
 
@@ -160,6 +178,8 @@ class MemberServiceTest {
 
         result shouldBe MemberData(
             nickname = "tester",
+            username = "tester-username",
+            description = "tester-description",
             preferredTeamId = 3L,
             profileImage = "https://example.com/thumbnail.png",
         )
@@ -168,6 +188,7 @@ class MemberServiceTest {
         }
         member.profileImage shouldBe "https://example.com/thumbnail.png"
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
+        verify(exactly = 0) { memberUsernameGenerator.generateRandomUsername(any()) }
         verify(exactly = 0) { teamReader.readById(any()) }
     }
 
@@ -192,12 +213,16 @@ class MemberServiceTest {
         nickname: String,
         preferredTeamId: Long?,
         profileImage: String = "",
+        username: String = "$nickname-username",
+        description: String = "$nickname-description",
     ): Member = Member(
         id = 1L,
         nickname = nickname,
+        username = username,
         provider = MemberProvider.GOOGLE,
         providerKey = "provider-key",
         profileImage = profileImage,
+        description = description,
         preferredTeamId = preferredTeamId,
         role = MemberRole.USER,
     )

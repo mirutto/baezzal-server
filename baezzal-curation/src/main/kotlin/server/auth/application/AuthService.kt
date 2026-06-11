@@ -12,6 +12,7 @@ import server.auth.implementation.RefreshTokenWriter
 import server.member.domain.Member
 import server.member.implementation.MemberReader
 import server.member.implementation.MemberWriter
+import java.util.UUID
 
 @Service
 class AuthService(
@@ -44,9 +45,11 @@ class AuthService(
 
         val member = Member(
             nickname = "",
+            username = UUID.randomUUID().toString(),
             provider = oauth2Attributes.provider,
             providerKey = oauth2Attributes.providerKey,
             profileImage = Member.DEFAULT_PROFILE_IMAGE_URL,
+            description = "",
         )
         val saved = memberWriter.write(member)
 
@@ -79,7 +82,6 @@ class AuthService(
     fun exchangeTicket(ticket: String): AuthTicketExchangeResult {
         val payload = authTicketExchanger.exchange(ticket)
         val member = memberReader.readById(payload.memberId)
-            ?: throw NotFoundException("회원을 찾을 수 없습니다")
 
         return AuthTicketExchangeResult(
             accessToken = payload.accessToken,
@@ -91,7 +93,6 @@ class AuthService(
     fun reissue(refreshToken: String): AuthTokenResult {
         val principal = refreshTokenVerifier.verify(refreshToken)
         val member = memberReader.readById(principal.memberId)
-            ?: throw NotFoundException("회원을 찾을 수 없습니다")
         val tokens = authTokenIssuer.issue(
             memberId = member.id,
             role = member.role.name,

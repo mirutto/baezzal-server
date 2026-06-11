@@ -7,6 +7,7 @@ import server.member.domain.Member
 import server.member.implementation.MemberNicknameGenerator
 import server.member.implementation.MemberProfileImageValidator
 import server.member.implementation.MemberReader
+import server.member.implementation.MemberUsernameGenerator
 import server.team.implementation.TeamReader
 
 @Service
@@ -14,11 +15,18 @@ class MemberService(
     private val memberReader: MemberReader,
     private val teamReader: TeamReader,
     private val memberNicknameGenerator: MemberNicknameGenerator,
+    private val memberUsernameGenerator: MemberUsernameGenerator,
     private val memberProfileImageValidator: MemberProfileImageValidator,
 ) {
     @Transactional(readOnly = true)
     fun getMe(memberId: Long): MemberMeResult {
-        val member = readMember(memberId)
+        val member = memberReader.readById(memberId)
+        return MemberMeResult(member)
+    }
+
+    @Transactional(readOnly = true)
+    fun findByUsername(username: String): MemberMeResult {
+        val member = memberReader.readByUsername(username)
         return MemberMeResult(member)
     }
 
@@ -27,13 +35,16 @@ class MemberService(
         memberId: Long,
         command: MemberOnboardingCommand,
     ): MemberData {
-        val member = readMember(memberId)
+        val member = memberReader.readById(memberId)
         val preferredTeamId = validatePreferredTeamId(command.preferredTeamId)
 
         val randomNickname =
             memberNicknameGenerator.generateRandomNickname(command.preferredTeamId)
+        val randomUsername =
+            memberUsernameGenerator.generateRandomUsername(command.preferredTeamId)
         member.updateNickname(randomNickname)
         member.updatePreferredTeam(preferredTeamId)
+        member.updateUsername(randomUsername)
 
         return MemberData(member)
     }
@@ -43,7 +54,7 @@ class MemberService(
         memberId: Long,
         command: MemberNicknameUpdateCommand,
     ): MemberData {
-        val member = readMember(memberId)
+        val member = memberReader.readById(memberId)
         member.updateNickname(command.nickname)
 
         return MemberData(member)
@@ -54,7 +65,7 @@ class MemberService(
         memberId: Long,
         command: MemberPreferredTeamUpdateCommand,
     ): MemberData {
-        val member = readMember(memberId)
+        val member = memberReader.readById(memberId)
         val preferredTeamId = validatePreferredTeamId(command.preferredTeamId)
 
         member.updatePreferredTeam(preferredTeamId)
@@ -68,16 +79,12 @@ class MemberService(
         command: MemberProfileImageUpdateCommand,
     ): MemberData {
         val profileImage = command.profileImage.trim()
-        val member = readMember(memberId)
+        val member = memberReader.readById(memberId)
         memberProfileImageValidator.validateImageUrl(profileImage)
         member.updateProfileImage(profileImage)
 
         return MemberData(member)
     }
-
-    private fun readMember(memberId: Long): Member =
-        memberReader.readById(memberId)
-            ?: throw NotFoundException("회원을 찾을 수 없습니다")
 
     private fun validatePreferredTeamId(preferredTeamId: Long?): Long? {
         if (preferredTeamId == null) {

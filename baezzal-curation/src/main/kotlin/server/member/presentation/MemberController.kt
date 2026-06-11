@@ -4,6 +4,7 @@ import global.auth.Passport
 import global.auth.RequestPassport
 import global.web.ApiResponse
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -26,6 +27,13 @@ class MemberController(
         @RequestPassport passport: Passport,
     ): ApiResponse<MemberMeResult> = ApiResponse.of(
         memberService.getMe(passport.memberId),
+    )
+
+    @GetMapping("/{username}")
+    fun getMe(
+        @PathVariable username: String,
+    ): ApiResponse<MemberMeResult> = ApiResponse.of(
+        memberService.findByUsername(username),
     )
 
     @PostMapping("/onboarding")

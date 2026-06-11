@@ -9,4 +9,6 @@ interface MemberRepository : JpaRepository<Member, Long> {
         provider: MemberProvider,
         providerKey: String,
     ): Member?
+
+    fun findByUsername(username: String): Member?
 }

@@ -1,5 +1,6 @@
 package server.member.implementation
 
+import global.error.NotFoundException
 import org.springframework.stereotype.Component
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.transaction.annotation.Transactional
@@ -12,7 +13,12 @@ class MemberReader(
     private val memberRepository: MemberRepository
 ) {
     @Transactional(readOnly = true)
-    fun readById(memberId: Long): Member? = memberRepository.findByIdOrNull(memberId)
+    fun readById(memberId: Long): Member = memberRepository.findByIdOrNull(memberId)
+        ?: throw NotFoundException("회원을 찾을 수 없습니다")
+
+    @Transactional(readOnly = true)
+    fun readByUsername(username: String): Member = memberRepository.findByUsername(username)
+        ?: throw NotFoundException("회원을 찾을 수 없습니다")
 
     @Transactional(readOnly = true)
     fun readByProvider(

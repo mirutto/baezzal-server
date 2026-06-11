@@ -50,9 +50,11 @@ class AuthServiceTest {
         val member = Member(
             id = 1L,
             nickname = "",
+            username = "11111111-1111-1111-1111-111111111111",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
             profileImage = "",
+            description = "",
             preferredTeamId = null,
             role = MemberRole.USER,
         )
@@ -81,9 +83,11 @@ class AuthServiceTest {
         val member = Member(
             id = 1L,
             nickname = "tester",
+            username = "tester-username",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
             profileImage = "",
+            description = "",
             preferredTeamId = null,
             role = MemberRole.USER,
         )
@@ -112,9 +116,11 @@ class AuthServiceTest {
         val member = Member(
             id = 1L,
             nickname = "tester",
+            username = "tester-username",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
             profileImage = "",
+            description = "",
             preferredTeamId = 9L,
             role = MemberRole.USER,
         )
@@ -142,9 +148,11 @@ class AuthServiceTest {
         val member = Member(
             id = 1L,
             nickname = "tester",
+            username = "tester-username",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
             profileImage = "",
+            description = "",
             preferredTeamId = 9L,
             role = MemberRole.USER,
         )
@@ -202,6 +210,27 @@ class AuthServiceTest {
         verify(exactly = 1) {
             memberWriter.write(withArg { member ->
                 member.profileImage shouldBe Member.DEFAULT_PROFILE_IMAGE_URL
+            })
+        }
+    }
+
+    @Test
+    fun `oauth 회원이 처음 생성될 때 username 은 uuid 형식으로 저장한다`() {
+        every { memberReader.readByProvider(MemberProvider.GOOGLE, "provider-key") } returns null
+        every { memberWriter.write(any()) } answers { firstArg() }
+
+        authService.upsert(
+            registrationId = "google",
+            attributes = mapOf(
+                "sub" to "provider-key",
+            ),
+        )
+
+        verify(exactly = 1) {
+            memberWriter.write(withArg { member ->
+                member.username.matches(
+                    Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+                ) shouldBe true
             })
         }
     }
