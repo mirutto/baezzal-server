@@ -15,6 +15,9 @@ class FeedMember(
     @Column(name = "nickname", nullable = false, length = 50)
     val nickname: String = "",
 
+    @Column(name = "username", nullable = false, length = 36)
+    val username: String = "",
+
     @Column(name = "profile_image", nullable = false, length = 500)
     val profileImage: String = "",
 

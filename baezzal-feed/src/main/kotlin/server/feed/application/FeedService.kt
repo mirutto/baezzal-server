@@ -18,6 +18,12 @@ class FeedService(
     fun findAll(): List<FeedPostData> = feedReader.readAll()
 
     @Transactional(readOnly = true)
+    fun findMine(memberId: Long): List<FeedPostData> = feedReader.readAllByMemberId(memberId)
+
+    @Transactional(readOnly = true)
+    fun findByUsername(username: String): List<FeedPostData> = feedReader.readAllByUsername(username)
+
+    @Transactional(readOnly = true)
     fun findTeams(): List<FeedTeamSummaryData> = feedTeamReader.readTeams()
 
     @Transactional(readOnly = true)

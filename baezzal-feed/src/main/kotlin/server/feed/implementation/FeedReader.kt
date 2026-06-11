@@ -52,6 +52,41 @@ class FeedReader(
             .map(FeedPostRowData::toFeedPostData)
 
     @Transactional(readOnly = true)
+    fun readAllByMemberId(memberId: Long): List<FeedPostData> =
+        jdslExecutor
+            .createQuery(
+                jpql {
+                    selectNew<FeedPostRowData>(
+                        path(FeedPost::id),
+                        path(FeedPost::viewCount),
+                        path(FeedPost::imageUrl),
+                        path(FeedPost::imageWidth),
+                        path(FeedPost::imageHeight),
+                        path(FeedPost::imageAspectRatio),
+                        path(FeedPost::thumbnailUrl),
+                        path(FeedPost::thumbnailWidth),
+                        path(FeedPost::thumbnailHeight),
+                        path(FeedPost::thumbnailAspectRatio),
+                    ).from(
+                        entity(FeedPost::class),
+                    ).where(
+                        path(FeedPost::memberId).eq(memberId),
+                    ).orderBy(
+                        path(FeedPost::createdAt).desc(),
+                        path(FeedPost::id).desc(),
+                    )
+                },
+                FeedPostRowData::class.java,
+            ).resultList
+            .map(FeedPostRowData::toFeedPostData)
+
+    @Transactional(readOnly = true)
+    fun readAllByUsername(username: String): List<FeedPostData> {
+        val memberId = readMemberIdByUsername(username)
+        return readAllByMemberId(memberId)
+    }
+
+    @Transactional(readOnly = true)
     fun readDetail(postId: Long): FeedPostDetailData {
         val post = readPostDetailRow(postId)
         val member = readMemberRow(post.memberId)
@@ -74,6 +109,7 @@ class FeedReader(
             author = FeedAuthorData(
                 memberId = member.memberId,
                 nickname = member.nickname,
+                username = member.username,
                 profileImage = member.profileImage,
                 preferredTeam = member.preferredTeamId?.let(::readTeam),
             ),
@@ -135,6 +171,7 @@ class FeedReader(
                     selectNew<FeedMemberRowData>(
                         path(FeedMember::id),
                         path(FeedMember::nickname),
+                        path(FeedMember::username),
                         path(FeedMember::profileImage),
                         path(FeedMember::preferredTeamId),
                     ).from(
@@ -144,6 +181,23 @@ class FeedReader(
                     )
                 },
                 FeedMemberRowData::class.java,
+            ).resultList
+            .firstOrNull()
+            ?: throw NotFoundException("회원을 찾을 수 없습니다")
+
+    private fun readMemberIdByUsername(username: String): Long =
+        jdslExecutor
+            .createQuery(
+                jpql {
+                    select(
+                        path(FeedMember::id),
+                    ).from(
+                        entity(FeedMember::class),
+                    ).where(
+                        path(FeedMember::username).eq(username),
+                    )
+                },
+                Long::class.javaObjectType,
             ).resultList
             .firstOrNull()
             ?: throw NotFoundException("회원을 찾을 수 없습니다")

@@ -28,6 +28,7 @@ data class FeedPostDetailData(
 data class FeedAuthorData(
     val memberId: Long,
     val nickname: String,
+    val username: String,
     val profileImage: String,
     val preferredTeam: FeedTeamData?,
 )
@@ -93,6 +94,7 @@ data class FeedPostDetailRowData(
 data class FeedMemberRowData(
     val memberId: Long,
     val nickname: String,
+    val username: String,
     val profileImage: String,
     val preferredTeamId: Long?,
 )

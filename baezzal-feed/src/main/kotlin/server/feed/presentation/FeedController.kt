@@ -22,6 +22,20 @@ class FeedController(
         feedService.findAll(),
     )
 
+    @GetMapping("/me")
+    fun findMine(
+        @RequestPassport passport: Passport,
+    ): ApiResponse<List<FeedPostData>> = ApiResponse.of(
+        feedService.findMine(passport.memberId),
+    )
+
+    @GetMapping("/members/{username}")
+    fun findByUsername(
+        @PathVariable username: String,
+    ): ApiResponse<List<FeedPostData>> = ApiResponse.of(
+        feedService.findByUsername(username),
+    )
+
     @GetMapping("/teams")
     fun findTeams(): ApiResponse<List<FeedTeamSummaryData>> = ApiResponse.of(
         feedService.findTeams(),
