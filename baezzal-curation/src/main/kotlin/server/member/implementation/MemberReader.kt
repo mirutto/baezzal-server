@@ -1,8 +1,8 @@
 package server.member.implementation
 
 import global.error.NotFoundException
-import org.springframework.stereotype.Component
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import server.member.domain.Member
 import server.member.domain.MemberProvider
@@ -10,7 +10,7 @@ import server.member.infrastructure.MemberRepository
 
 @Component
 class MemberReader(
-    private val memberRepository: MemberRepository
+    private val memberRepository: MemberRepository,
 ) {
     @Transactional(readOnly = true)
     fun readById(memberId: Long): Member = memberRepository.findByIdOrNull(memberId)

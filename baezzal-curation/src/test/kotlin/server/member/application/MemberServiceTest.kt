@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test
 import server.member.domain.Member
 import server.member.domain.MemberProvider
 import server.member.domain.MemberRole
+import server.member.implementation.MemberCachedReader
+import server.member.implementation.MemberCacheRemover
+import server.member.implementation.MemberUpdatedEventPublisher
 import server.member.implementation.MemberNicknameGenerator
 import server.member.implementation.MemberProfileImageValidator
 import server.member.implementation.MemberReader
@@ -19,16 +22,22 @@ import server.team.implementation.TeamReader
 
 class MemberServiceTest {
     private val memberReader = mockk<MemberReader>()
+    private val memberCachedReader = mockk<MemberCachedReader>()
     private val teamReader = mockk<TeamReader>()
     private val memberNicknameGenerator = mockk<MemberNicknameGenerator>()
     private val memberUsernameGenerator = mockk<MemberUsernameGenerator>()
     private val memberProfileImageValidator = mockk<MemberProfileImageValidator>()
+    private val memberUpdatedEventPublisher = mockk<MemberUpdatedEventPublisher>()
+    private val memberCacheRemover = mockk<MemberCacheRemover>()
     private val memberService = MemberService(
         memberReader = memberReader,
+        memberCachedReader = memberCachedReader,
         teamReader = teamReader,
         memberNicknameGenerator = memberNicknameGenerator,
         memberUsernameGenerator = memberUsernameGenerator,
         memberProfileImageValidator = memberProfileImageValidator,
+        memberUpdatedEventPublisher = memberUpdatedEventPublisher,
+        memberCacheRemover = memberCacheRemover,
     )
 
     @Test
@@ -38,7 +47,7 @@ class MemberServiceTest {
             preferredTeamId = 3L,
             profileImage = "https://example.com/profile.png",
         )
-        every { memberReader.readById(1L) } returns member
+        every { memberCachedReader.readById(1L) } returns member
 
         val result = memberService.getMe(1L)
 
@@ -60,7 +69,7 @@ class MemberServiceTest {
             nickname = "tester",
             preferredTeamId = null,
         )
-        every { memberReader.readById(1L) } returns member
+        every { memberCachedReader.readById(1L) } returns member
 
         val result = memberService.getMe(1L)
 
@@ -88,6 +97,7 @@ class MemberServiceTest {
         )
         every { memberNicknameGenerator.generateRandomNickname(2L) } returns "홈런왕 쌍둥이"
         every { memberUsernameGenerator.generateRandomUsername(2L) } returns "lg-1234abcd"
+        every { memberUpdatedEventPublisher.publish(member) } returns Unit
 
         val result = memberService.onboarding(
             memberId = 1L,
@@ -106,6 +116,7 @@ class MemberServiceTest {
         member.nickname shouldBe "홈런왕 쌍둥이"
         member.username shouldBe "lg-1234abcd"
         member.preferredTeamId shouldBe 2L
+        verify(exactly = 1) { memberUpdatedEventPublisher.publish(member) }
         verify(exactly = 1) { memberNicknameGenerator.generateRandomNickname(2L) }
         verify(exactly = 1) { memberUsernameGenerator.generateRandomUsername(2L) }
     }
@@ -117,6 +128,7 @@ class MemberServiceTest {
             preferredTeamId = 3L,
         )
         every { memberReader.readById(1L) } returns member
+        every { memberUpdatedEventPublisher.publish(member) } returns Unit
 
         val result = memberService.updateNickname(
             memberId = 1L,
@@ -131,6 +143,7 @@ class MemberServiceTest {
             profileImage = "",
         )
         member.nickname shouldBe "after"
+        verify(exactly = 1) { memberUpdatedEventPublisher.publish(member) }
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
         verify(exactly = 0) { memberUsernameGenerator.generateRandomUsername(any()) }
         verify(exactly = 0) { teamReader.readById(any()) }
@@ -143,6 +156,7 @@ class MemberServiceTest {
             preferredTeamId = 2L,
         )
         every { memberReader.readById(1L) } returns member
+        every { memberUpdatedEventPublisher.publish(member) } returns Unit
 
         val result = memberService.updatePreferredTeam(
             memberId = 1L,
@@ -157,6 +171,7 @@ class MemberServiceTest {
             profileImage = "",
         )
         member.preferredTeamId shouldBe null
+        verify(exactly = 1) { memberUpdatedEventPublisher.publish(member) }
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
         verify(exactly = 0) { memberUsernameGenerator.generateRandomUsername(any()) }
         verify(exactly = 0) { teamReader.readById(any()) }
@@ -170,6 +185,7 @@ class MemberServiceTest {
         )
         every { memberReader.readById(1L) } returns member
         every { memberProfileImageValidator.validateImageUrl("https://example.com/thumbnail.png") } returns Unit
+        every { memberUpdatedEventPublisher.publish(member) } returns Unit
 
         val result = memberService.updateProfileImage(
             memberId = 1L,
@@ -187,6 +203,7 @@ class MemberServiceTest {
             memberProfileImageValidator.validateImageUrl("https://example.com/thumbnail.png")
         }
         member.profileImage shouldBe "https://example.com/thumbnail.png"
+        verify(exactly = 1) { memberUpdatedEventPublisher.publish(member) }
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
         verify(exactly = 0) { memberUsernameGenerator.generateRandomUsername(any()) }
         verify(exactly = 0) { teamReader.readById(any()) }
@@ -207,6 +224,20 @@ class MemberServiceTest {
                 command = MemberPreferredTeamUpdateCommand(preferredTeamId = 9L),
             )
         }
+    }
+
+    @Test
+    fun `member updated event 로 member 캐시를 무효화한다`() {
+        every { memberCacheRemover.remove(1L, "tester-username") } returns Unit
+
+        memberService.handleUpdated(
+            MemberUpdatedEvent(
+                memberId = 1L,
+                username = "tester-username",
+            ),
+        )
+
+        verify(exactly = 1) { memberCacheRemover.remove(1L, "tester-username") }
     }
 
     private fun member(

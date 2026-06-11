@@ -3,30 +3,35 @@ package server.member.application
 import global.error.NotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import server.member.domain.Member
+import server.member.implementation.MemberCachedReader
+import server.member.implementation.MemberCacheRemover
 import server.member.implementation.MemberNicknameGenerator
 import server.member.implementation.MemberProfileImageValidator
 import server.member.implementation.MemberReader
+import server.member.implementation.MemberUpdatedEventPublisher
 import server.member.implementation.MemberUsernameGenerator
 import server.team.implementation.TeamReader
 
 @Service
 class MemberService(
     private val memberReader: MemberReader,
+    private val memberCachedReader: MemberCachedReader,
     private val teamReader: TeamReader,
     private val memberNicknameGenerator: MemberNicknameGenerator,
     private val memberUsernameGenerator: MemberUsernameGenerator,
     private val memberProfileImageValidator: MemberProfileImageValidator,
+    private val memberUpdatedEventPublisher: MemberUpdatedEventPublisher,
+    private val memberCacheRemover: MemberCacheRemover,
 ) {
     @Transactional(readOnly = true)
     fun getMe(memberId: Long): MemberMeResult {
-        val member = memberReader.readById(memberId)
+        val member = memberCachedReader.readById(memberId)
         return MemberMeResult(member)
     }
 
     @Transactional(readOnly = true)
     fun findByUsername(username: String): MemberMeResult {
-        val member = memberReader.readByUsername(username)
+        val member = memberCachedReader.readByUsername(username)
         return MemberMeResult(member)
     }
 
@@ -45,6 +50,7 @@ class MemberService(
         member.updateNickname(randomNickname)
         member.updatePreferredTeam(preferredTeamId)
         member.updateUsername(randomUsername)
+        memberUpdatedEventPublisher.publish(member)
 
         return MemberData(member)
     }
@@ -56,6 +62,7 @@ class MemberService(
     ): MemberData {
         val member = memberReader.readById(memberId)
         member.updateNickname(command.nickname)
+        memberUpdatedEventPublisher.publish(member)
 
         return MemberData(member)
     }
@@ -69,6 +76,7 @@ class MemberService(
         val preferredTeamId = validatePreferredTeamId(command.preferredTeamId)
 
         member.updatePreferredTeam(preferredTeamId)
+        memberUpdatedEventPublisher.publish(member)
 
         return MemberData(member)
     }
@@ -82,8 +90,17 @@ class MemberService(
         val member = memberReader.readById(memberId)
         memberProfileImageValidator.validateImageUrl(profileImage)
         member.updateProfileImage(profileImage)
+        memberUpdatedEventPublisher.publish(member)
 
         return MemberData(member)
+    }
+
+    @Transactional
+    fun handleUpdated(event: MemberUpdatedEvent) {
+        memberCacheRemover.remove(
+            memberId = event.memberId,
+            username = event.username,
+        )
     }
 
     private fun validatePreferredTeamId(preferredTeamId: Long?): Long? {
