@@ -20,4 +20,12 @@ class FollowReader(
         followerId: Long,
         followeeId: Long,
     ): Follow? = followRepository.findByFollowerIdAndFolloweeId(followerId, followeeId)
+
+    @Transactional(readOnly = true)
+    fun readFollowerCount(memberId: Long) =
+        followRepository.countByFolloweeId(memberId)
+
+    @Transactional(readOnly = true)
+    fun readFollowingCount(memberId: Long) =
+        followRepository.countByFollowerId(memberId)
 }

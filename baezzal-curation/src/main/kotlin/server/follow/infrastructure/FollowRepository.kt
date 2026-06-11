@@ -14,8 +14,7 @@ interface FollowRepository : JpaRepository<Follow, Long> {
         followeeId: Long,
     ): Follow?
 
-    fun deleteByFollowerIdAndFolloweeId(
-        followerId: Long,
-        followeeId: Long,
-    ): Long
+    fun countByFollowerId(followerId: Long): Long
+
+    fun countByFolloweeId(followeeId: Long): Long
 }
