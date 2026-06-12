@@ -3,10 +3,9 @@ package server.member.application
 import global.error.NotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import server.member.implementation.MemberCachedReader
-import server.member.implementation.MemberCacheRemover
 import server.member.implementation.MemberNicknameGenerator
 import server.member.implementation.MemberProfileImageValidator
+import server.member.implementation.MemberCacheRemover
 import server.member.implementation.MemberReader
 import server.member.implementation.MemberUpdatedEventPublisher
 import server.member.implementation.MemberUsernameGenerator
@@ -15,7 +14,6 @@ import server.team.implementation.TeamReader
 @Service
 class MemberService(
     private val memberReader: MemberReader,
-    private val memberCachedReader: MemberCachedReader,
     private val teamReader: TeamReader,
     private val memberNicknameGenerator: MemberNicknameGenerator,
     private val memberUsernameGenerator: MemberUsernameGenerator,
@@ -24,16 +22,8 @@ class MemberService(
     private val memberCacheRemover: MemberCacheRemover,
 ) {
     @Transactional(readOnly = true)
-    fun getMe(memberId: Long): MemberMeResult {
-        val member = memberCachedReader.readById(memberId)
-        return MemberMeResult(member)
-    }
-
-    @Transactional(readOnly = true)
-    fun findByUsername(username: String): MemberMeResult {
-        val member = memberCachedReader.readByUsername(username)
-        return MemberMeResult(member)
-    }
+    fun findByUsername(username: String): MemberResult =
+        MemberResult(memberReader.readByUsername(username))
 
     @Transactional
     fun onboarding(

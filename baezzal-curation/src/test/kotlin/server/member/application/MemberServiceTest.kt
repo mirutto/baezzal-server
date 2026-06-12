@@ -10,19 +10,17 @@ import org.junit.jupiter.api.Test
 import server.member.domain.Member
 import server.member.domain.MemberProvider
 import server.member.domain.MemberRole
-import server.member.implementation.MemberCachedReader
 import server.member.implementation.MemberCacheRemover
-import server.member.implementation.MemberUpdatedEventPublisher
 import server.member.implementation.MemberNicknameGenerator
 import server.member.implementation.MemberProfileImageValidator
 import server.member.implementation.MemberReader
+import server.member.implementation.MemberUpdatedEventPublisher
 import server.member.implementation.MemberUsernameGenerator
 import server.team.domain.Team
 import server.team.implementation.TeamReader
 
 class MemberServiceTest {
     private val memberReader = mockk<MemberReader>()
-    private val memberCachedReader = mockk<MemberCachedReader>()
     private val teamReader = mockk<TeamReader>()
     private val memberNicknameGenerator = mockk<MemberNicknameGenerator>()
     private val memberUsernameGenerator = mockk<MemberUsernameGenerator>()
@@ -31,7 +29,6 @@ class MemberServiceTest {
     private val memberCacheRemover = mockk<MemberCacheRemover>()
     private val memberService = MemberService(
         memberReader = memberReader,
-        memberCachedReader = memberCachedReader,
         teamReader = teamReader,
         memberNicknameGenerator = memberNicknameGenerator,
         memberUsernameGenerator = memberUsernameGenerator,
@@ -41,45 +38,23 @@ class MemberServiceTest {
     )
 
     @Test
-    fun `내 정보를 조회한다`() {
+    fun `username 으로 회원 정보를 조회한다`() {
         val member = member(
             nickname = "tester",
             preferredTeamId = 3L,
             profileImage = "https://example.com/profile.png",
         )
-        every { memberCachedReader.readById(1L) } returns member
+        every { memberReader.readByUsername("tester-username") } returns member
 
-        val result = memberService.getMe(1L)
+        val result = memberService.findByUsername("tester-username")
 
-        result shouldBe MemberMeResult(
+        result shouldBe MemberResult(
             nickname = "tester",
             username = "tester-username",
             description = "tester-description",
-            profileImage = "https://example.com/profile.png",
             preferredTeamId = 3L,
+            profileImage = "https://example.com/profile.png",
             needsOnboarding = false,
-        )
-        verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
-        verify(exactly = 0) { teamReader.readById(any()) }
-    }
-
-    @Test
-    fun `선호 팀이 없으면 온보딩이 필요하다`() {
-        val member = member(
-            nickname = "tester",
-            preferredTeamId = null,
-        )
-        every { memberCachedReader.readById(1L) } returns member
-
-        val result = memberService.getMe(1L)
-
-        result shouldBe MemberMeResult(
-            nickname = "tester",
-            username = "tester-username",
-            description = "tester-description",
-            profileImage = "",
-            preferredTeamId = null,
-            needsOnboarding = true,
         )
     }
 

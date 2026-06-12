@@ -12,20 +12,12 @@ import org.springframework.web.bind.annotation.RestController
 import server.follow.application.FollowResult
 import server.follow.application.FollowService
 import server.follow.application.MemberFollowSummaryResult
-import server.follow.application.MyFollowStats
 
 @RestController
 @RequestMapping("/api/v1/follow")
 class FollowController(
     private val followService: FollowService,
 ) {
-    @GetMapping("/me/stats")
-    fun myStats(
-        @RequestPassport passport: Passport,
-    ): ApiResponse<MyFollowStats> = ApiResponse.of(
-        followService.myStats(passport.memberId),
-    )
-
     @GetMapping("/{username}")
     fun getMemberFollowSummary(
         @RequestPassport passport: Passport,

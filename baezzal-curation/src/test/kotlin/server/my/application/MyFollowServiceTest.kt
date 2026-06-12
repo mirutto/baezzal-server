@@ -1,0 +1,92 @@
+package server.my.application
+
+import io.kotest.matchers.shouldBe
+import io.mockk.every
+import io.mockk.mockk
+import org.junit.jupiter.api.Test
+import server.follow.implementation.FollowReader
+import server.member.application.MemberData
+import server.member.domain.Member
+import server.member.domain.MemberProvider
+import server.member.domain.MemberRole
+
+class MyFollowServiceTest {
+    private val followReader = mockk<FollowReader>()
+    private val myFollowService = MyFollowService(
+        followReader = followReader,
+    )
+
+    @Test
+    fun `내 팔로우 통계를 조회한다`() {
+        every { followReader.readFollowerCount(1L) } returns 3L
+        every { followReader.readFollowingCount(1L) } returns 7L
+
+        val result = myFollowService.getMyStats(1L)
+
+        result shouldBe MyFollowStats(
+            followerCount = 3L,
+            followeeCount = 7L,
+        )
+    }
+
+    @Test
+    fun `내 팔로워 목록을 조회한다`() {
+        every { followReader.readFollowerMembers(1L) } returns listOf(
+            member(id = 2L, nickname = "member-2"),
+            member(id = 3L, nickname = "member-3"),
+        )
+
+        val result = myFollowService.getMyFollowers(1L)
+
+        result shouldBe listOf(
+            MemberData(
+                nickname = "member-2",
+                username = "member-2-username",
+                description = "member-2-description",
+                preferredTeamId = null,
+                profileImage = "",
+            ),
+            MemberData(
+                nickname = "member-3",
+                username = "member-3-username",
+                description = "member-3-description",
+                preferredTeamId = null,
+                profileImage = "",
+            ),
+        )
+    }
+
+    @Test
+    fun `내 팔로잉 목록을 조회한다`() {
+        every { followReader.readFollowingMembers(1L) } returns listOf(
+            member(id = 4L, nickname = "member-4"),
+        )
+
+        val result = myFollowService.getMyFollowings(1L)
+
+        result shouldBe listOf(
+            MemberData(
+                nickname = "member-4",
+                username = "member-4-username",
+                description = "member-4-description",
+                preferredTeamId = null,
+                profileImage = "",
+            ),
+        )
+    }
+
+    private fun member(
+        id: Long,
+        nickname: String,
+    ): Member = Member(
+        id = id,
+        nickname = nickname,
+        username = "$nickname-username",
+        provider = MemberProvider.GOOGLE,
+        providerKey = "provider-key-$id",
+        profileImage = "",
+        description = "$nickname-description",
+        preferredTeamId = null,
+        role = MemberRole.USER,
+    )
+}

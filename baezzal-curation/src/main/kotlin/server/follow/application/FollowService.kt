@@ -74,14 +74,6 @@ class FollowService(
     }
 
     @Transactional(readOnly = true)
-    fun myStats(memberId: Long): MyFollowStats {
-        val followerCount = followReader.readFollowerCount(memberId)
-        val followeeCount = followReader.readFollowingCount(memberId)
-
-        return MyFollowStats(followerCount, followeeCount)
-    }
-
-    @Transactional(readOnly = true)
     fun getMemberFollowSummary(
         memberId: Long,
         targetUsername: String,

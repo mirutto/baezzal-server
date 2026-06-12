@@ -34,7 +34,7 @@ data class MemberData(
     )
 }
 
-data class MemberMeResult(
+data class MemberResult(
     val nickname: String,
     val username: String,
     val description: String,

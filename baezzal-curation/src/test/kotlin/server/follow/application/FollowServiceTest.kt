@@ -147,19 +147,6 @@ class FollowServiceTest {
     }
 
     @Test
-    fun `내 팔로우 통계를 조회한다`() {
-        every { followReader.readFollowerCount(1L) } returns 3L
-        every { followReader.readFollowingCount(1L) } returns 7L
-
-        val result = followService.myStats(1L)
-
-        result shouldBe MyFollowStats(
-            followerCount = 3L,
-            followeeCount = 7L,
-        )
-    }
-
-    @Test
     fun `상대 회원의 팔로우 통계를 조회한다`() {
         every { memberReader.readByUsername("member-2-username") } returns member(id = 2L)
         every { followReader.readFollowerCount(2L) } returns 11L

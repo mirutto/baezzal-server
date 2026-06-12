@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import server.member.application.MemberData
-import server.member.application.MemberMeResult
 import server.member.application.MemberNicknameUpdateCommand
 import server.member.application.MemberOnboardingCommand
-import server.member.application.MemberProfileImageUpdateCommand
 import server.member.application.MemberPreferredTeamUpdateCommand
+import server.member.application.MemberProfileImageUpdateCommand
+import server.member.application.MemberResult
 import server.member.application.MemberService
 
 @RestController
@@ -22,17 +22,10 @@ import server.member.application.MemberService
 class MemberController(
     private val memberService: MemberService,
 ) {
-    @GetMapping("/me")
-    fun getMe(
-        @RequestPassport passport: Passport,
-    ): ApiResponse<MemberMeResult> = ApiResponse.of(
-        memberService.getMe(passport.memberId),
-    )
-
     @GetMapping("/{username}")
-    fun getMe(
+    fun getMember(
         @PathVariable username: String,
-    ): ApiResponse<MemberMeResult> = ApiResponse.of(
+    ): ApiResponse<MemberResult> = ApiResponse.of(
         memberService.findByUsername(username),
     )
 
