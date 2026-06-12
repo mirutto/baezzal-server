@@ -19,28 +19,16 @@ class FeedPost(
     val memberId: Long = 0,
 
     @Column(name = "image_url", nullable = false, length = 2048)
-    val imageUrl: String = "",
+    val rawImageUrl: String = "",
 
-    @Column(name = "image_width")
-    val imageWidth: Int? = null,
-
-    @Column(name = "image_height")
-    val imageHeight: Int? = null,
+    @Column(name = "public_url", nullable = false, length = 2048)
+    val publicImageUrl: String = "",
 
     @Column(name = "image_aspect_ratio")
-    val imageAspectRatio: Double? = null,
+    val imageAspectRatio: Double = 1.0,
 
     @Column(name = "thumbnail_url", nullable = false, length = 2048)
-    val thumbnailUrl: String = "",
-
-    @Column(name = "thumbnail_width")
-    val thumbnailWidth: Int? = null,
-
-    @Column(name = "thumbnail_height")
-    val thumbnailHeight: Int? = null,
-
-    @Column(name = "thumbnail_aspect_ratio")
-    val thumbnailAspectRatio: Double? = null,
+    val thumbnailImageUrl: String = "",
 
     @Enumerated(EnumType.STRING)
     @Column(name = "thumbnail_status", nullable = false, length = 20)

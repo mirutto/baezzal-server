@@ -1,10 +1,11 @@
 package server.feed.application
 
+import server.feed.domain.FeedThumbnailStatus
+
 data class FeedPostData(
     val postId: Long,
-    val viewCount: Long,
-    val image: FeedImageData,
-    val thumbnail: FeedImageData,
+    val thumbnailImageUrl: String,
+    val imageAspectRatio: Double,
 )
 
 data class FeedTeamSummaryData(
@@ -17,8 +18,10 @@ data class FeedTeamSummaryData(
 data class FeedPostDetailData(
     val postId: Long,
     val viewCount: Long,
-    val image: FeedImageData,
-    val thumbnail: FeedImageData,
+    val rawImageUrl: String,
+    val publicImageUrl: String,
+    val imageAspectRatio: Double,
+    val status: String,
     val author: FeedAuthorData,
     val description: String,
     val tagTitles: List<String>,
@@ -38,41 +41,16 @@ data class FeedTeamData(
     val name: String,
 )
 
-data class FeedImageData(
-    val url: String,
-    val width: Int?,
-    val height: Int?,
-    val aspectRatio: Double?,
-)
-
 data class FeedPostRowData(
     val postId: Long,
-    val viewCount: Long,
-    val imageUrl: String,
-    val imageWidth: Int?,
-    val imageHeight: Int?,
-    val imageAspectRatio: Double?,
-    val thumbnailUrl: String,
-    val thumbnailWidth: Int?,
-    val thumbnailHeight: Int?,
-    val thumbnailAspectRatio: Double?,
+    val thumbnailImageUrl: String,
+    val imageAspectRatio: Double,
 ) {
     fun toFeedPostData(): FeedPostData =
         FeedPostData(
             postId = postId,
-            viewCount = viewCount,
-            image = FeedImageData(
-                url = imageUrl,
-                width = imageWidth,
-                height = imageHeight,
-                aspectRatio = imageAspectRatio,
-            ),
-            thumbnail = FeedImageData(
-                url = thumbnailUrl,
-                width = thumbnailWidth,
-                height = thumbnailHeight,
-                aspectRatio = thumbnailAspectRatio,
-            ),
+            thumbnailImageUrl = thumbnailImageUrl,
+            imageAspectRatio = imageAspectRatio,
         )
 }
 
@@ -80,14 +58,10 @@ data class FeedPostDetailRowData(
     val postId: Long,
     val memberId: Long,
     val viewCount: Long,
-    val imageUrl: String,
-    val imageWidth: Int?,
-    val imageHeight: Int?,
-    val imageAspectRatio: Double?,
-    val thumbnailUrl: String,
-    val thumbnailWidth: Int?,
-    val thumbnailHeight: Int?,
-    val thumbnailAspectRatio: Double?,
+    val rawImageUrl: String,
+    val publicImageUrl: String,
+    val imageAspectRatio: Double,
+    val status: FeedThumbnailStatus,
     val description: String,
 )
 

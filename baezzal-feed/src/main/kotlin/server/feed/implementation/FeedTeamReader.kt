@@ -83,13 +83,13 @@ class FeedTeamReader(
                 jpql {
                     selectNew<FeedTeamThumbnailRowData>(
                         path(FeedPost::teamId),
-                        path(FeedPost::thumbnailUrl),
+                        path(FeedPost::thumbnailImageUrl),
                     ).from(
                         entity(FeedPost::class),
                     ).whereAnd(
                         path(FeedPost::teamId).`in`(teamIds),
                         path(FeedPost::thumbnailStatus).eq(FeedThumbnailStatus.SUCCESS),
-                        path(FeedPost::thumbnailUrl).notEqual(""),
+                        path(FeedPost::thumbnailImageUrl).notEqual(""),
                     ).orderBy(
                         path(FeedPost::teamId).asc(),
                         path(FeedPost::createdAt).desc(),
@@ -105,6 +105,6 @@ class FeedTeamReader(
     }
 
     companion object {
-        private const val TEAM_THUMBNAIL_LIMIT = 4
+        private const val TEAM_THUMBNAIL_LIMIT = 3
     }
 }

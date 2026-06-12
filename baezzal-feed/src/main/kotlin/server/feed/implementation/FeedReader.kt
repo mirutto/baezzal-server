@@ -5,7 +5,6 @@ import global.error.NotFoundException
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import server.feed.application.FeedAuthorData
-import server.feed.application.FeedImageData
 import server.feed.application.FeedMemberRowData
 import server.feed.application.FeedPostData
 import server.feed.application.FeedPostDetailData
@@ -18,6 +17,7 @@ import server.feed.domain.FeedPost
 import server.feed.domain.FeedPostTag
 import server.feed.domain.FeedTag
 import server.feed.domain.FeedTeam
+import server.feed.domain.FeedThumbnailStatus
 import server.feed.infrastructure.JdslExecutor
 
 @Component
@@ -31,17 +31,12 @@ class FeedReader(
                 jpql {
                     selectNew<FeedPostRowData>(
                         path(FeedPost::id),
-                        path(FeedPost::viewCount),
-                        path(FeedPost::imageUrl),
-                        path(FeedPost::imageWidth),
-                        path(FeedPost::imageHeight),
+                        path(FeedPost::thumbnailImageUrl),
                         path(FeedPost::imageAspectRatio),
-                        path(FeedPost::thumbnailUrl),
-                        path(FeedPost::thumbnailWidth),
-                        path(FeedPost::thumbnailHeight),
-                        path(FeedPost::thumbnailAspectRatio),
                     ).from(
                         entity(FeedPost::class),
+                    ).where(
+                        path(FeedPost::thumbnailStatus).eq(FeedThumbnailStatus.SUCCESS),
                     ).orderBy(
                         path(FeedPost::createdAt).desc(),
                         path(FeedPost::id).desc(),
@@ -58,19 +53,13 @@ class FeedReader(
                 jpql {
                     selectNew<FeedPostRowData>(
                         path(FeedPost::id),
-                        path(FeedPost::viewCount),
-                        path(FeedPost::imageUrl),
-                        path(FeedPost::imageWidth),
-                        path(FeedPost::imageHeight),
+                        path(FeedPost::thumbnailImageUrl),
                         path(FeedPost::imageAspectRatio),
-                        path(FeedPost::thumbnailUrl),
-                        path(FeedPost::thumbnailWidth),
-                        path(FeedPost::thumbnailHeight),
-                        path(FeedPost::thumbnailAspectRatio),
                     ).from(
                         entity(FeedPost::class),
-                    ).where(
+                    ).whereAnd(
                         path(FeedPost::memberId).eq(memberId),
+                        path(FeedPost::thumbnailStatus).eq(FeedThumbnailStatus.SUCCESS),
                     ).orderBy(
                         path(FeedPost::createdAt).desc(),
                         path(FeedPost::id).desc(),
@@ -94,18 +83,10 @@ class FeedReader(
         return FeedPostDetailData(
             postId = post.postId,
             viewCount = post.viewCount,
-            image = toFeedImageData(
-                url = post.imageUrl,
-                width = post.imageWidth,
-                height = post.imageHeight,
-                aspectRatio = post.imageAspectRatio,
-            ),
-            thumbnail = toFeedImageData(
-                url = post.thumbnailUrl,
-                width = post.thumbnailWidth,
-                height = post.thumbnailHeight,
-                aspectRatio = post.thumbnailAspectRatio,
-            ),
+            rawImageUrl = post.rawImageUrl,
+            publicImageUrl = post.publicImageUrl,
+            imageAspectRatio = post.imageAspectRatio,
+            status = post.status.name,
             author = FeedAuthorData(
                 memberId = member.memberId,
                 nickname = member.nickname,
@@ -144,14 +125,10 @@ class FeedReader(
                         path(FeedPost::id),
                         path(FeedPost::memberId),
                         path(FeedPost::viewCount),
-                        path(FeedPost::imageUrl),
-                        path(FeedPost::imageWidth),
-                        path(FeedPost::imageHeight),
+                        path(FeedPost::rawImageUrl),
+                        path(FeedPost::publicImageUrl),
                         path(FeedPost::imageAspectRatio),
-                        path(FeedPost::thumbnailUrl),
-                        path(FeedPost::thumbnailWidth),
-                        path(FeedPost::thumbnailHeight),
-                        path(FeedPost::thumbnailAspectRatio),
+                        path(FeedPost::thumbnailStatus),
                         path(FeedPost::description),
                     ).from(
                         entity(FeedPost::class),
@@ -235,16 +212,4 @@ class FeedReader(
                 Long::class.javaObjectType,
             ).singleResult
             .toLong()
-
-    private fun toFeedImageData(
-        url: String,
-        width: Int?,
-        height: Int?,
-        aspectRatio: Double?,
-    ) = FeedImageData(
-        url = url,
-        width = width,
-        height = height,
-        aspectRatio = aspectRatio,
-    )
 }
