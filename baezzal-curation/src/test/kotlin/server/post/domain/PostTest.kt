@@ -1,20 +1,22 @@
 package server.post.domain
 
+import global.image.ImageStatus
+import global.image.ImageVersions
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class PostTest {
     @Test
-    fun `post 생성시 썸네일 기본값은 빈 문자열과 pending 이다`() {
+    fun `post 생성시 image 기본값은 processing 이다`() {
         val post = Post(
             memberId = 1L,
-            originalImage = ImageAsset(url = "https://cdn.example.com/post.png"),
+            image = ImageVersions(rawUrl = "https://cdn.example.com/post.png"),
         )
 
-        post.originalImage.url shouldBe "https://cdn.example.com/post.png"
-        post.thumbnailImage.url shouldBe ""
+        post.rawImageUrl shouldBe "https://cdn.example.com/post.png"
+        post.imageUrl shouldBe "https://cdn.example.com/post.png"
         post.thumbnailUrl shouldBe ""
-        post.thumbnailStatus shouldBe ThumbnailStatus.PENDING
+        post.imageStatus shouldBe ImageStatus.PROCESSING
         post.description shouldBe ""
         post.teamId shouldBe null
         post.viewCount shouldBe 0L
@@ -22,40 +24,30 @@ class PostTest {
     }
 
     @Test
-    fun `thumbnail 완료시 thumbnail image 와 status 를 갱신한다`() {
+    fun `image 완료시 public 과 thumbnail 과 status 를 갱신한다`() {
         val post = Post(
             memberId = 1L,
-            originalImage = ImageAsset(url = "https://cdn.example.com/post.png"),
+            image = ImageVersions(rawUrl = "https://cdn.example.com/post.png"),
         )
 
-        post.completeThumbnail(
-            originalImage = ImageAsset(
-                url = "https://cdn.example.com/post.png",
-                width = 1280,
-                height = 720,
-                aspectRatio = 1280.0 / 720.0,
-            ),
-            thumbnailImage = ImageAsset(
-                url = "https://static.wowan.me/thumbnails/post.webp",
-                width = 320,
-                height = 180,
-                aspectRatio = 320.0 / 180.0,
-            ),
+        post.completeImage(
+            publicUrl = " https://cdn.example.com/post.webp ",
+            thumbnailUrl = " https://static.wowan.me/thumbnails/post.webp ",
+            aspectRatio = 16.0 / 9.0,
         )
 
-        post.originalImage.width shouldBe 1280
-        post.originalImage.height shouldBe 720
-        post.thumbnailImage.url shouldBe "https://static.wowan.me/thumbnails/post.webp"
-        post.thumbnailImage.width shouldBe 320
-        post.thumbnailImage.height shouldBe 180
-        post.thumbnailStatus shouldBe ThumbnailStatus.SUCCESS
+        post.rawImageUrl shouldBe "https://cdn.example.com/post.png"
+        post.image.publicUrl shouldBe "https://cdn.example.com/post.webp"
+        post.thumbnailUrl shouldBe "https://static.wowan.me/thumbnails/post.webp"
+        post.imageStatus shouldBe ImageStatus.SUCCESS
+        post.image.aspectRatio shouldBe 16.0 / 9.0
     }
 
     @Test
     fun `view count 를 증가시킨다`() {
         val post = Post(
             memberId = 1L,
-            originalImage = ImageAsset(url = "https://cdn.example.com/post.png"),
+            image = ImageVersions(rawUrl = "https://cdn.example.com/post.png"),
         )
 
         post.increaseViewCount(3L)

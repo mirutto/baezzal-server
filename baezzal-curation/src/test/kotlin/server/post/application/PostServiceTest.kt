@@ -2,6 +2,8 @@ package server.post.application
 
 import global.error.BadRequestException
 import global.error.NotFoundException
+import global.image.ImageStatus
+import global.image.ImageVersions
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -9,9 +11,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Test
-import server.post.domain.ImageAsset
 import server.post.domain.Post
-import server.post.domain.ThumbnailStatus
 import server.post.implementation.PostEventPublisher
 import server.post.implementation.PostReader
 import server.post.implementation.PostValidator
@@ -36,8 +36,9 @@ class PostServiceTest {
         postEventPublisher = postEventPublisher,
     )
 
-    private val originalImageUrl = "https://cdn.example.com/post.png"
-    private val thumbnailUrl = "https://static.wowan.me/thumbnails/post.webp"
+    private val rawImageUrl = "https://cdn.example.com/post.png"
+    private val publicImageUrl = "https://static.wowan.me/posts/public/post.webp"
+    private val thumbnailUrl = "https://static.wowan.me/posts/thumbnail/post.webp"
 
     @Test
     fun `post 를 생성한다`() {
@@ -47,14 +48,12 @@ class PostServiceTest {
             Tag(id = 11L, title = "잠실"),
         )
 
-        every { postValidator.validateImageUrl(originalImageUrl) } returns Unit
+        every { postValidator.validateImageUrl(rawImageUrl) } returns Unit
         every { postValidator.normalizeTeamId(2L) } returns 2L
         every { postWriter.write(capture(savedPost)) } returns createdPost(
             id = 100L,
             memberId = 7L,
             teamId = 2L,
-            width = 1080,
-            height = 1350,
             aspectRatio = 1080.0 / 1350.0,
         )
         every { tagResolver.resolveAll(listOf("KBO", "잠실", "KBO")) } returns resolvedTags
@@ -64,9 +63,7 @@ class PostServiceTest {
         val result = postService.create(
             memberId = 7L,
             command = createPostCommand(
-                imageUrl = " $originalImageUrl ",
-                imageWidth = 1080,
-                imageHeight = 1350,
+                imageUrl = " $rawImageUrl ",
                 imageAspectRatio = 1080.0 / 1350.0,
                 description = " 경기 후기 ",
                 teamId = 2L,
@@ -78,22 +75,19 @@ class PostServiceTest {
             postId = 100L,
             memberId = 7L,
             teamId = 2L,
-            originalWidth = 1080,
-            originalHeight = 1350,
-            originalAspectRatio = 1080.0 / 1350.0,
+            aspectRatio = 1080.0 / 1350.0,
             tagTitles = listOf("KBO", "잠실"),
         )
         savedPost.captured.memberId shouldBe 7L
         savedPost.captured.teamId shouldBe 2L
         savedPost.captured.description shouldBe "경기 후기"
-        savedPost.captured.originalImage.url shouldBe originalImageUrl
-        savedPost.captured.originalImage.width shouldBe 1080
-        savedPost.captured.originalImage.height shouldBe 1350
-        savedPost.captured.originalImage.aspectRatio shouldBe 1080.0 / 1350.0
-        savedPost.captured.thumbnailImage.url shouldBe ""
+        savedPost.captured.rawImageUrl shouldBe rawImageUrl
+        savedPost.captured.image.publicUrl shouldBe ""
+        savedPost.captured.thumbnailUrl shouldBe ""
+        savedPost.captured.imageStatus shouldBe ImageStatus.PROCESSING
         verify(exactly = 1) {
             postEventPublisher.publishCreated(
-                createdPost(100L, 7L, 2L, 1080, 1350, 1080.0 / 1350.0),
+                createdPost(100L, 7L, 2L, 1080.0 / 1350.0),
             )
         }
     }
@@ -102,14 +96,12 @@ class PostServiceTest {
     fun `team id 가 0 이면 null 로 저장한다`() {
         val savedPost = slot<Post>()
 
-        every { postValidator.validateImageUrl(originalImageUrl) } returns Unit
+        every { postValidator.validateImageUrl(rawImageUrl) } returns Unit
         every { postValidator.normalizeTeamId(0L) } returns null
         every { postWriter.write(capture(savedPost)) } returns createdPost(
             id = 101L,
             memberId = 9L,
             teamId = null,
-            width = 1200,
-            height = 900,
             aspectRatio = 1200.0 / 900.0,
             description = "",
         )
@@ -120,9 +112,7 @@ class PostServiceTest {
         val result = postService.create(
             memberId = 9L,
             command = createPostCommand(
-                imageUrl = originalImageUrl,
-                imageWidth = 1200,
-                imageHeight = 900,
+                imageUrl = rawImageUrl,
                 imageAspectRatio = 1200.0 / 900.0,
                 teamId = 0L,
             ),
@@ -130,33 +120,28 @@ class PostServiceTest {
 
         result.teamId shouldBe null
         result.memberId shouldBe 9L
-        result.originalImage shouldBe imageAssetData(
-            url = originalImageUrl,
-            width = 1200,
-            height = 900,
+        result.image shouldBe imageVersionsData(
+            rawUrl = rawImageUrl,
             aspectRatio = 1200.0 / 900.0,
         )
         savedPost.captured.memberId shouldBe 9L
         savedPost.captured.teamId shouldBe null
         verify(exactly = 1) {
             postEventPublisher.publishCreated(
-                createdPost(101L, 9L, null, 1200, 900, 1200.0 / 900.0, ""),
+                createdPost(101L, 9L, null, 1200.0 / 900.0, ""),
             )
         }
     }
 
-    @Test
     fun `존재하지 않는 team id 이면 예외가 발생한다`() {
-        every { postValidator.validateImageUrl(originalImageUrl) } returns Unit
+        every { postValidator.validateImageUrl(rawImageUrl) } returns Unit
         every { postValidator.normalizeTeamId(99L) } throws NotFoundException("팀을 찾을 수 없습니다")
 
         shouldThrow<NotFoundException> {
             postService.create(
                 memberId = 3L,
                 command = CreatePostCommand(
-                    imageUrl = originalImageUrl,
-                    imageWidth = 1080,
-                    imageHeight = 1350,
+                    imageUrl = rawImageUrl,
                     imageAspectRatio = 1080.0 / 1350.0,
                     teamId = 99L,
                 ),
@@ -165,31 +150,29 @@ class PostServiceTest {
     }
 
     @Test
-    fun `thumbnail 을 업데이트한다`() {
+    fun `처리된 image 를 업데이트한다`() {
         val post = Post(
             id = 100L,
             memberId = 7L,
-            originalImage = ImageAsset(url = originalImageUrl),
+            image = ImageVersions(rawUrl = rawImageUrl),
         )
         every { postReader.readById(100L) } returns post
 
-        postService.updateThumbnail(thumbnailUpdatedEvent(postId = 100L, trimWrapped = true))
+        postService.updateImage(processedEvent(postId = 100L, trimWrapped = true))
 
-        post.originalImage.url shouldBe originalImageUrl
-        post.originalImage.width shouldBe 1280
-        post.originalImage.height shouldBe 720
+        post.rawImageUrl shouldBe rawImageUrl
+        post.image.publicUrl shouldBe publicImageUrl
         post.thumbnailUrl shouldBe thumbnailUrl
-        post.thumbnailImage.width shouldBe 320
-        post.thumbnailImage.height shouldBe 180
-        post.thumbnailStatus shouldBe ThumbnailStatus.SUCCESS
+        post.imageStatus shouldBe ImageStatus.SUCCESS
+        post.image.aspectRatio shouldBe 1280.0 / 720.0
     }
 
     @Test
-    fun `thumbnail 업데이트 대상 post 가 없으면 예외가 발생한다`() {
+    fun `image 업데이트 대상 post 가 없으면 예외가 발생한다`() {
         every { postReader.readById(999L) } returns null
 
         shouldThrow<NotFoundException> {
-            postService.updateThumbnail(thumbnailUpdatedEvent(postId = 999L))
+            postService.updateImage(processedEvent(postId = 999L))
         }
     }
 
@@ -202,8 +185,6 @@ class PostServiceTest {
                 memberId = 5L,
                 command = CreatePostCommand(
                     imageUrl = "   ",
-                    imageWidth = 1080,
-                    imageHeight = 1350,
                     imageAspectRatio = 1080.0 / 1350.0,
                 ),
             )
@@ -215,47 +196,15 @@ class PostServiceTest {
         verify(exactly = 0) { postEventPublisher.publishCreated(any()) }
     }
 
-    private fun thumbnailUpdatedEvent(
+    private fun processedEvent(
         postId: Long,
         trimWrapped: Boolean = false,
-    ): ThumbnailUpdatedEvent = ThumbnailUpdatedEvent(
+    ): PostImageProcessedEvent = PostImageProcessedEvent(
         postId = postId,
-        originalImage = imageAssetEvent(
-            url = wrap(originalImageUrl, trimWrapped),
-            width = 1280,
-            height = 720,
-            aspectRatio = 1280.0 / 720.0,
-        ),
-        thumbnailImage = imageAssetEvent(
-            url = wrap(thumbnailUrl, trimWrapped),
-            width = 320,
-            height = 180,
-            aspectRatio = 320.0 / 180.0,
-        ),
-    )
-
-    private fun imageAssetEvent(
-        url: String,
-        width: Int?,
-        height: Int?,
-        aspectRatio: Double?,
-    ): ImageAssetEvent = ImageAssetEvent(
-        url = url,
-        width = width,
-        height = height,
-        aspectRatio = aspectRatio,
-    )
-
-    private fun imageAssetData(
-        url: String,
-        width: Int? = null,
-        height: Int? = null,
-        aspectRatio: Double? = null,
-    ): ImageAssetData = ImageAssetData(
-        url = url,
-        width = width,
-        height = height,
-        aspectRatio = aspectRatio,
+        rawImageUrl = wrap(rawImageUrl, trimWrapped),
+        publicImageUrl = wrap(publicImageUrl, trimWrapped),
+        thumbnailImageUrl = wrap(thumbnailUrl, trimWrapped),
+        aspectRatio = 1280.0 / 720.0,
     )
 
     private fun wrap(value: String, trimWrapped: Boolean): String =
@@ -263,16 +212,12 @@ class PostServiceTest {
 
     private fun createPostCommand(
         imageUrl: String,
-        imageWidth: Int = 1080,
-        imageHeight: Int = 1350,
         imageAspectRatio: Double = 1080.0 / 1350.0,
         description: String = "",
         teamId: Long? = null,
         tagTitles: List<String> = emptyList(),
     ): CreatePostCommand = CreatePostCommand(
         imageUrl = imageUrl,
-        imageWidth = imageWidth,
-        imageHeight = imageHeight,
         imageAspectRatio = imageAspectRatio,
         description = description,
         teamId = teamId,
@@ -283,17 +228,13 @@ class PostServiceTest {
         id: Long,
         memberId: Long,
         teamId: Long?,
-        width: Int?,
-        height: Int?,
-        aspectRatio: Double?,
+        aspectRatio: Double,
         description: String = "경기 후기",
     ): Post = Post(
         id = id,
         memberId = memberId,
-        originalImage = ImageAsset(
-            url = originalImageUrl,
-            width = width,
-            height = height,
+        image = ImageVersions(
+            rawUrl = rawImageUrl,
             aspectRatio = aspectRatio,
         ),
         description = description,
@@ -304,55 +245,35 @@ class PostServiceTest {
         postId: Long,
         memberId: Long,
         teamId: Long?,
-        originalWidth: Int?,
-        originalHeight: Int?,
-        originalAspectRatio: Double?,
+        aspectRatio: Double,
         tagTitles: List<String>,
         description: String = "경기 후기",
     ): CreatePostResult = CreatePostResult(
         postId = postId,
         memberId = memberId,
         viewCount = 0L,
-        imageUrl = originalImageUrl,
-        originalImage = imageAssetData(
-            url = originalImageUrl,
-            width = originalWidth,
-            height = originalHeight,
-            aspectRatio = originalAspectRatio,
-        ),
+        imageUrl = rawImageUrl,
         thumbnailUrl = "",
-        thumbnailImage = imageAssetData(url = ""),
-        thumbnailStatus = "PENDING",
+        image = imageVersionsData(
+            rawUrl = rawImageUrl,
+            aspectRatio = aspectRatio,
+        ),
         description = description,
         teamId = teamId,
         tagTitles = tagTitles,
     )
 
-    private fun postData(
-        postId: Long,
-        memberId: Long,
-        teamId: Long?,
-        description: String,
-        tagTitles: List<String>,
-        originalWidth: Int? = null,
-        originalHeight: Int? = null,
-        originalAspectRatio: Double? = null,
-    ): PostData = PostData(
-        postId = postId,
-        memberId = memberId,
-        viewCount = 0L,
-        imageUrl = originalImageUrl,
-        originalImage = imageAssetData(
-            url = originalImageUrl,
-            width = originalWidth,
-            height = originalHeight,
-            aspectRatio = originalAspectRatio,
-        ),
-        thumbnailUrl = "",
-        thumbnailImage = imageAssetData(url = ""),
-        thumbnailStatus = "PENDING",
-        description = description,
-        teamId = teamId,
-        tagTitles = tagTitles,
+    private fun imageVersionsData(
+        rawUrl: String,
+        publicUrl: String = "",
+        thumbnailUrl: String = "",
+        status: String = "PROCESSING",
+        aspectRatio: Double,
+    ): ImageVersionsData = ImageVersionsData(
+        rawUrl = rawUrl,
+        publicUrl = publicUrl,
+        thumbnailUrl = thumbnailUrl,
+        status = status,
+        aspectRatio = aspectRatio,
     )
 }

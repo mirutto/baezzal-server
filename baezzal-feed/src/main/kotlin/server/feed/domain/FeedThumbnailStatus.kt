@@ -1,7 +1,7 @@
 package server.feed.domain
 
 enum class FeedThumbnailStatus {
-    PENDING,
+    PROCESSING,
     SUCCESS,
     FAIL,
 }

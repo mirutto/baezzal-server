@@ -10,6 +10,6 @@ class PostEventPublisher(
     private val eventPublisher: EventPublisher,
 ) {
     fun publishCreated(post: Post) {
-        eventPublisher.publish(PostCreatedEvent(post.id, post.originalImage.url))
+        eventPublisher.publish(PostCreatedEvent(post.id, post.rawImageUrl))
     }
 }

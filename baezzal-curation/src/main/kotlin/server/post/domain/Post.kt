@@ -1,13 +1,13 @@
 package server.post.domain
 
 import global.entity.BaseEntity
+import global.image.ImageStatus
+import global.image.ImageVersions
 import jakarta.persistence.AttributeOverride
 import jakarta.persistence.AttributeOverrides
 import jakarta.persistence.Column
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -26,25 +26,25 @@ class Post(
 
     @Embedded
     @AttributeOverrides(
-        AttributeOverride(name = "url", column = Column(name = "image_url", nullable = false, length = 2048)),
-        AttributeOverride(name = "width", column = Column(name = "image_width")),
-        AttributeOverride(name = "height", column = Column(name = "image_height")),
+        AttributeOverride(
+            name = "rawUrl",
+            column = Column(name = "image_url", nullable = false, length = 2048),
+        ),
+        AttributeOverride(
+            name = "publicUrl",
+            column = Column(name = "public_url", nullable = false, length = 2048),
+        ),
+        AttributeOverride(
+            name = "thumbnailUrl",
+            column = Column(name = "thumbnail_url", nullable = false, length = 2048),
+        ),
+        AttributeOverride(
+            name = "status",
+            column = Column(name = "thumbnail_status", nullable = false, length = 20),
+        ),
         AttributeOverride(name = "aspectRatio", column = Column(name = "image_aspect_ratio")),
     )
-    var originalImage: ImageAsset,
-
-    @Embedded
-    @AttributeOverrides(
-        AttributeOverride(name = "url", column = Column(name = "thumbnail_url", nullable = false, length = 2048)),
-        AttributeOverride(name = "width", column = Column(name = "thumbnail_width")),
-        AttributeOverride(name = "height", column = Column(name = "thumbnail_height")),
-        AttributeOverride(name = "aspectRatio", column = Column(name = "thumbnail_aspect_ratio")),
-    )
-    var thumbnailImage: ImageAsset = ImageAsset(),
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "thumbnail_status", nullable = false, length = 20)
-    var thumbnailStatus: ThumbnailStatus = ThumbnailStatus.PENDING,
+    var image: ImageVersions,
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     var description: String = "",
@@ -55,23 +55,32 @@ class Post(
     @Column(name = "view_count", nullable = false)
     var viewCount: Long = 0,
 ) : BaseEntity() {
+    val rawImageUrl: String
+        get() = image.rawUrl
+
     val imageUrl: String
-        get() = originalImage.url
+        get() = image.publicUrl.ifBlank { image.rawUrl }
 
     val thumbnailUrl: String
-        get() = thumbnailImage.url
+        get() = image.thumbnailUrl
 
-    fun completeThumbnail(
-        originalImage: ImageAsset,
-        thumbnailImage: ImageAsset,
+    val imageStatus: ImageStatus
+        get() = image.status
+
+    fun completeImage(
+        publicUrl: String,
+        thumbnailUrl: String,
+        aspectRatio: Double,
     ) {
-        this.originalImage = originalImage
-        this.thumbnailImage = thumbnailImage
-        this.thumbnailStatus = ThumbnailStatus.SUCCESS
+        this.image = image.complete(
+            publicUrl = publicUrl,
+            thumbnailUrl = thumbnailUrl,
+            aspectRatio = aspectRatio,
+        )
     }
 
-    fun failThumbnail() {
-        this.thumbnailStatus = ThumbnailStatus.FAIL
+    fun failImage() {
+        this.image = image.fail()
     }
 
     fun updateDescription(description: String) {

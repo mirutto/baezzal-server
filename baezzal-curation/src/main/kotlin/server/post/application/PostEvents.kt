@@ -13,15 +13,10 @@ data class PostViewedEvent(
     val viewedAt: LocalDateTime,
 )
 
-data class ImageAssetEvent(
-    val url: String,
-    val width: Int?,
-    val height: Int?,
-    val aspectRatio: Double?,
-)
-
-data class ThumbnailUpdatedEvent(
+data class PostImageProcessedEvent(
     val postId: Long,
-    val originalImage: ImageAssetEvent,
-    val thumbnailImage: ImageAssetEvent,
+    val rawImageUrl: String,
+    val publicImageUrl: String,
+    val thumbnailImageUrl: String,
+    val aspectRatio: Double,
 )

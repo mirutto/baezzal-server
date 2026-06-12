@@ -44,7 +44,7 @@ class FeedPost(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "thumbnail_status", nullable = false, length = 20)
-    val thumbnailStatus: FeedThumbnailStatus = FeedThumbnailStatus.PENDING,
+    val thumbnailStatus: FeedThumbnailStatus = FeedThumbnailStatus.PROCESSING,
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     val description: String = "",

@@ -1,9 +1,9 @@
 package server.post.application
 
 import global.error.NotFoundException
+import global.image.ImageVersions
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import server.post.domain.ImageAsset
 import server.post.domain.Post
 import server.post.implementation.PostEventPublisher
 import server.post.implementation.PostReader
@@ -34,10 +34,8 @@ class PostService(
         val post = postWriter.write(
             Post(
                 memberId = memberId,
-                originalImage = ImageAsset(
-                    url = imageUrl,
-                    width = command.imageWidth,
-                    height = command.imageHeight,
+                image = ImageVersions(
+                    rawUrl = imageUrl,
                     aspectRatio = command.imageAspectRatio,
                 ),
                 description = description,
@@ -57,24 +55,15 @@ class PostService(
     }
 
     @Transactional
-    fun updateThumbnail(event: ThumbnailUpdatedEvent) {
+    fun updateImage(event: PostImageProcessedEvent) {
         val postId = event.postId
         val post = postReader.readById(postId)
             ?: throw NotFoundException("게시글을 찾을 수 없습니다")
 
-        post.completeThumbnail(
-            originalImage = ImageAsset(
-                url = event.originalImage.url.trim(),
-                width = event.originalImage.width,
-                height = event.originalImage.height,
-                aspectRatio = event.originalImage.aspectRatio,
-            ),
-            thumbnailImage = ImageAsset(
-                url = event.thumbnailImage.url.trim(),
-                width = event.thumbnailImage.width,
-                height = event.thumbnailImage.height,
-                aspectRatio = event.thumbnailImage.aspectRatio,
-            ),
+        post.completeImage(
+            publicUrl = event.publicImageUrl,
+            thumbnailUrl = event.thumbnailImageUrl,
+            aspectRatio = event.aspectRatio,
         )
     }
 }

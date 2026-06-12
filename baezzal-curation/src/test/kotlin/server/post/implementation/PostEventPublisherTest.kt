@@ -1,5 +1,6 @@
 package server.post.implementation
 
+import global.image.ImageVersions
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -7,7 +8,6 @@ import io.mockk.slot
 import org.junit.jupiter.api.Test
 import server.messaging.EventPublisher
 import server.post.application.PostCreatedEvent
-import server.post.domain.ImageAsset
 import server.post.domain.Post
 
 class PostEventPublisherTest {
@@ -23,7 +23,7 @@ class PostEventPublisherTest {
             Post(
                 id = 1L,
                 memberId = 1L,
-                originalImage = ImageAsset(url = "https://cdn.example.com/post.png"),
+                image = ImageVersions(rawUrl = "https://cdn.example.com/post.png"),
             ),
         )
 
