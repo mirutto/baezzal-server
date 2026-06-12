@@ -27,7 +27,7 @@ class MediaUploadService(
         val uploadUrl =
             mediaUploadUrlIssuer.createPresignedUploadUrl(
                 prefix = prefix,
-                fileName = UUID.randomUUID().toString(),
+                fileName = createFileName(contentType),
                 contentType = contentType,
             )
 
@@ -52,7 +52,30 @@ class MediaUploadService(
         }
     }
 
+    private fun createFileName(contentType: String): String =
+        "${UUID.randomUUID()}.${extractFileExtension(contentType)}"
+
+    private fun extractFileExtension(contentType: String): String {
+        val fileExtension =
+            contentType
+                .substringBefore(';')
+                .substringAfter(IMAGE_CONTENT_TYPE_PREFIX)
+                .substringBefore('+')
+                .trim()
+
+        if (fileExtension.isBlank()) {
+            throw BadRequestException("이미지 파일 확장자를 판별할 수 없습니다")
+        }
+
+        return when (fileExtension) {
+            JPEG_FILE_EXTENSION -> JPG_FILE_EXTENSION
+            else -> fileExtension
+        }
+    }
+
     companion object {
         private const val IMAGE_CONTENT_TYPE_PREFIX = "image/"
+        private const val JPEG_FILE_EXTENSION = "jpeg"
+        private const val JPG_FILE_EXTENSION = "jpg"
     }
 }

@@ -52,6 +52,7 @@ class ImageMetadataExtractor {
         return ImageMetadata(
             width = width,
             height = height,
+            aspectRatio =  width.toDouble() / height.toDouble(),
             mimeType = mimeType,
             fileExtension = fileExtension,
             orientation = orientation,

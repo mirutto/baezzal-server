@@ -4,18 +4,19 @@ import org.springframework.stereotype.Component
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
-import kotlin.math.max
 import kotlin.math.min
 
 @Component
-class WebpThumbnailCompressor {
+class WebpImageCompressor {
     fun compress(
         bytes: ByteArray,
         metadata: ImageMetadata,
-    ): CompressedImage {
+        maxWidth: Int,
+    ): EncodedImage {
         if (bytes.isEmpty()) {
             throw ImagePlatformException("압축할 이미지 바이트 배열이 비어 있습니다")
         }
+        require(maxWidth > 0) { "압축 기준 width 는 0보다 커야 합니다" }
 
         val sourcePath = Files.createTempFile(SOURCE_FILE_PREFIX, ".${metadata.fileExtension}")
         val targetPath = Files.createTempFile(TARGET_FILE_PREFIX, ".$WEBP_FILE_EXTENSION")
@@ -25,7 +26,7 @@ class WebpThumbnailCompressor {
             executeVipsCommand(
                 sourcePath = sourcePath,
                 targetPath = targetPath,
-                maxDimension = min(max(metadata.width, metadata.height), MAX_THUMBNAIL_DIMENSION),
+                maxWidth = min(metadata.width, maxWidth),
             )
 
             val compressedBytes = Files.readAllBytes(targetPath)
@@ -33,7 +34,7 @@ class WebpThumbnailCompressor {
                 throw ImagePlatformException("압축된 썸네일 이미지가 비어 있습니다")
             }
 
-            return CompressedImage(
+            return EncodedImage(
                 bytes = compressedBytes,
                 contentType = WEBP_CONTENT_TYPE,
                 fileExtension = WEBP_FILE_EXTENSION,
@@ -47,7 +48,7 @@ class WebpThumbnailCompressor {
     private fun executeVipsCommand(
         sourcePath: Path,
         targetPath: Path,
-        maxDimension: Int,
+        maxWidth: Int,
     ) {
         val outputPath = "${targetPath}[Q=$WEBP_QUALITY]"
         val process =
@@ -56,9 +57,7 @@ class WebpThumbnailCompressor {
                 "thumbnail",
                 sourcePath.toString(),
                 outputPath,
-                maxDimension.toString(),
-                "--height",
-                maxDimension.toString(),
+                maxWidth.toString(),
                 "--size",
                 "down",
             ).redirectErrorStream(true)
@@ -76,7 +75,6 @@ class WebpThumbnailCompressor {
         private const val WEBP_CONTENT_TYPE = "image/webp"
         private const val WEBP_FILE_EXTENSION = "webp"
         private const val WEBP_QUALITY = 80
-        private const val MAX_THUMBNAIL_DIMENSION = 320
         private const val SOURCE_FILE_PREFIX = "thumbnail-source-"
         private const val TARGET_FILE_PREFIX = "thumbnail-target-"
     }

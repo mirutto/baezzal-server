@@ -13,9 +13,9 @@ class MediaUploadUrlRecorder(
         expiresInSeconds: Int,
     ) {
         val key =
-            when (prefix) {
-                POST_IMAGE_PREFIX -> "post:image-url:$fileUrl"
-                PROFILE_IMAGE_PREFIX -> "member:profile-image-url:$fileUrl"
+            when {
+                prefix.startsWith(POST_IMAGE_PREFIX) -> "post:image-url:$fileUrl"
+                prefix.startsWith(PROFILE_IMAGE_PREFIX) -> "member:profile-image-url:$fileUrl"
                 else -> return
             }
 

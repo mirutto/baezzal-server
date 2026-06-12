@@ -1,6 +1,6 @@
 package server.image
 
-data class CompressedImage(
+data class EncodedImage(
     val bytes: ByteArray,
     val contentType: String,
     val fileExtension: String,
