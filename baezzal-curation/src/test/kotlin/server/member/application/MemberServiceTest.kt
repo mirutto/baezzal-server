@@ -14,7 +14,7 @@ import server.member.implementation.MemberCacheRemover
 import server.member.implementation.MemberNicknameGenerator
 import server.member.implementation.MemberProfileImageValidator
 import server.member.implementation.MemberReader
-import server.member.implementation.MemberUpdatedEventPublisher
+import server.member.implementation.MemberEventPublisher
 import server.member.implementation.MemberUsernameGenerator
 import server.team.domain.Team
 import server.team.implementation.TeamReader
@@ -25,7 +25,7 @@ class MemberServiceTest {
     private val memberNicknameGenerator = mockk<MemberNicknameGenerator>()
     private val memberUsernameGenerator = mockk<MemberUsernameGenerator>()
     private val memberProfileImageValidator = mockk<MemberProfileImageValidator>()
-    private val memberUpdatedEventPublisher = mockk<MemberUpdatedEventPublisher>()
+    private val memberEventPublisher = mockk<MemberEventPublisher>()
     private val memberCacheRemover = mockk<MemberCacheRemover>()
     private val memberService = MemberService(
         memberReader = memberReader,
@@ -33,7 +33,7 @@ class MemberServiceTest {
         memberNicknameGenerator = memberNicknameGenerator,
         memberUsernameGenerator = memberUsernameGenerator,
         memberProfileImageValidator = memberProfileImageValidator,
-        memberUpdatedEventPublisher = memberUpdatedEventPublisher,
+        memberEventPublisher = memberEventPublisher,
         memberCacheRemover = memberCacheRemover,
     )
 
@@ -72,7 +72,7 @@ class MemberServiceTest {
         )
         every { memberNicknameGenerator.generateRandomNickname(2L) } returns "홈런왕 쌍둥이"
         every { memberUsernameGenerator.generateRandomUsername(2L) } returns "lg-1234abcd"
-        every { memberUpdatedEventPublisher.publish(member) } returns Unit
+        every { memberEventPublisher.publishUpdated(member) } returns Unit
 
         val result = memberService.onboarding(
             memberId = 1L,
@@ -91,7 +91,7 @@ class MemberServiceTest {
         member.nickname shouldBe "홈런왕 쌍둥이"
         member.username shouldBe "lg-1234abcd"
         member.preferredTeamId shouldBe 2L
-        verify(exactly = 1) { memberUpdatedEventPublisher.publish(member) }
+        verify(exactly = 1) { memberEventPublisher.publishUpdated(member) }
         verify(exactly = 1) { memberNicknameGenerator.generateRandomNickname(2L) }
         verify(exactly = 1) { memberUsernameGenerator.generateRandomUsername(2L) }
     }
@@ -103,7 +103,7 @@ class MemberServiceTest {
             preferredTeamId = 3L,
         )
         every { memberReader.readById(1L) } returns member
-        every { memberUpdatedEventPublisher.publish(member) } returns Unit
+        every { memberEventPublisher.publishUpdated(member) } returns Unit
 
         val result = memberService.updateNickname(
             memberId = 1L,
@@ -118,7 +118,7 @@ class MemberServiceTest {
             profileImage = "",
         )
         member.nickname shouldBe "after"
-        verify(exactly = 1) { memberUpdatedEventPublisher.publish(member) }
+        verify(exactly = 1) { memberEventPublisher.publishUpdated(member) }
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
         verify(exactly = 0) { memberUsernameGenerator.generateRandomUsername(any()) }
         verify(exactly = 0) { teamReader.readById(any()) }
@@ -131,7 +131,7 @@ class MemberServiceTest {
             preferredTeamId = 2L,
         )
         every { memberReader.readById(1L) } returns member
-        every { memberUpdatedEventPublisher.publish(member) } returns Unit
+        every { memberEventPublisher.publishUpdated(member) } returns Unit
 
         val result = memberService.updatePreferredTeam(
             memberId = 1L,
@@ -146,7 +146,7 @@ class MemberServiceTest {
             profileImage = "",
         )
         member.preferredTeamId shouldBe null
-        verify(exactly = 1) { memberUpdatedEventPublisher.publish(member) }
+        verify(exactly = 1) { memberEventPublisher.publishUpdated(member) }
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
         verify(exactly = 0) { memberUsernameGenerator.generateRandomUsername(any()) }
         verify(exactly = 0) { teamReader.readById(any()) }
@@ -160,7 +160,7 @@ class MemberServiceTest {
         )
         every { memberReader.readById(1L) } returns member
         every { memberProfileImageValidator.validateImageUrl("https://example.com/thumbnail.png") } returns Unit
-        every { memberUpdatedEventPublisher.publish(member) } returns Unit
+        every { memberEventPublisher.publishUpdated(member) } returns Unit
 
         val result = memberService.updateProfileImage(
             memberId = 1L,
@@ -178,7 +178,7 @@ class MemberServiceTest {
             memberProfileImageValidator.validateImageUrl("https://example.com/thumbnail.png")
         }
         member.profileImage shouldBe "https://example.com/thumbnail.png"
-        verify(exactly = 1) { memberUpdatedEventPublisher.publish(member) }
+        verify(exactly = 1) { memberEventPublisher.publishUpdated(member) }
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
         verify(exactly = 0) { memberUsernameGenerator.generateRandomUsername(any()) }
         verify(exactly = 0) { teamReader.readById(any()) }

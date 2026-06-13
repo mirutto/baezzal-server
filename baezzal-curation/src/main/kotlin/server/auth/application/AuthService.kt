@@ -1,6 +1,5 @@
 package server.auth.application
 
-import global.error.NotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import server.auth.implementation.AuthTicketExchanger
@@ -10,6 +9,7 @@ import server.auth.implementation.RefreshTokenRemover
 import server.auth.implementation.RefreshTokenVerifier
 import server.auth.implementation.RefreshTokenWriter
 import server.member.domain.Member
+import server.member.implementation.MemberEventPublisher
 import server.member.implementation.MemberReader
 import server.member.implementation.MemberWriter
 import java.util.UUID
@@ -18,6 +18,7 @@ import java.util.UUID
 class AuthService(
     private val memberReader: MemberReader,
     private val memberWriter: MemberWriter,
+    private val memberEventPublisher: MemberEventPublisher,
     private val authTicketIssuer: AuthTicketIssuer,
     private val authTicketExchanger: AuthTicketExchanger,
     private val authTokenIssuer: AuthTokenIssuer,
@@ -52,6 +53,8 @@ class AuthService(
             description = "",
         )
         val saved = memberWriter.write(member)
+
+        memberEventPublisher.publishCreated(saved.id)
 
         return Oauth2LoginResult(
             memberId = saved.id,

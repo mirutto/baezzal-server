@@ -18,6 +18,7 @@ import server.auth.domain.AuthTokens
 import server.member.domain.Member
 import server.member.domain.MemberProvider
 import server.member.domain.MemberRole
+import server.member.implementation.MemberEventPublisher
 import server.member.implementation.MemberReader
 import server.member.implementation.MemberWriter
 import server.token.AuthPrincipal
@@ -26,6 +27,7 @@ import server.token.TokenType
 class AuthServiceTest {
     private val memberReader = mockk<MemberReader>()
     private val memberWriter = mockk<MemberWriter>()
+    private val memberEventPublisher = mockk<MemberEventPublisher>()
     private val authTicketIssuer = mockk<AuthTicketIssuer>()
     private val authTicketExchanger = mockk<AuthTicketExchanger>()
     private val authTokenIssuer = mockk<AuthTokenIssuer>()
@@ -35,6 +37,7 @@ class AuthServiceTest {
     private val authService = AuthService(
         memberReader = memberReader,
         memberWriter = memberWriter,
+        memberEventPublisher = memberEventPublisher,
         authTicketIssuer = authTicketIssuer,
         authTicketExchanger = authTicketExchanger,
         authTokenIssuer = authTokenIssuer,
@@ -199,6 +202,7 @@ class AuthServiceTest {
     fun `oauth 회원이 처음 생성될 때 profile image 는 기본 이미지로 저장한다`() {
         every { memberReader.readByProvider(MemberProvider.GOOGLE, "provider-key") } returns null
         every { memberWriter.write(any()) } answers { firstArg() }
+        every { memberEventPublisher.publishCreated(any()) } just runs
 
         authService.upsert(
             registrationId = "google",
@@ -217,7 +221,8 @@ class AuthServiceTest {
     @Test
     fun `oauth 회원이 처음 생성될 때 username 은 uuid 형식으로 저장한다`() {
         every { memberReader.readByProvider(MemberProvider.GOOGLE, "provider-key") } returns null
-        every { memberWriter.write(any()) } answers { firstArg() }
+        every { memberWriter.write(any()) } answers { firstArg<Member>() }
+        every { memberEventPublisher.publishCreated(any()) } just runs
 
         authService.upsert(
             registrationId = "google",
@@ -233,5 +238,67 @@ class AuthServiceTest {
                 ) shouldBe true
             })
         }
+    }
+
+    @Test
+    fun `oauth 회원이 처음 생성될 때 member created event 를 발행한다`() {
+        every { memberReader.readByProvider(MemberProvider.GOOGLE, "provider-key") } returns null
+        every { memberWriter.write(any()) } answers {
+            val saved = firstArg<Member>()
+            Member(
+                id = 3L,
+                nickname = saved.nickname,
+                username = saved.username,
+                provider = saved.provider,
+                providerKey = saved.providerKey,
+                profileImage = saved.profileImage,
+                description = saved.description,
+                preferredTeamId = saved.preferredTeamId,
+                role = saved.role,
+            )
+        }
+        every { memberEventPublisher.publishCreated(3L) } just runs
+
+        val result = authService.upsert(
+            registrationId = "google",
+            attributes = mapOf(
+                "sub" to "provider-key",
+            ),
+        )
+
+        result shouldBe Oauth2LoginResult(
+            memberId = 3L,
+            role = MemberRole.USER.name,
+        )
+        verify(exactly = 1) { memberEventPublisher.publishCreated(3L) }
+    }
+
+    @Test
+    fun `이미 존재하는 oauth 회원이면 member created event 를 발행하지 않는다`() {
+        every { memberReader.readByProvider(MemberProvider.GOOGLE, "provider-key") } returns Member(
+            id = 5L,
+            nickname = "tester",
+            username = "tester-username",
+            provider = MemberProvider.GOOGLE,
+            providerKey = "provider-key",
+            profileImage = "",
+            description = "",
+            preferredTeamId = 1L,
+            role = MemberRole.USER,
+        )
+
+        val result = authService.upsert(
+            registrationId = "google",
+            attributes = mapOf(
+                "sub" to "provider-key",
+            ),
+        )
+
+        result shouldBe Oauth2LoginResult(
+            memberId = 5L,
+            role = MemberRole.USER.name,
+        )
+        verify(exactly = 0) { memberWriter.write(any()) }
+        verify(exactly = 0) { memberEventPublisher.publishCreated(any()) }
     }
 }

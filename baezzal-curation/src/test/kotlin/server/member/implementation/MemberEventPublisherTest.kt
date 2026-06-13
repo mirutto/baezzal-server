@@ -5,15 +5,26 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import org.junit.jupiter.api.Test
+import server.member.application.MemberCreatedEvent
 import server.member.application.MemberUpdatedEvent
 import server.member.domain.Member
 import server.member.domain.MemberProvider
 import server.member.domain.MemberRole
 import server.outbox.TransactionalEventPublisher
 
-class MemberUpdatedEventPublisherTest {
+class MemberEventPublisherTest {
     private val transactionalEventPublisher = mockk<TransactionalEventPublisher>()
-    private val memberUpdatedEventPublisher = MemberUpdatedEventPublisher(transactionalEventPublisher)
+    private val memberEventPublisher = MemberEventPublisher(transactionalEventPublisher)
+
+    @Test
+    fun `member created event 를 발행한다`() {
+        val publishedEvent = slot<Any>()
+        every { transactionalEventPublisher.publish(capture(publishedEvent)) } returns Unit
+
+        memberEventPublisher.publishCreated(1L)
+
+        publishedEvent.captured shouldBe MemberCreatedEvent(memberId = 1L)
+    }
 
     @Test
     fun `member updated event 를 발행한다`() {
@@ -31,7 +42,7 @@ class MemberUpdatedEventPublisherTest {
         )
         every { transactionalEventPublisher.publish(capture(publishedEvent)) } returns Unit
 
-        memberUpdatedEventPublisher.publish(member)
+        memberEventPublisher.publishUpdated(member)
 
         publishedEvent.captured shouldBe MemberUpdatedEvent(
             memberId = 1L,

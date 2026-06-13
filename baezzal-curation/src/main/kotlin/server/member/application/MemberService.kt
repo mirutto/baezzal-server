@@ -7,7 +7,7 @@ import server.member.implementation.MemberNicknameGenerator
 import server.member.implementation.MemberProfileImageValidator
 import server.member.implementation.MemberCacheRemover
 import server.member.implementation.MemberReader
-import server.member.implementation.MemberUpdatedEventPublisher
+import server.member.implementation.MemberEventPublisher
 import server.member.implementation.MemberUsernameGenerator
 import server.team.implementation.TeamReader
 
@@ -18,7 +18,7 @@ class MemberService(
     private val memberNicknameGenerator: MemberNicknameGenerator,
     private val memberUsernameGenerator: MemberUsernameGenerator,
     private val memberProfileImageValidator: MemberProfileImageValidator,
-    private val memberUpdatedEventPublisher: MemberUpdatedEventPublisher,
+    private val memberEventPublisher: MemberEventPublisher,
     private val memberCacheRemover: MemberCacheRemover,
 ) {
     @Transactional(readOnly = true)
@@ -40,7 +40,7 @@ class MemberService(
         member.updateNickname(randomNickname)
         member.updatePreferredTeam(preferredTeamId)
         member.updateUsername(randomUsername)
-        memberUpdatedEventPublisher.publish(member)
+        memberEventPublisher.publishUpdated(member)
 
         return MemberData(member)
     }
@@ -52,7 +52,7 @@ class MemberService(
     ): MemberData {
         val member = memberReader.readById(memberId)
         member.updateNickname(command.nickname)
-        memberUpdatedEventPublisher.publish(member)
+        memberEventPublisher.publishUpdated(member)
 
         return MemberData(member)
     }
@@ -66,7 +66,7 @@ class MemberService(
         val preferredTeamId = validatePreferredTeamId(command.preferredTeamId)
 
         member.updatePreferredTeam(preferredTeamId)
-        memberUpdatedEventPublisher.publish(member)
+        memberEventPublisher.publishUpdated(member)
 
         return MemberData(member)
     }
@@ -80,7 +80,7 @@ class MemberService(
         val member = memberReader.readById(memberId)
         memberProfileImageValidator.validateImageUrl(profileImage)
         member.updateProfileImage(profileImage)
-        memberUpdatedEventPublisher.publish(member)
+        memberEventPublisher.publishUpdated(member)
 
         return MemberData(member)
     }
