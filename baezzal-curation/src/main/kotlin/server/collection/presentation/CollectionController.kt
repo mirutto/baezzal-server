@@ -7,22 +7,22 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import server.collection.application.AddCollectionPostCommand
 import server.collection.application.CollectionDeleteResult
 import server.collection.application.CollectionData
-import server.collection.application.CollectionPostResult
 import server.collection.application.CollectionService
 import server.collection.application.CreateCollectionCommand
-import server.collection.application.UpdateCollectionCommand
+import server.collectionpost.application.AddCollectionPostCommand
+import server.collectionpost.application.CollectionPostResult
+import server.collectionpost.application.CollectionPostService
 
 @RestController
 @RequestMapping("/api/v1/collection")
 class CollectionController(
     private val collectionService: CollectionService,
+    private val collectionPostService: CollectionPostService,
 ) {
     @PostMapping
     fun create(
@@ -42,26 +42,13 @@ class CollectionController(
         collectionService.findAllByMemberId(passport.memberId),
     )
 
-    @PutMapping("/{collectionId}")
-    fun update(
-        @RequestPassport passport: Passport,
-        @PathVariable collectionId: Long,
-        @RequestBody command: UpdateCollectionCommand,
-    ): ApiResponse<CollectionData> = ApiResponse.of(
-        collectionService.update(
-            memberId = passport.memberId,
-            collectionId = collectionId,
-            command = command,
-        ),
-    )
-
     @PostMapping("/{collectionId}/post")
     fun addPost(
         @RequestPassport passport: Passport,
         @PathVariable collectionId: Long,
         @RequestBody command: AddCollectionPostCommand,
     ): ApiResponse<CollectionPostResult> = ApiResponse.of(
-        collectionService.addPost(
+        collectionPostService.add(
             memberId = passport.memberId,
             collectionId = collectionId,
             command = command,
@@ -74,7 +61,7 @@ class CollectionController(
         @PathVariable collectionId: Long,
         @PathVariable postId: Long,
     ): ApiResponse<CollectionPostResult> = ApiResponse.of(
-        collectionService.removePost(
+        collectionPostService.remove(
             memberId = passport.memberId,
             collectionId = collectionId,
             postId = postId,

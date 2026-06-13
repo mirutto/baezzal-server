@@ -4,6 +4,7 @@ import global.error.BadRequestException
 import global.error.NotFoundException
 import global.image.ImageStatus
 import global.image.ImageVersions
+import global.image.ImageVersionsData
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every
