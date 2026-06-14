@@ -1,6 +1,7 @@
 package server.feed.application
 
 import server.feed.domain.FeedThumbnailStatus
+import java.time.LocalDateTime
 
 data class FeedPostData(
     val postId: Long,
@@ -13,6 +14,15 @@ data class FeedTeamSummaryData(
     val name: String,
     val postCount: Long,
     val thumbnailUrls: List<String>,
+)
+
+data class FeedCollectionData(
+    val collectionId: Long,
+    val name: String,
+    val postCount: Long,
+    val lastPostRuleModifiedAt: LocalDateTime,
+    val thumbnailUrl: String,
+    val isPublic: Boolean,
 )
 
 data class FeedPostDetailData(
@@ -86,4 +96,17 @@ data class FeedTeamPostCountRowData(
 data class FeedTeamThumbnailRowData(
     val teamId: Long,
     val thumbnailUrl: String,
+)
+
+data class FeedCollectionRowData(
+    val collectionId: Long,
+    val name: String,
+    val lastPostRuleModifiedAt: LocalDateTime,
+    val thumbnailUrl: String,
+    val isPublic: Boolean,
+)
+
+data class FeedCollectionPostCountRowData(
+    val collectionId: Long,
+    val postCount: Long,
 )

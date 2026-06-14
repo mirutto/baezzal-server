@@ -12,6 +12,9 @@ class FeedCollectionPost(
     @Column(name = "collection_post_id", nullable = false)
     val id: Long = 0,
 
+    @Column(name = "collection_id", nullable = false)
+    val collectionId: Long = 0,
+
     @Column(name = "post_id", nullable = false)
     val postId: Long = 0,
 )
