@@ -13,6 +13,6 @@ class ThumbnailImageCompressor(
         imageCompressor.compress(imageData, POST_THUMBNAIL_MAX_WIDTH)
 
     companion object {
-        private const val POST_THUMBNAIL_MAX_WIDTH = 200
+        private const val POST_THUMBNAIL_MAX_WIDTH = 400
     }
 }
