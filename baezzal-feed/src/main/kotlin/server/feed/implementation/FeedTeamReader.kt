@@ -25,7 +25,7 @@ class FeedTeamReader(
 
         return teams.map { team ->
             FeedTeamSummaryData(
-                teamId = team.teamId,
+                teamCode = team.teamCode,
                 name = team.name,
                 postCount = postCounts[team.teamId] ?: 0L,
                 thumbnailUrls = thumbnailUrls[team.teamId].orEmpty(),
@@ -39,6 +39,7 @@ class FeedTeamReader(
                 jpql {
                     selectNew<FeedTeamSummaryRowData>(
                         path(FeedTeam::id),
+                        path(FeedTeam::code),
                         path(FeedTeam::name),
                     ).from(
                         entity(FeedTeam::class),

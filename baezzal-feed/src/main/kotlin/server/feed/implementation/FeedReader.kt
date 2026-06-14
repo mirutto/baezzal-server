@@ -105,7 +105,7 @@ class FeedReader(
             .createQuery(
                 jpql {
                     selectNew<FeedTeamData>(
-                        path(FeedTeam::id),
+                        path(FeedTeam::code),
                         path(FeedTeam::name),
                     ).from(
                         entity(FeedTeam::class),

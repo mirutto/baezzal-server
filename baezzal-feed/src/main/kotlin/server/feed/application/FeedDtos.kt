@@ -10,7 +10,7 @@ data class FeedPostData(
 )
 
 data class FeedTeamSummaryData(
-    val teamId: Long,
+    val teamCode: String,
     val name: String,
     val postCount: Long,
     val thumbnailUrls: List<String>,
@@ -47,7 +47,7 @@ data class FeedAuthorData(
 )
 
 data class FeedTeamData(
-    val teamId: Long,
+    val teamCode: String,
     val name: String,
 )
 
@@ -85,6 +85,7 @@ data class FeedMemberRowData(
 
 data class FeedTeamSummaryRowData(
     val teamId: Long,
+    val teamCode: String,
     val name: String,
 )
 

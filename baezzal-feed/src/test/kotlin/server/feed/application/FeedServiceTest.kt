@@ -26,6 +26,26 @@ class FeedServiceTest {
     )
 
     @Test
+    fun `team 목록을 조회한다`() {
+        val expected = listOf(
+            FeedTeamSummaryData(
+                teamCode = "LG",
+                name = "LG 트윈스",
+                postCount = 4L,
+                thumbnailUrls = listOf(
+                    "https://cdn.example.com/posts/lg-1.webp",
+                    "https://cdn.example.com/posts/lg-2.webp",
+                ),
+            ),
+        )
+        every { feedTeamReader.readTeams() } returns expected
+
+        val result = feedService.findTeams()
+
+        result shouldBe expected
+    }
+
+    @Test
     fun `내 collection 목록을 조회한다`() {
         val expected = listOf(
             FeedCollectionData(
