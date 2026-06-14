@@ -45,13 +45,13 @@ class MemberCacheTest {
     @Test
     fun `member 를 id 와 username 키로 함께 저장한다`() {
         val member = member(username = "cache-user")
-        every { cacheMemory.set("member:id:1", any<Any>(), null) } returns Unit
-        every { cacheMemory.set("member:username:cache-user", any<Any>(), null) } returns Unit
+        every { cacheMemory.set("member:id:1", any<Any>(), 86_400_000L) } returns Unit
+        every { cacheMemory.set("member:username:cache-user", any<Any>(), 86_400_000L) } returns Unit
 
         memberCache.set(member)
 
-        verify(exactly = 1) { cacheMemory.set("member:id:1", any<Any>(), null) }
-        verify(exactly = 1) { cacheMemory.set("member:username:cache-user", any<Any>(), null) }
+        verify(exactly = 1) { cacheMemory.set("member:id:1", any<Any>(), 86_400_000L) }
+        verify(exactly = 1) { cacheMemory.set("member:username:cache-user", any<Any>(), 86_400_000L) }
     }
 
     @Test

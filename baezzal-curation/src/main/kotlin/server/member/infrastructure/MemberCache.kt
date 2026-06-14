@@ -24,8 +24,8 @@ class MemberCache(
 
     fun set(member: Member) {
         val data = MemberCacheData(member)
-        cacheMemory.set(keyById(member.id), data, null)
-        cacheMemory.set(keyByUsername(member.username), data, null)
+        cacheMemory.set(keyById(member.id), data, MEMBER_CACHE_TTL_MILLIS)
+        cacheMemory.set(keyByUsername(member.username), data, MEMBER_CACHE_TTL_MILLIS)
     }
 
     fun evict(
@@ -39,6 +39,10 @@ class MemberCache(
     private fun keyById(memberId: Long): String = "member:id:$memberId"
 
     private fun keyByUsername(username: String): String = "member:username:$username"
+
+    companion object {
+        private const val MEMBER_CACHE_TTL_MILLIS = 24 * 60 * 60 * 1000L
+    }
 
     internal data class MemberCacheData(
         val id: Long,
