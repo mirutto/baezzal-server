@@ -89,7 +89,7 @@ class CollectionServiceTest {
 
         result.id shouldBe 2L
         result.memberId shouldBe 9L
-        result.name shouldBe ""
+        result.name shouldBe "나중에 볼 짤북"
         result.description shouldBe ""
         result.imageVersions.rawUrl shouldBe ""
         result.imageVersions.publicUrl shouldBe ""

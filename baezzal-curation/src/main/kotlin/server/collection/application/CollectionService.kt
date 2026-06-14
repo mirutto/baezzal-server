@@ -38,6 +38,7 @@ class CollectionService(
         ),
     )
 
+    @Transactional
     fun createDefault(memberId: Long) = collectionWriter.write(
         Collection(
             memberId = memberId,
@@ -73,7 +74,7 @@ class CollectionService(
         ?: throw NotFoundException("컬렉션을 찾을 수 없습니다")
 
     companion object {
-        private const val DEFAULT_COLLECTION_NAME = ""
+        private const val DEFAULT_COLLECTION_NAME = "나중에 볼 짤북"
         private const val DEFAULT_COLLECTION_DESCRIPTION = ""
     }
 }
