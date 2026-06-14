@@ -66,12 +66,14 @@ class AuthService(
         memberId: Long,
         role: String,
     ): String {
+        val sessionId = UUID.randomUUID().toString()
         val tokens = authTokenIssuer.issue(
             memberId = memberId,
             role = role,
+            sessionId = sessionId,
         )
         refreshTokenWriter.write(
-            memberId = memberId,
+            sessionId = sessionId,
             refreshToken = tokens.refreshToken,
         )
 
@@ -96,12 +98,14 @@ class AuthService(
     fun reissue(refreshToken: String): AuthTokenResult {
         val principal = refreshTokenVerifier.verify(refreshToken)
         val member = memberReader.readById(principal.memberId)
+        val sessionId = principal.sessionId ?: error("refresh token sessionId is required")
         val tokens = authTokenIssuer.issue(
             memberId = member.id,
             role = member.role.name,
+            sessionId = sessionId,
         )
         refreshTokenWriter.write(
-            memberId = member.id,
+            sessionId = sessionId,
             refreshToken = tokens.refreshToken,
         )
 
@@ -113,6 +117,7 @@ class AuthService(
 
     fun logout(refreshToken: String) {
         val principal = refreshTokenVerifier.verify(refreshToken)
-        refreshTokenRemover.remove(principal.memberId)
+        val sessionId = principal.sessionId ?: error("refresh token sessionId is required")
+        refreshTokenRemover.remove(sessionId)
     }
 }

@@ -20,9 +20,9 @@ class RefreshTokenVerifierTest {
     @Test
     fun `refresh token 이고 캐시와 일치하면 principal 을 반환한다`() {
         val refreshToken = "refresh-token"
-        val principal = AuthPrincipal(memberId = 1L, type = TokenType.REFRESH)
+        val principal = AuthPrincipal(memberId = 1L, type = TokenType.REFRESH, sessionId = "session-id")
         every { tokenProvider.decodeToken(refreshToken) } returns principal
-        every { refreshTokenCache.get(1L) } returns refreshToken
+        every { refreshTokenCache.get("session-id") } returns refreshToken
 
         val result = refreshTokenVerifier.verify(refreshToken)
 
@@ -48,8 +48,22 @@ class RefreshTokenVerifierTest {
         val refreshToken = "refresh-token"
         every {
             tokenProvider.decodeToken(refreshToken)
+        } returns AuthPrincipal(memberId = 1L, type = TokenType.REFRESH, sessionId = "session-id")
+        every { refreshTokenCache.get("session-id") } returns "different-token"
+
+        val result = shouldThrow<UnauthorizedException> {
+            refreshTokenVerifier.verify(refreshToken)
+        }
+
+        result.message shouldBe "LOGIN_AGAIN"
+    }
+
+    @Test
+    fun `refresh token 에 session id 가 없으면 예외가 발생한다`() {
+        val refreshToken = "refresh-token"
+        every {
+            tokenProvider.decodeToken(refreshToken)
         } returns AuthPrincipal(memberId = 1L, type = TokenType.REFRESH)
-        every { refreshTokenCache.get(1L) } returns "different-token"
 
         val result = shouldThrow<UnauthorizedException> {
             refreshTokenVerifier.verify(refreshToken)

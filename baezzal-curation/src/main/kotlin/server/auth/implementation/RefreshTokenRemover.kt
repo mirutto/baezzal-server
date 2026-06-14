@@ -7,7 +7,7 @@ import server.auth.infrastructure.RefreshTokenCache
 class RefreshTokenRemover(
     private val refreshTokenCache: RefreshTokenCache,
 ) {
-    fun remove(memberId: Long) {
-        refreshTokenCache.delete(memberId)
+    fun remove(sessionId: String) {
+        refreshTokenCache.delete(sessionId)
     }
 }

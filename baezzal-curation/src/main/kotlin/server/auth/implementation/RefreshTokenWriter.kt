@@ -8,11 +8,11 @@ class RefreshTokenWriter(
     private val refreshTokenCache: RefreshTokenCache,
 ) {
     fun write(
-        memberId: Long,
+        sessionId: String,
         refreshToken: String,
     ) {
         refreshTokenCache.set(
-            memberId = memberId,
+            sessionId = sessionId,
             refreshToken = refreshToken,
             ttlMillis = AuthTokenIssuer.REFRESH_TOKEN_TTL_MILLIS,
         )

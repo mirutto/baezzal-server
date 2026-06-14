@@ -7,27 +7,27 @@ import server.cache.CacheMemory
 class RefreshTokenCache(
     private val cacheMemory: CacheMemory,
 ) {
-    fun get(memberId: Long): String? =
+    fun get(sessionId: String): String? =
         cacheMemory.get(
-            key = key(memberId),
+            key = key(sessionId),
             type = String::class.java,
         )
 
     fun set(
-        memberId: Long,
+        sessionId: String,
         refreshToken: String,
         ttlMillis: Long,
     ) {
         cacheMemory.set(
-            key = key(memberId),
+            key = key(sessionId),
             value = refreshToken,
             ttlMillis = ttlMillis,
         )
     }
 
-    fun delete(memberId: Long) {
-        cacheMemory.evict(key(memberId))
+    fun delete(sessionId: String) {
+        cacheMemory.evict(key(sessionId))
     }
 
-    private fun key(memberId: Long): String = "auth:refresh:$memberId"
+    private fun key(sessionId: String): String = "auth:refresh:$sessionId"
 }

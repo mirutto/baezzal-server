@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 import server.auth.domain.AuthTicketPayload
@@ -148,6 +149,7 @@ class AuthServiceTest {
     @Test
     fun `refresh token 으로 access token 과 refresh token 을 재발급한다`() {
         val refreshToken = "refresh-token"
+        val sessionId = "session-id"
         val member = Member(
             id = 1L,
             nickname = "tester",
@@ -162,14 +164,15 @@ class AuthServiceTest {
         every { refreshTokenVerifier.verify(refreshToken) } returns AuthPrincipal(
             memberId = 1L,
             type = TokenType.REFRESH,
+            sessionId = sessionId,
         )
         every { memberReader.readById(1L) } returns member
-        every { authTokenIssuer.issue(1L, MemberRole.USER.name) } returns AuthTokens(
+        every { authTokenIssuer.issue(1L, MemberRole.USER.name, sessionId) } returns AuthTokens(
             accessToken = "new-access-token",
             refreshToken = "new-refresh-token",
         )
         every {
-            refreshTokenWriter.write(1L, "new-refresh-token")
+            refreshTokenWriter.write(sessionId, "new-refresh-token")
         } just runs
 
         val result = authService.reissue(refreshToken)
@@ -180,8 +183,8 @@ class AuthServiceTest {
         )
         verify(exactly = 1) { refreshTokenVerifier.verify(refreshToken) }
         verify(exactly = 1) { memberReader.readById(1L) }
-        verify(exactly = 1) { authTokenIssuer.issue(1L, MemberRole.USER.name) }
-        verify(exactly = 1) { refreshTokenWriter.write(1L, "new-refresh-token") }
+        verify(exactly = 1) { authTokenIssuer.issue(1L, MemberRole.USER.name, sessionId) }
+        verify(exactly = 1) { refreshTokenWriter.write(sessionId, "new-refresh-token") }
     }
 
     @Test
@@ -189,13 +192,38 @@ class AuthServiceTest {
         every { refreshTokenVerifier.verify("refresh-token") } returns AuthPrincipal(
             memberId = 1L,
             type = TokenType.REFRESH,
+            sessionId = "session-id",
         )
-        every { refreshTokenRemover.remove(1L) } just runs
+        every { refreshTokenRemover.remove("session-id") } just runs
 
         authService.logout("refresh-token")
 
         verify(exactly = 1) { refreshTokenVerifier.verify("refresh-token") }
-        verify(exactly = 1) { refreshTokenRemover.remove(1L) }
+        verify(exactly = 1) { refreshTokenRemover.remove("session-id") }
+    }
+
+    @Test
+    fun `로그인 ticket 발급 시 새 session id 로 refresh token 을 저장한다`() {
+        val capturedSessionId = slot<String>()
+        every { authTokenIssuer.issue(1L, "USER", capture(capturedSessionId)) } returns AuthTokens(
+            accessToken = "access-token",
+            refreshToken = "refresh-token",
+        )
+        every { refreshTokenWriter.write(any(), "refresh-token") } just runs
+        every {
+            authTicketIssuer.issue(
+                memberId = 1L,
+                accessToken = "access-token",
+                refreshToken = "refresh-token",
+            )
+        } returns "ticket"
+
+        val result = authService.issueLoginTicket(1L, "USER")
+
+        result shouldBe "ticket"
+        capturedSessionId.captured.isBlank() shouldBe false
+        verify(exactly = 1) { authTokenIssuer.issue(1L, "USER", capturedSessionId.captured) }
+        verify(exactly = 1) { refreshTokenWriter.write(capturedSessionId.captured, "refresh-token") }
     }
 
     @Test

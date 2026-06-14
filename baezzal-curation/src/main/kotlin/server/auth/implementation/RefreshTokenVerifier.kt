@@ -20,7 +20,8 @@ class RefreshTokenVerifier(
             invalidToken()
         }
 
-        val cachedRefreshToken = refreshTokenCache.get(principal.memberId)
+        val sessionId = principal.sessionId ?: invalidToken()
+        val cachedRefreshToken = refreshTokenCache.get(sessionId)
         if (cachedRefreshToken != refreshToken) {
             invalidToken()
         }

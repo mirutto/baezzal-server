@@ -17,7 +17,7 @@ class TokenProvider(
 
     fun encodeToken(
         principal: AuthPrincipal,
-        ttl: Long
+        ttl: Long,
     ): String {
         val now = Date()
         val expiry = Date(now.time + ttl)
@@ -28,6 +28,9 @@ class TokenProvider(
             .apply {
                 if (principal.type == TokenType.ACCESS) {
                     claim("role", principal.role)
+                }
+                if (principal.type == TokenType.REFRESH) {
+                    claim("sessionId", principal.sessionId)
                 }
             }
             .issuedAt(now)
@@ -44,6 +47,7 @@ class TokenProvider(
                 type = payload.get("type", String::class.java)
                     ?.let(TokenType::valueOf)
                     .orInvalid(),
+                sessionId = payload.get("sessionId", String::class.java),
             )
         }
 

@@ -12,6 +12,7 @@ class AuthTokenIssuer(
     fun issue(
         memberId: Long,
         role: String,
+        sessionId: String,
     ): AuthTokens =
         AuthTokens(
             accessToken = tokenProvider.encodeToken(
@@ -19,7 +20,7 @@ class AuthTokenIssuer(
                 ttl = ACCESS_TOKEN_TTL_MILLIS,
             ),
             refreshToken = tokenProvider.encodeToken(
-                principal = AuthPrincipal.refreshToken(memberId),
+                principal = AuthPrincipal.refreshToken(memberId, sessionId),
                 ttl = REFRESH_TOKEN_TTL_MILLIS,
             ),
         )
