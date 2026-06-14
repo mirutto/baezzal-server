@@ -48,7 +48,6 @@ class CollectionServiceTest {
             command = CreateCollectionCommand(
                 name = " 직관 모음 ",
                 description = " 직관 기록 모음 ",
-                imageUrl = " https://cdn.example.com/collections/1-raw.webp ",
                 isPublished = false,
             ),
         )
@@ -58,7 +57,7 @@ class CollectionServiceTest {
             name = "직관 모음",
             description = "직관 기록 모음",
             imageVersions = imageVersionsData(
-                rawUrl = "https://cdn.example.com/collections/1-raw.webp",
+                rawUrl = "",
                 publicUrl = "",
                 thumbnailUrl = "",
                 status = "PROCESSING",
@@ -70,7 +69,7 @@ class CollectionServiceTest {
         savedCollection.captured.memberId shouldBe 7L
         savedCollection.captured.name shouldBe "직관 모음"
         savedCollection.captured.description shouldBe "직관 기록 모음"
-        savedCollection.captured.imageVersions.rawUrl shouldBe "https://cdn.example.com/collections/1-raw.webp"
+        savedCollection.captured.imageVersions.rawUrl shouldBe ""
         savedCollection.captured.imageVersions.publicUrl shouldBe ""
         savedCollection.captured.imageVersions.thumbnailUrl shouldBe ""
         savedCollection.captured.imageVersions.status shouldBe ImageStatus.PROCESSING
@@ -215,6 +214,7 @@ class CollectionServiceTest {
         imageVersions = imageVersions,
         isCustomThumbnail = isCustomThumbnail,
         isPublished = isPublished,
+        lastPostRuleModifiedAt = lastPostRuleModifiedAt,
     )
 
     private fun imageVersions(

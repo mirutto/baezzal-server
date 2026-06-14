@@ -6,7 +6,6 @@ import server.collection.domain.Collection
 data class CreateCollectionCommand(
     val name: String,
     val description: String,
-    val imageUrl: String,
     val isPublished: Boolean,
 )
 

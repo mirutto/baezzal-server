@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "collection")
@@ -59,6 +60,13 @@ class Collection(
 
     @Column(name = "is_published", nullable = false)
     var isPublished: Boolean = false,
+
+    @Column(
+        name = "last_post_rule_modified_at",
+        nullable = false,
+        columnDefinition = "DATETIME(6)",
+    )
+    var lastPostRuleModifiedAt: LocalDateTime = LocalDateTime.now(),
 ) : BaseEntity() {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

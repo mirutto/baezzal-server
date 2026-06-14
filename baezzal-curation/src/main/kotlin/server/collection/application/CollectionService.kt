@@ -31,7 +31,7 @@ class CollectionService(
                 memberId = memberId,
                 name = command.name.trim(),
                 description = command.description.trim(),
-                imageVersions = ImageVersions(command.imageUrl.trim()),
+                imageVersions = ImageVersions(),
                 isCustomThumbnail = false,
                 isPublished = command.isPublished,
             ),
