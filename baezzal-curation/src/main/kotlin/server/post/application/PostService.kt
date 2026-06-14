@@ -25,7 +25,7 @@ class PostService(
     fun create(
         memberId: Long,
         command: CreatePostCommand,
-    ): CreatePostResult {
+    ): PostIdResult {
         val imageUrl = command.imageUrl.trim()
         val description = command.description.trim()
 
@@ -48,10 +48,7 @@ class PostService(
 
         postEventPublisher.publishCreated(post)
 
-        return CreatePostResult(
-            post = post,
-            tags = tags,
-        )
+        return PostIdResult(post)
     }
 
     @Transactional

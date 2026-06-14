@@ -4,7 +4,6 @@ import global.error.BadRequestException
 import global.error.NotFoundException
 import global.image.ImageStatus
 import global.image.ImageVersions
-import global.image.ImageVersionsData
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -72,13 +71,7 @@ class PostServiceTest {
             ),
         )
 
-        result shouldBe createPostResult(
-            postId = 100L,
-            memberId = 7L,
-            teamId = 2L,
-            aspectRatio = 1080.0 / 1350.0,
-            tagTitles = listOf("KBO", "잠실"),
-        )
+        result shouldBe PostIdResult(postId = 100L)
         savedPost.captured.memberId shouldBe 7L
         savedPost.captured.teamId shouldBe 2L
         savedPost.captured.description shouldBe "경기 후기"
@@ -119,12 +112,7 @@ class PostServiceTest {
             ),
         )
 
-        result.teamId shouldBe null
-        result.memberId shouldBe 9L
-        result.image shouldBe imageVersionsData(
-            rawUrl = rawImageUrl,
-            aspectRatio = 1200.0 / 900.0,
-        )
+        result shouldBe PostIdResult(postId = 101L)
         savedPost.captured.memberId shouldBe 9L
         savedPost.captured.teamId shouldBe null
         verify(exactly = 1) {
@@ -240,41 +228,5 @@ class PostServiceTest {
         ),
         description = description,
         teamId = teamId,
-    )
-
-    private fun createPostResult(
-        postId: Long,
-        memberId: Long,
-        teamId: Long?,
-        aspectRatio: Double,
-        tagTitles: List<String>,
-        description: String = "경기 후기",
-    ): CreatePostResult = CreatePostResult(
-        postId = postId,
-        memberId = memberId,
-        viewCount = 0L,
-        imageUrl = rawImageUrl,
-        thumbnailUrl = "",
-        image = imageVersionsData(
-            rawUrl = rawImageUrl,
-            aspectRatio = aspectRatio,
-        ),
-        description = description,
-        teamId = teamId,
-        tagTitles = tagTitles,
-    )
-
-    private fun imageVersionsData(
-        rawUrl: String,
-        publicUrl: String = "",
-        thumbnailUrl: String = "",
-        status: String = "PROCESSING",
-        aspectRatio: Double,
-    ): ImageVersionsData = ImageVersionsData(
-        rawUrl = rawUrl,
-        publicUrl = publicUrl,
-        thumbnailUrl = thumbnailUrl,
-        status = status,
-        aspectRatio = aspectRatio,
     )
 }

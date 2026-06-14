@@ -21,16 +21,16 @@ class MemberService(
     private val memberCacheRemover: MemberCacheRemover,
 ) {
     @Transactional(readOnly = true)
-    fun findByUsername(username: String): MemberResult =
+    fun findByUsername(username: String): MemberData =
         memberReader.readByUsername(username).let { member ->
-            MemberResult(member, teamReader.resolveCode(member.preferredTeamId))
+            MemberData(member, teamReader.resolveCode(member.preferredTeamId))
         }
 
     @Transactional
     fun onboarding(
         memberId: Long,
         command: MemberOnboardingCommand,
-    ): MemberData {
+    ): MemberIdResult {
         val member = memberReader.readById(memberId)
         val preferredTeam = teamReader.readByCode(command.preferredTeamCode)
 
@@ -43,47 +43,47 @@ class MemberService(
         member.updateUsername(randomUsername)
         memberEventPublisher.publishUpdated(member)
 
-        return MemberData(member, preferredTeam.code)
+        return MemberIdResult(member)
     }
 
     @Transactional
     fun updateNickname(
         memberId: Long,
         command: MemberNicknameUpdateCommand,
-    ): MemberData {
+    ): MemberIdResult {
         val member = memberReader.readById(memberId)
         member.updateNickname(command.nickname)
         memberEventPublisher.publishUpdated(member)
 
-        return MemberData(member, teamReader.resolveCode(member.preferredTeamId))
+        return MemberIdResult(member)
     }
 
     @Transactional
     fun updatePreferredTeam(
         memberId: Long,
         command: MemberPreferredTeamUpdateCommand,
-    ): MemberData {
+    ): MemberIdResult {
         val member = memberReader.readById(memberId)
         val preferredTeam = command.preferredTeamCode?.let(teamReader::readByCode)
 
         member.updatePreferredTeam(preferredTeam?.id)
         memberEventPublisher.publishUpdated(member)
 
-        return MemberData(member, preferredTeam?.code)
+        return MemberIdResult(member)
     }
 
     @Transactional
     fun updateProfileImage(
         memberId: Long,
         command: MemberProfileImageUpdateCommand,
-    ): MemberData {
+    ): MemberIdResult {
         val profileImage = command.profileImage.trim()
         val member = memberReader.readById(memberId)
         memberProfileImageValidator.validateImageUrl(profileImage)
         member.updateProfileImage(profileImage)
         memberEventPublisher.publishUpdated(member)
 
-        return MemberData(member, teamReader.resolveCode(member.preferredTeamId))
+        return MemberIdResult(member)
     }
 
     @Transactional

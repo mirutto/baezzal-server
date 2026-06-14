@@ -50,13 +50,12 @@ class MemberServiceTest {
 
         val result = memberService.findByUsername("tester-username")
 
-        result shouldBe MemberResult(
+        result shouldBe MemberData(
             nickname = "tester",
             username = "tester-username",
             description = "tester-description",
             preferredTeamCode = TeamCodes.SSG,
             profileImage = "https://example.com/profile.png",
-            needsOnboarding = false,
         )
     }
 
@@ -84,13 +83,7 @@ class MemberServiceTest {
             ),
         )
 
-        result shouldBe MemberData(
-            nickname = "홈런왕 독수리",
-            username = "hanwha-1234abcd",
-            description = "before-description",
-            preferredTeamCode = TeamCodes.HANWHA,
-            profileImage = "",
-        )
+        result shouldBe MemberIdResult(memberId = 1L)
         member.nickname shouldBe "홈런왕 독수리"
         member.username shouldBe "hanwha-1234abcd"
         member.preferredTeamId shouldBe 2L
@@ -114,13 +107,7 @@ class MemberServiceTest {
             command = MemberNicknameUpdateCommand(nickname = "after"),
         )
 
-        result shouldBe MemberData(
-            nickname = "after",
-            username = "before-username",
-            description = "before-description",
-            preferredTeamCode = TeamCodes.SSG,
-            profileImage = "",
-        )
+        result shouldBe MemberIdResult(memberId = 1L)
         member.nickname shouldBe "after"
         verify(exactly = 1) { memberEventPublisher.publishUpdated(member) }
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
@@ -141,13 +128,7 @@ class MemberServiceTest {
             command = MemberPreferredTeamUpdateCommand(preferredTeamCode = null),
         )
 
-        result shouldBe MemberData(
-            nickname = "tester",
-            username = "tester-username",
-            description = "tester-description",
-            preferredTeamCode = null,
-            profileImage = "",
-        )
+        result shouldBe MemberIdResult(memberId = 1L)
         member.preferredTeamId shouldBe null
         verify(exactly = 1) { memberEventPublisher.publishUpdated(member) }
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
@@ -170,13 +151,7 @@ class MemberServiceTest {
             command = MemberProfileImageUpdateCommand(profileImage = "https://example.com/thumbnail.png"),
         )
 
-        result shouldBe MemberData(
-            nickname = "tester",
-            username = "tester-username",
-            description = "tester-description",
-            preferredTeamCode = TeamCodes.SSG,
-            profileImage = "https://example.com/thumbnail.png",
-        )
+        result shouldBe MemberIdResult(memberId = 1L)
         verify(exactly = 1) {
             memberProfileImageValidator.validateImageUrl("https://example.com/thumbnail.png")
         }

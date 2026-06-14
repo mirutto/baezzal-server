@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import server.collection.application.CollectionDeleteResult
 import server.collection.application.CollectionData
+import server.collection.application.CollectionIdResult
 import server.collection.application.CollectionService
 import server.collection.application.CreateCollectionCommand
 import server.collectionpost.application.AddCollectionPostCommand
@@ -28,7 +29,7 @@ class CollectionController(
     fun create(
         @RequestPassport passport: Passport,
         @RequestBody command: CreateCollectionCommand,
-    ): ApiResponse<CollectionData> = ApiResponse.of(
+    ): ApiResponse<CollectionIdResult> = ApiResponse.of(
         collectionService.create(
             memberId = passport.memberId,
             command = command,

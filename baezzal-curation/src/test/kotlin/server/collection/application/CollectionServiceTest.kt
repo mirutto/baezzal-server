@@ -52,20 +52,7 @@ class CollectionServiceTest {
             ),
         )
 
-        result shouldBe CollectionData(
-            collectionId = 1L,
-            name = "직관 모음",
-            description = "직관 기록 모음",
-            imageVersions = imageVersionsData(
-                rawUrl = "",
-                publicUrl = "",
-                thumbnailUrl = "",
-                status = "PROCESSING",
-                aspectRatio = 1.0,
-            ),
-            isCustomThumbnail = false,
-            isPublished = false,
-        )
+        result shouldBe CollectionIdResult(collectionId = 1L)
         savedCollection.captured.memberId shouldBe 7L
         savedCollection.captured.name shouldBe "직관 모음"
         savedCollection.captured.description shouldBe "직관 기록 모음"

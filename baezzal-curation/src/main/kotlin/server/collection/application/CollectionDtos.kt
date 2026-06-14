@@ -27,6 +27,12 @@ data class CollectionData(
     )
 }
 
+data class CollectionIdResult(
+    val collectionId: Long,
+) {
+    constructor(collection: Collection) : this(collectionId = collection.id)
+}
+
 data class CollectionDeleteResult(
     val collectionId: Long,
 )

@@ -34,20 +34,8 @@ data class MemberData(
     )
 }
 
-data class MemberResult(
-    val nickname: String,
-    val username: String,
-    val description: String,
-    val profileImage: String,
-    val preferredTeamCode: String?,
-    val needsOnboarding: Boolean,
+data class MemberIdResult(
+    val memberId: Long,
 ) {
-    constructor(member: Member, preferredTeamCode: String?) : this(
-        nickname = member.nickname,
-        username = member.username,
-        description = member.description,
-        profileImage = member.profileImage,
-        preferredTeamCode = preferredTeamCode,
-        needsOnboarding = member.isNew(),
-    )
+    constructor(member: Member) : this(memberId = member.id)
 }

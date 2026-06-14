@@ -25,7 +25,7 @@ class CollectionService(
     fun create(
         memberId: Long,
         command: CreateCollectionCommand,
-    ): CollectionData = CollectionData(
+    ): CollectionIdResult = CollectionIdResult(
         collectionWriter.write(
             Collection(
                 memberId = memberId,
