@@ -17,6 +17,7 @@ import server.member.implementation.MemberReader
 import server.member.implementation.MemberEventPublisher
 import server.member.implementation.MemberUsernameGenerator
 import server.team.domain.Team
+import server.team.domain.TeamCodes
 import server.team.implementation.TeamReader
 
 class MemberServiceTest {
@@ -45,6 +46,7 @@ class MemberServiceTest {
             profileImage = "https://example.com/profile.png",
         )
         every { memberReader.readByUsername("tester-username") } returns member
+        every { teamReader.resolveCode(3L) } returns TeamCodes.SSG
 
         val result = memberService.findByUsername("tester-username")
 
@@ -52,7 +54,7 @@ class MemberServiceTest {
             nickname = "tester",
             username = "tester-username",
             description = "tester-description",
-            preferredTeamId = 3L,
+            preferredTeamCode = TeamCodes.SSG,
             profileImage = "https://example.com/profile.png",
             needsOnboarding = false,
         )
@@ -65,35 +67,36 @@ class MemberServiceTest {
             preferredTeamId = null,
         )
         every { memberReader.readById(1L) } returns member
-        every { teamReader.readById(2L) } returns Team(
+        every { teamReader.readByCode(TeamCodes.HANWHA) } returns Team(
             id = 2L,
+            code = TeamCodes.HANWHA,
             name = "LG",
             sortOrder = 1,
         )
-        every { memberNicknameGenerator.generateRandomNickname(2L) } returns "홈런왕 쌍둥이"
-        every { memberUsernameGenerator.generateRandomUsername(2L) } returns "lg-1234abcd"
+        every { memberNicknameGenerator.generateRandomNickname(TeamCodes.HANWHA) } returns "홈런왕 독수리"
+        every { memberUsernameGenerator.generateRandomUsername(TeamCodes.HANWHA) } returns "hanwha-1234abcd"
         every { memberEventPublisher.publishUpdated(member) } returns Unit
 
         val result = memberService.onboarding(
             memberId = 1L,
             command = MemberOnboardingCommand(
-                preferredTeamId = 2L,
+                preferredTeamCode = TeamCodes.HANWHA,
             ),
         )
 
         result shouldBe MemberData(
-            nickname = "홈런왕 쌍둥이",
-            username = "lg-1234abcd",
+            nickname = "홈런왕 독수리",
+            username = "hanwha-1234abcd",
             description = "before-description",
-            preferredTeamId = 2L,
+            preferredTeamCode = TeamCodes.HANWHA,
             profileImage = "",
         )
-        member.nickname shouldBe "홈런왕 쌍둥이"
-        member.username shouldBe "lg-1234abcd"
+        member.nickname shouldBe "홈런왕 독수리"
+        member.username shouldBe "hanwha-1234abcd"
         member.preferredTeamId shouldBe 2L
         verify(exactly = 1) { memberEventPublisher.publishUpdated(member) }
-        verify(exactly = 1) { memberNicknameGenerator.generateRandomNickname(2L) }
-        verify(exactly = 1) { memberUsernameGenerator.generateRandomUsername(2L) }
+        verify(exactly = 1) { memberNicknameGenerator.generateRandomNickname(TeamCodes.HANWHA) }
+        verify(exactly = 1) { memberUsernameGenerator.generateRandomUsername(TeamCodes.HANWHA) }
     }
 
     @Test
@@ -103,6 +106,7 @@ class MemberServiceTest {
             preferredTeamId = 3L,
         )
         every { memberReader.readById(1L) } returns member
+        every { teamReader.resolveCode(3L) } returns TeamCodes.SSG
         every { memberEventPublisher.publishUpdated(member) } returns Unit
 
         val result = memberService.updateNickname(
@@ -114,14 +118,13 @@ class MemberServiceTest {
             nickname = "after",
             username = "before-username",
             description = "before-description",
-            preferredTeamId = 3L,
+            preferredTeamCode = TeamCodes.SSG,
             profileImage = "",
         )
         member.nickname shouldBe "after"
         verify(exactly = 1) { memberEventPublisher.publishUpdated(member) }
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
         verify(exactly = 0) { memberUsernameGenerator.generateRandomUsername(any()) }
-        verify(exactly = 0) { teamReader.readById(any()) }
     }
 
     @Test
@@ -135,21 +138,20 @@ class MemberServiceTest {
 
         val result = memberService.updatePreferredTeam(
             memberId = 1L,
-            command = MemberPreferredTeamUpdateCommand(preferredTeamId = null),
+            command = MemberPreferredTeamUpdateCommand(preferredTeamCode = null),
         )
 
         result shouldBe MemberData(
             nickname = "tester",
             username = "tester-username",
             description = "tester-description",
-            preferredTeamId = null,
+            preferredTeamCode = null,
             profileImage = "",
         )
         member.preferredTeamId shouldBe null
         verify(exactly = 1) { memberEventPublisher.publishUpdated(member) }
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
         verify(exactly = 0) { memberUsernameGenerator.generateRandomUsername(any()) }
-        verify(exactly = 0) { teamReader.readById(any()) }
     }
 
     @Test
@@ -159,6 +161,7 @@ class MemberServiceTest {
             preferredTeamId = 3L,
         )
         every { memberReader.readById(1L) } returns member
+        every { teamReader.resolveCode(3L) } returns TeamCodes.SSG
         every { memberProfileImageValidator.validateImageUrl("https://example.com/thumbnail.png") } returns Unit
         every { memberEventPublisher.publishUpdated(member) } returns Unit
 
@@ -171,7 +174,7 @@ class MemberServiceTest {
             nickname = "tester",
             username = "tester-username",
             description = "tester-description",
-            preferredTeamId = 3L,
+            preferredTeamCode = TeamCodes.SSG,
             profileImage = "https://example.com/thumbnail.png",
         )
         verify(exactly = 1) {
@@ -181,7 +184,6 @@ class MemberServiceTest {
         verify(exactly = 1) { memberEventPublisher.publishUpdated(member) }
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
         verify(exactly = 0) { memberUsernameGenerator.generateRandomUsername(any()) }
-        verify(exactly = 0) { teamReader.readById(any()) }
     }
 
     @Test
@@ -191,12 +193,12 @@ class MemberServiceTest {
             preferredTeamId = null,
         )
         every { memberReader.readById(1L) } returns member
-        every { teamReader.readById(9L) } returns null
+        every { teamReader.readByCode("MISSING") } throws NotFoundException("팀을 찾을 수 없습니다")
 
         shouldThrow<NotFoundException> {
             memberService.updatePreferredTeam(
                 memberId = 1L,
-                command = MemberPreferredTeamUpdateCommand(preferredTeamId = 9L),
+                command = MemberPreferredTeamUpdateCommand(preferredTeamCode = "MISSING"),
             )
         }
     }
@@ -232,4 +234,5 @@ class MemberServiceTest {
         preferredTeamId = preferredTeamId,
         role = MemberRole.USER,
     )
+
 }

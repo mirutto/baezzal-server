@@ -15,7 +15,7 @@ class TeamCacheTest {
 
     @Test
     fun `getAll 은 team 전체 캐시 키로 조회한다`() {
-        val teams = listOf(Team(id = 1L, name = "A", sortOrder = 1))
+        val teams = listOf(Team(id = 1L, code = "LG", name = "A", sortOrder = 1))
         every {
             cacheMemory.get("team:all", any<TypeReference<List<Team>>>())
         } returns teams
@@ -30,7 +30,7 @@ class TeamCacheTest {
 
     @Test
     fun `setAll 은 team 전체 목록을 ttl 없이 저장한다`() {
-        val teams = listOf(Team(id = 1L, name = "A", sortOrder = 1))
+        val teams = listOf(Team(id = 1L, code = "LG", name = "A", sortOrder = 1))
         every { cacheMemory.set("team:all", teams, null) } returns Unit
 
         teamCache.setAll(teams)

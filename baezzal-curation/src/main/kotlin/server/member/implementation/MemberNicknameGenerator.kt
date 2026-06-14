@@ -1,13 +1,13 @@
 package server.member.implementation
 
 import org.springframework.stereotype.Component
-import server.team.domain.TeamIds
+import server.team.domain.TeamCodes
 
 @Component
 class MemberNicknameGenerator {
 
-    fun generateRandomNickname(teamId: Long): String {
-        return "${randomPrefix()} ${teamAlias(teamId)}"
+    fun generateRandomNickname(teamCode: String): String {
+        return "${randomPrefix()} ${teamAlias(teamCode)}"
     }
 
     private fun randomPrefix(): String = listOf(
@@ -20,17 +20,17 @@ class MemberNicknameGenerator {
         "승리요정", "해결사", "호수비", "4번타자", "평범한"
     ).random()
 
-    private fun teamAlias(teamId: Long): String = when(teamId) {
-        TeamIds.LG -> "쌍둥이"
-        TeamIds.HANWHA -> "독수리"
-        TeamIds.SSG -> "강아지"
-        TeamIds.SAMSUNG -> "사자"
-        TeamIds.NC -> "공룡"
-        TeamIds.KT -> "마법사"
-        TeamIds.LOTTE -> "거인"
-        TeamIds.KIA -> "호랑이"
-        TeamIds.DOOSAN -> "곰"
-        TeamIds.KIWOOM -> "히어로"
+    private fun teamAlias(teamCode: String): String = when(teamCode) {
+        TeamCodes.LG -> "쌍둥이"
+        TeamCodes.HANWHA -> "독수리"
+        TeamCodes.SSG -> "강아지"
+        TeamCodes.SAMSUNG -> "사자"
+        TeamCodes.NC -> "공룡"
+        TeamCodes.KT -> "마법사"
+        TeamCodes.LOTTE -> "거인"
+        TeamCodes.KIA -> "호랑이"
+        TeamCodes.DOOSAN -> "곰"
+        TeamCodes.KIWOOM -> "히어로"
         else -> ""
     }
 }

@@ -1,7 +1,6 @@
 package server.post.implementation
 
 import global.error.BadRequestException
-import global.error.NotFoundException
 import org.springframework.stereotype.Component
 import server.post.infrastructure.PostImageUrlCache
 import server.team.implementation.TeamReader
@@ -25,7 +24,6 @@ class PostValidator(
         val normalizedTeamId = teamId?.takeIf { it > 0 } ?: return null
 
         teamReader.readById(normalizedTeamId)
-            ?: throw NotFoundException("팀을 찾을 수 없습니다")
 
         return normalizedTeamId
     }

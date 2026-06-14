@@ -9,11 +9,14 @@ import server.member.application.MemberData
 import server.member.domain.Member
 import server.member.domain.MemberProvider
 import server.member.domain.MemberRole
+import server.team.implementation.TeamReader
 
 class MyFollowServiceTest {
     private val followReader = mockk<FollowReader>()
+    private val teamReader = mockk<TeamReader>()
     private val myFollowService = MyFollowService(
         followReader = followReader,
+        teamReader = teamReader,
     )
 
     @Test
@@ -35,6 +38,7 @@ class MyFollowServiceTest {
             member(id = 2L, nickname = "member-2"),
             member(id = 3L, nickname = "member-3"),
         )
+        every { teamReader.resolveCode(null) } returns null
 
         val result = myFollowService.getMyFollowers(1L)
 
@@ -43,14 +47,14 @@ class MyFollowServiceTest {
                 nickname = "member-2",
                 username = "member-2-username",
                 description = "member-2-description",
-                preferredTeamId = null,
+                preferredTeamCode = null,
                 profileImage = "",
             ),
             MemberData(
                 nickname = "member-3",
                 username = "member-3-username",
                 description = "member-3-description",
-                preferredTeamId = null,
+                preferredTeamCode = null,
                 profileImage = "",
             ),
         )
@@ -61,6 +65,7 @@ class MyFollowServiceTest {
         every { followReader.readFollowingMembers(1L) } returns listOf(
             member(id = 4L, nickname = "member-4"),
         )
+        every { teamReader.resolveCode(null) } returns null
 
         val result = myFollowService.getMyFollowings(1L)
 
@@ -69,7 +74,7 @@ class MyFollowServiceTest {
                 nickname = "member-4",
                 username = "member-4-username",
                 description = "member-4-description",
-                preferredTeamId = null,
+                preferredTeamCode = null,
                 profileImage = "",
             ),
         )

@@ -1,6 +1,5 @@
 package server.member.application
 
-import global.error.NotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import server.member.implementation.MemberNicknameGenerator
@@ -23,7 +22,9 @@ class MemberService(
 ) {
     @Transactional(readOnly = true)
     fun findByUsername(username: String): MemberResult =
-        MemberResult(memberReader.readByUsername(username))
+        memberReader.readByUsername(username).let { member ->
+            MemberResult(member, teamReader.resolveCode(member.preferredTeamId))
+        }
 
     @Transactional
     fun onboarding(
@@ -31,18 +32,18 @@ class MemberService(
         command: MemberOnboardingCommand,
     ): MemberData {
         val member = memberReader.readById(memberId)
-        val preferredTeamId = validatePreferredTeamId(command.preferredTeamId)
+        val preferredTeam = teamReader.readByCode(command.preferredTeamCode)
 
         val randomNickname =
-            memberNicknameGenerator.generateRandomNickname(command.preferredTeamId)
+            memberNicknameGenerator.generateRandomNickname(command.preferredTeamCode)
         val randomUsername =
-            memberUsernameGenerator.generateRandomUsername(command.preferredTeamId)
+            memberUsernameGenerator.generateRandomUsername(command.preferredTeamCode)
         member.updateNickname(randomNickname)
-        member.updatePreferredTeam(preferredTeamId)
+        member.updatePreferredTeam(preferredTeam.id)
         member.updateUsername(randomUsername)
         memberEventPublisher.publishUpdated(member)
 
-        return MemberData(member)
+        return MemberData(member, preferredTeam.code)
     }
 
     @Transactional
@@ -54,7 +55,7 @@ class MemberService(
         member.updateNickname(command.nickname)
         memberEventPublisher.publishUpdated(member)
 
-        return MemberData(member)
+        return MemberData(member, teamReader.resolveCode(member.preferredTeamId))
     }
 
     @Transactional
@@ -63,12 +64,12 @@ class MemberService(
         command: MemberPreferredTeamUpdateCommand,
     ): MemberData {
         val member = memberReader.readById(memberId)
-        val preferredTeamId = validatePreferredTeamId(command.preferredTeamId)
+        val preferredTeam = command.preferredTeamCode?.let(teamReader::readByCode)
 
-        member.updatePreferredTeam(preferredTeamId)
+        member.updatePreferredTeam(preferredTeam?.id)
         memberEventPublisher.publishUpdated(member)
 
-        return MemberData(member)
+        return MemberData(member, preferredTeam?.code)
     }
 
     @Transactional
@@ -82,7 +83,7 @@ class MemberService(
         member.updateProfileImage(profileImage)
         memberEventPublisher.publishUpdated(member)
 
-        return MemberData(member)
+        return MemberData(member, teamReader.resolveCode(member.preferredTeamId))
     }
 
     @Transactional
@@ -91,16 +92,5 @@ class MemberService(
             memberId = event.memberId,
             username = event.username,
         )
-    }
-
-    private fun validatePreferredTeamId(preferredTeamId: Long?): Long? {
-        if (preferredTeamId == null) {
-            return null
-        }
-
-        teamReader.readById(preferredTeamId)
-            ?: throw NotFoundException("팀을 찾을 수 없습니다")
-
-        return preferredTeamId
     }
 }

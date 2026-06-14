@@ -4,7 +4,6 @@ import global.error.NotFoundException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import server.member.application.MemberData
 import server.member.domain.Member
 import server.member.domain.MemberProvider
 import server.member.infrastructure.MemberRepository
@@ -24,7 +23,7 @@ class MemberReader(
     @Transactional(readOnly = true)
     fun readByProvider(
         provider: MemberProvider,
-        providerKey: String
+        providerKey: String,
     ): Member? = memberRepository.findByProviderAndProviderKey(provider, providerKey)
 
     @Transactional(readOnly = true)

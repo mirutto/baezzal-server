@@ -3,7 +3,7 @@ package server.member.application
 import server.member.domain.Member
 
 data class MemberOnboardingCommand(
-    val preferredTeamId: Long,
+    val preferredTeamCode: String,
 )
 
 data class MemberNicknameUpdateCommand(
@@ -11,7 +11,7 @@ data class MemberNicknameUpdateCommand(
 )
 
 data class MemberPreferredTeamUpdateCommand(
-    val preferredTeamId: Long?,
+    val preferredTeamCode: String?,
 )
 
 data class MemberProfileImageUpdateCommand(
@@ -22,14 +22,14 @@ data class MemberData(
     val nickname: String,
     val username: String,
     val description: String,
-    val preferredTeamId: Long?,
+    val preferredTeamCode: String?,
     val profileImage: String,
 ) {
-    constructor(member: Member) : this(
+    constructor(member: Member, preferredTeamCode: String?) : this(
         nickname = member.nickname,
         username = member.username,
         description = member.description,
-        preferredTeamId = member.preferredTeamId,
+        preferredTeamCode = preferredTeamCode,
         profileImage = member.profileImage,
     )
 }
@@ -39,15 +39,15 @@ data class MemberResult(
     val username: String,
     val description: String,
     val profileImage: String,
-    val preferredTeamId: Long?,
+    val preferredTeamCode: String?,
     val needsOnboarding: Boolean,
 ) {
-    constructor(member: Member) : this(
+    constructor(member: Member, preferredTeamCode: String?) : this(
         nickname = member.nickname,
         username = member.username,
         description = member.description,
         profileImage = member.profileImage,
-        preferredTeamId = member.preferredTeamId,
+        preferredTeamCode = preferredTeamCode,
         needsOnboarding = member.isNew(),
     )
 }

@@ -7,15 +7,15 @@ data class MyMemberResult(
     val username: String,
     val description: String,
     val profileImage: String,
-    val preferredTeamId: Long?,
+    val preferredTeamCode: String?,
     val needsOnboarding: Boolean,
 ) {
-    constructor(member: Member) : this(
+    constructor(member: Member, preferredTeamCode: String?) : this(
         nickname = member.nickname,
         username = member.username,
         description = member.description,
         profileImage = member.profileImage,
-        preferredTeamId = member.preferredTeamId,
+        preferredTeamCode = preferredTeamCode,
         needsOnboarding = member.isNew(),
     )
 }

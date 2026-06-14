@@ -3,15 +3,15 @@ package server.member.implementation
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
-import server.team.domain.TeamIds
+import server.team.domain.TeamCodes
 
 class MemberNicknameGeneratorTest {
     private val memberNicknameGenerator = MemberNicknameGenerator()
 
     @Test
     fun `팀 아이디에 맞는 별칭으로 랜덤 닉네임을 생성한다`() {
-        aliasesByTeamId.forEach { (teamId, alias) ->
-            val nickname = memberNicknameGenerator.generateRandomNickname(teamId)
+        aliasesByTeamId.forEach { (teamCode, alias) ->
+            val nickname = memberNicknameGenerator.generateRandomNickname(teamCode)
             val parts = nickname.split(" ")
 
             parts.size shouldBe 2
@@ -22,16 +22,16 @@ class MemberNicknameGeneratorTest {
 
     companion object {
         private val aliasesByTeamId = mapOf(
-            TeamIds.LG to "쌍둥이",
-            TeamIds.HANWHA to "독수리",
-            TeamIds.SSG to "강아지",
-            TeamIds.SAMSUNG to "사자",
-            TeamIds.NC to "공룡",
-            TeamIds.KT to "마법사",
-            TeamIds.LOTTE to "거인",
-            TeamIds.KIA to "호랑이",
-            TeamIds.DOOSAN to "곰",
-            TeamIds.KIWOOM to "히어로",
+            TeamCodes.LG to "쌍둥이",
+            TeamCodes.HANWHA to "독수리",
+            TeamCodes.SSG to "강아지",
+            TeamCodes.SAMSUNG to "사자",
+            TeamCodes.NC to "공룡",
+            TeamCodes.KT to "마법사",
+            TeamCodes.LOTTE to "거인",
+            TeamCodes.KIA to "호랑이",
+            TeamCodes.DOOSAN to "곰",
+            TeamCodes.KIWOOM to "히어로",
         )
 
         private val prefixes = listOf(

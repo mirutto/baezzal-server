@@ -15,8 +15,13 @@ class Team(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "team_id", nullable = false)
     val id: Long = 0,
+
+    @Column(name = "code", nullable = false, length = 50)
+    val code: String,
+
     @Column(name = "name", nullable = false, length = 255)
     val name: String,
+
     @Column(name = "sort_order", nullable = false)
     val sortOrder: Int,
 ) : BaseEntity() {

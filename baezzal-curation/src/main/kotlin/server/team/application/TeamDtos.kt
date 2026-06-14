@@ -3,11 +3,11 @@ package server.team.application
 import server.team.domain.Team
 
 data class TeamData(
-    val teamId: Long,
+    val code: String,
     val name: String,
 ) {
     constructor(team: Team) : this(
-        teamId = team.id,
+        code = team.code,
         name = team.name,
     )
 }

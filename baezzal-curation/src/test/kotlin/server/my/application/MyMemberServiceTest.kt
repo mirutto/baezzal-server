@@ -8,11 +8,15 @@ import server.member.domain.Member
 import server.member.domain.MemberProvider
 import server.member.domain.MemberRole
 import server.member.implementation.MemberCachedReader
+import server.team.domain.TeamCodes
+import server.team.implementation.TeamReader
 
 class MyMemberServiceTest {
     private val memberCachedReader = mockk<MemberCachedReader>()
+    private val teamReader = mockk<TeamReader>()
     private val myMemberService = MyMemberService(
         memberCachedReader = memberCachedReader,
+        teamReader = teamReader,
     )
 
     @Test
@@ -23,6 +27,7 @@ class MyMemberServiceTest {
             profileImage = "https://example.com/profile.png",
         )
         every { memberCachedReader.readById(1L) } returns member
+        every { teamReader.resolveCode(3L) } returns TeamCodes.SSG
 
         val result = myMemberService.getMyProfile(1L)
 
@@ -31,7 +36,7 @@ class MyMemberServiceTest {
             username = "tester-username",
             description = "tester-description",
             profileImage = "https://example.com/profile.png",
-            preferredTeamId = 3L,
+            preferredTeamCode = TeamCodes.SSG,
             needsOnboarding = false,
         )
     }
@@ -43,6 +48,7 @@ class MyMemberServiceTest {
             preferredTeamId = null,
         )
         every { memberCachedReader.readById(1L) } returns member
+        every { teamReader.resolveCode(null) } returns null
 
         val result = myMemberService.getMyProfile(1L)
 
@@ -51,7 +57,7 @@ class MyMemberServiceTest {
             username = "tester-username",
             description = "tester-description",
             profileImage = "",
-            preferredTeamId = null,
+            preferredTeamCode = null,
             needsOnboarding = true,
         )
     }
