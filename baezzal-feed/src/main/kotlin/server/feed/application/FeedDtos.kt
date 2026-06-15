@@ -6,6 +6,7 @@ import java.time.LocalDateTime
 data class FeedPostData(
     val postId: Long,
     val thumbnailImageUrl: String,
+    val publicImageUrl: String,
     val imageAspectRatio: Double,
 )
 
@@ -54,12 +55,14 @@ data class FeedTeamData(
 data class FeedPostRowData(
     val postId: Long,
     val thumbnailImageUrl: String,
+    val publicImageUrl: String,
     val imageAspectRatio: Double,
 ) {
     fun toFeedPostData(): FeedPostData =
         FeedPostData(
             postId = postId,
             thumbnailImageUrl = thumbnailImageUrl,
+            publicImageUrl = publicImageUrl,
             imageAspectRatio = imageAspectRatio,
         )
 }

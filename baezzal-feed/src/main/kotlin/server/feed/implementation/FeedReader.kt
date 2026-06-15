@@ -32,6 +32,7 @@ class FeedReader(
                     selectNew<FeedPostRowData>(
                         path(FeedPost::id),
                         path(FeedPost::thumbnailImageUrl),
+                        path(FeedPost::publicImageUrl),
                         path(FeedPost::imageAspectRatio),
                     ).from(
                         entity(FeedPost::class),
@@ -54,6 +55,7 @@ class FeedReader(
                     selectNew<FeedPostRowData>(
                         path(FeedPost::id),
                         path(FeedPost::thumbnailImageUrl),
+                        path(FeedPost::publicImageUrl),
                         path(FeedPost::imageAspectRatio),
                     ).from(
                         entity(FeedPost::class),
