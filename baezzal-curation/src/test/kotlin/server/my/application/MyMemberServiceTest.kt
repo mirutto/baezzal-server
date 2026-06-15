@@ -1,5 +1,7 @@
 package server.my.application
 
+import global.image.ImageStatus
+import global.image.ImageVersions
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -35,7 +37,8 @@ class MyMemberServiceTest {
             nickname = "tester",
             username = "tester-username",
             description = "tester-description",
-            profileImage = "https://example.com/profile.png",
+            publicProfileImageUrl = "https://example.com/profile.png",
+            thumbnailProfileImageUrl = "https://example.com/profile.png",
             preferredTeamCode = TeamCodes.SSG,
             needsOnboarding = false,
         )
@@ -56,7 +59,8 @@ class MyMemberServiceTest {
             nickname = "tester",
             username = "tester-username",
             description = "tester-description",
-            profileImage = "",
+            publicProfileImageUrl = Member.DEFAULT_PROFILE_PUBLIC_URL,
+            thumbnailProfileImageUrl = Member.DEFAULT_PROFILE_THUMBNAIL_URL,
             preferredTeamCode = null,
             needsOnboarding = true,
         )
@@ -65,7 +69,7 @@ class MyMemberServiceTest {
     private fun member(
         nickname: String,
         preferredTeamId: Long?,
-        profileImage: String = "",
+        profileImage: String = Member.DEFAULT_PROFILE_IMAGE_URL,
         username: String = "$nickname-username",
         description: String = "$nickname-description",
     ): Member = Member(
@@ -74,9 +78,22 @@ class MyMemberServiceTest {
         username = username,
         provider = MemberProvider.GOOGLE,
         providerKey = "provider-key",
-        profileImage = profileImage,
+        profileImage = profileImage(profileImage),
         description = description,
         preferredTeamId = preferredTeamId,
         role = MemberRole.USER,
     )
+
+    private fun profileImage(profileImage: String): ImageVersions =
+        if (profileImage == Member.DEFAULT_PROFILE_IMAGE_URL) {
+            Member.defaultProfileImage()
+        } else {
+            ImageVersions(
+                rawUrl = profileImage,
+                publicUrl = profileImage,
+                thumbnailUrl = profileImage,
+                status = ImageStatus.SUCCESS,
+                aspectRatio = 1.0,
+            )
+        }
 }

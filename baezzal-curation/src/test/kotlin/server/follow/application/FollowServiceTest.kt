@@ -2,6 +2,8 @@ package server.follow.application
 
 import global.error.BadRequestException
 import global.error.NotFoundException
+import global.image.ImageStatus
+import global.image.ImageVersions
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -185,7 +187,13 @@ class FollowServiceTest {
         username = "member-$id-username",
         provider = MemberProvider.GOOGLE,
         providerKey = "provider-key-$id",
-        profileImage = "",
+        profileImage = ImageVersions(
+            rawUrl = Member.DEFAULT_PROFILE_IMAGE_URL,
+            publicUrl = Member.DEFAULT_PROFILE_PUBLIC_URL,
+            thumbnailUrl = Member.DEFAULT_PROFILE_THUMBNAIL_URL,
+            status = ImageStatus.SUCCESS,
+            aspectRatio = 1.0,
+        ),
         description = "",
         role = MemberRole.USER,
     )

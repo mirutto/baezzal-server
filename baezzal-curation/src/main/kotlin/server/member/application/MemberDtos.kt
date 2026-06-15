@@ -23,14 +23,16 @@ data class MemberData(
     val username: String,
     val description: String,
     val preferredTeamCode: String?,
-    val profileImage: String,
+    val publicProfileImageUrl: String,
+    val thumbnailProfileImageUrl: String,
 ) {
     constructor(member: Member, preferredTeamCode: String?) : this(
         nickname = member.nickname,
         username = member.username,
         description = member.description,
         preferredTeamCode = preferredTeamCode,
-        profileImage = member.profileImage,
+        publicProfileImageUrl = member.profileImage.publicUrl,
+        thumbnailProfileImageUrl = member.profileImage.thumbnailUrl,
     )
 }
 

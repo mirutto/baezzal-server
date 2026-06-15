@@ -1,5 +1,7 @@
 package server.my.application
 
+import global.image.ImageStatus
+import global.image.ImageVersions
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -48,14 +50,16 @@ class MyFollowServiceTest {
                 username = "member-2-username",
                 description = "member-2-description",
                 preferredTeamCode = null,
-                profileImage = "",
+                publicProfileImageUrl = Member.DEFAULT_PROFILE_PUBLIC_URL,
+                thumbnailProfileImageUrl = Member.DEFAULT_PROFILE_THUMBNAIL_URL,
             ),
             MemberData(
                 nickname = "member-3",
                 username = "member-3-username",
                 description = "member-3-description",
                 preferredTeamCode = null,
-                profileImage = "",
+                publicProfileImageUrl = Member.DEFAULT_PROFILE_PUBLIC_URL,
+                thumbnailProfileImageUrl = Member.DEFAULT_PROFILE_THUMBNAIL_URL,
             ),
         )
     }
@@ -75,7 +79,8 @@ class MyFollowServiceTest {
                 username = "member-4-username",
                 description = "member-4-description",
                 preferredTeamCode = null,
-                profileImage = "",
+                publicProfileImageUrl = Member.DEFAULT_PROFILE_PUBLIC_URL,
+                thumbnailProfileImageUrl = Member.DEFAULT_PROFILE_THUMBNAIL_URL,
             ),
         )
     }
@@ -89,7 +94,13 @@ class MyFollowServiceTest {
         username = "$nickname-username",
         provider = MemberProvider.GOOGLE,
         providerKey = "provider-key-$id",
-        profileImage = "",
+        profileImage = ImageVersions(
+            rawUrl = Member.DEFAULT_PROFILE_IMAGE_URL,
+            publicUrl = Member.DEFAULT_PROFILE_PUBLIC_URL,
+            thumbnailUrl = Member.DEFAULT_PROFILE_THUMBNAIL_URL,
+            status = ImageStatus.SUCCESS,
+            aspectRatio = 1.0,
+        ),
         description = "$nickname-description",
         preferredTeamId = null,
         role = MemberRole.USER,

@@ -1,5 +1,7 @@
 package server.member.infrastructure
 
+import global.image.ImageStatus
+import global.image.ImageVersions
 import org.springframework.stereotype.Component
 import server.cache.CacheMemory
 import server.member.domain.Member
@@ -51,6 +53,8 @@ class MemberCache(
         val provider: MemberProvider,
         val providerKey: String,
         val profileImage: String,
+        val publicProfileImage: String,
+        val thumbnailProfileImage: String,
         val description: String,
         val preferredTeamId: Long?,
         val role: MemberRole,
@@ -61,7 +65,9 @@ class MemberCache(
             username = member.username,
             provider = member.provider,
             providerKey = member.providerKey,
-            profileImage = member.profileImage,
+            profileImage = member.profileImage.rawUrl,
+            publicProfileImage = member.profileImage.publicUrl,
+            thumbnailProfileImage = member.profileImage.thumbnailUrl,
             description = member.description,
             preferredTeamId = member.preferredTeamId,
             role = member.role,
@@ -73,7 +79,13 @@ class MemberCache(
             username = username,
             provider = provider,
             providerKey = providerKey,
-            profileImage = profileImage,
+            profileImage = ImageVersions(
+                rawUrl = profileImage,
+                publicUrl = publicProfileImage,
+                thumbnailUrl = thumbnailProfileImage,
+                status = ImageStatus.SUCCESS,
+                aspectRatio = 1.0,
+            ),
             description = description,
             preferredTeamId = preferredTeamId,
             role = role,

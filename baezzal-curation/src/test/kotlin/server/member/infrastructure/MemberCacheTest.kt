@@ -1,5 +1,7 @@
 package server.member.infrastructure
 
+import global.image.ImageStatus
+import global.image.ImageVersions
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -71,7 +73,13 @@ class MemberCacheTest {
         username = username,
         provider = MemberProvider.GOOGLE,
         providerKey = "provider-key",
-        profileImage = "https://example.com/profile.png",
+        profileImage = ImageVersions(
+            rawUrl = "https://example.com/profile.png",
+            publicUrl = "https://example.com/profile.png",
+            thumbnailUrl = "https://example.com/profile.png",
+            status = ImageStatus.SUCCESS,
+            aspectRatio = 1.0,
+        ),
         description = "cache-description",
         preferredTeamId = 3L,
         role = MemberRole.USER,

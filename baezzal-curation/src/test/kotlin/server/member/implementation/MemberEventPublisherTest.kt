@@ -1,5 +1,7 @@
 package server.member.implementation
 
+import global.image.ImageStatus
+import global.image.ImageVersions
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -35,7 +37,13 @@ class MemberEventPublisherTest {
             username = "tester-username",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
-            profileImage = "https://example.com/profile.png",
+            profileImage = ImageVersions(
+                rawUrl = "https://example.com/profile.png",
+                publicUrl = "https://example.com/profile.png",
+                thumbnailUrl = "https://example.com/profile.png",
+                status = ImageStatus.SUCCESS,
+                aspectRatio = 1.0,
+            ),
             description = "description",
             preferredTeamId = 3L,
             role = MemberRole.USER,

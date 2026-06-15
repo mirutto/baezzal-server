@@ -1,6 +1,8 @@
 package server.member.application
 
 import global.error.NotFoundException
+import global.image.ImageStatus
+import global.image.ImageVersions
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -55,7 +57,8 @@ class MemberServiceTest {
             username = "tester-username",
             description = "tester-description",
             preferredTeamCode = TeamCodes.SSG,
-            profileImage = "https://example.com/profile.png",
+            publicProfileImageUrl = "https://example.com/profile.png",
+            thumbnailProfileImageUrl = "https://example.com/profile.png",
         )
     }
 
@@ -155,7 +158,11 @@ class MemberServiceTest {
         verify(exactly = 1) {
             memberProfileImageValidator.validateImageUrl("https://example.com/thumbnail.png")
         }
-        member.profileImage shouldBe "https://example.com/thumbnail.png"
+        member.profileImage.rawUrl shouldBe "https://example.com/thumbnail.png"
+        member.profileImage.publicUrl shouldBe "https://example.com/thumbnail.png"
+        member.profileImage.thumbnailUrl shouldBe "https://example.com/thumbnail.png"
+        member.profileImage.status shouldBe ImageStatus.SUCCESS
+        member.profileImage.aspectRatio shouldBe 1.0
         verify(exactly = 1) { memberEventPublisher.publishUpdated(member) }
         verify(exactly = 0) { memberNicknameGenerator.generateRandomNickname(any()) }
         verify(exactly = 0) { memberUsernameGenerator.generateRandomUsername(any()) }
@@ -204,10 +211,23 @@ class MemberServiceTest {
         username = username,
         provider = MemberProvider.GOOGLE,
         providerKey = "provider-key",
-        profileImage = profileImage,
+        profileImage = profileImage(profileImage),
         description = description,
         preferredTeamId = preferredTeamId,
         role = MemberRole.USER,
     )
+
+    private fun profileImage(profileImage: String): ImageVersions =
+        if (profileImage.isBlank()) {
+            Member.defaultProfileImage()
+        } else {
+            ImageVersions(
+                rawUrl = profileImage,
+                publicUrl = profileImage,
+                thumbnailUrl = profileImage,
+                status = ImageStatus.SUCCESS,
+                aspectRatio = 1.0,
+            )
+        }
 
 }

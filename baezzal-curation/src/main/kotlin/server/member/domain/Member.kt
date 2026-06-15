@@ -1,8 +1,13 @@
 package server.member.domain
 
 import global.entity.BaseEntity
+import global.image.ImageStatus
+import global.image.ImageVersions
 import global.uuid.isUuid
+import jakarta.persistence.AttributeOverride
+import jakarta.persistence.AttributeOverrides
 import jakarta.persistence.Column
+import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -46,8 +51,30 @@ class Member(
     @Column(name = "provider_key", nullable = false, length = 255)
     val providerKey: String,
 
-    @Column(name = "profile_image", nullable = false, length = 500)
-    var profileImage: String,
+    @Embedded
+    @AttributeOverrides(
+        AttributeOverride(
+            name = "rawUrl",
+            column = Column(name = "profile_image", nullable = false, length = 2048),
+        ),
+        AttributeOverride(
+            name = "publicUrl",
+            column = Column(name = "public_profile_image", nullable = false, length = 2048),
+        ),
+        AttributeOverride(
+            name = "thumbnailUrl",
+            column = Column(name = "thumbnail_profile_image", nullable = false, length = 2048),
+        ),
+        AttributeOverride(
+            name = "status",
+            column = Column(name = "profile_image_status", nullable = false, length = 20),
+        ),
+        AttributeOverride(
+            name = "aspectRatio",
+            column = Column(name = "profile_image_aspect_ratio", nullable = false),
+        ),
+    )
+    var profileImage: ImageVersions,
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     var description: String,
@@ -60,7 +87,21 @@ class Member(
     val role: MemberRole = MemberRole.USER,
 ) : BaseEntity() {
     companion object {
-        const val DEFAULT_PROFILE_IMAGE_URL = "https://static.wowan.me/baezzal/images/mirutto_default.png"
+        private const val STATIC_DOMAIN = "https://static.wowan.me"
+        const val DEFAULT_PROFILE_IMAGE_URL =
+            "$STATIC_DOMAIN/baezzal/members/raw/mirutto_default_profile.png"
+        const val DEFAULT_PROFILE_PUBLIC_URL =
+            "$STATIC_DOMAIN/baezzal/members/public/mirutto_default_profile.png"
+        const val DEFAULT_PROFILE_THUMBNAIL_URL =
+            "$STATIC_DOMAIN/baezzal/members/thumbnail/mirutto_default_profile.webp"
+
+        fun defaultProfileImage(): ImageVersions = ImageVersions(
+            rawUrl = DEFAULT_PROFILE_IMAGE_URL,
+            publicUrl = DEFAULT_PROFILE_PUBLIC_URL,
+            thumbnailUrl = DEFAULT_PROFILE_THUMBNAIL_URL,
+            status = ImageStatus.SUCCESS,
+            aspectRatio = 1.0,
+        )
     }
 
     fun isNew(): Boolean = nickname.isBlank() || preferredTeamId == null || username.isUuid()
@@ -74,7 +115,13 @@ class Member(
     }
 
     fun updateProfileImage(profileImage: String) {
-        this.profileImage = profileImage
+        this.profileImage = ImageVersions(
+            rawUrl = profileImage,
+            publicUrl = profileImage,
+            thumbnailUrl = profileImage,
+            status = ImageStatus.SUCCESS,
+            aspectRatio = 1.0,
+        )
     }
 
     fun updateUsername(username: String) {

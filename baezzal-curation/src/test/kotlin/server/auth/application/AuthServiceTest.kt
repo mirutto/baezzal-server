@@ -1,5 +1,4 @@
 package server.auth.application
-
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.just
@@ -57,7 +56,7 @@ class AuthServiceTest {
             username = "11111111-1111-1111-1111-111111111111",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
-            profileImage = "",
+            profileImage = Member.defaultProfileImage(),
             description = "",
             preferredTeamId = null,
             role = MemberRole.USER,
@@ -90,7 +89,7 @@ class AuthServiceTest {
             username = "tester-username",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
-            profileImage = "",
+            profileImage = Member.defaultProfileImage(),
             description = "",
             preferredTeamId = null,
             role = MemberRole.USER,
@@ -123,7 +122,7 @@ class AuthServiceTest {
             username = "tester-username",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
-            profileImage = "",
+            profileImage = Member.defaultProfileImage(),
             description = "",
             preferredTeamId = 9L,
             role = MemberRole.USER,
@@ -156,7 +155,7 @@ class AuthServiceTest {
             username = "tester-username",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
-            profileImage = "",
+            profileImage = Member.defaultProfileImage(),
             description = "",
             preferredTeamId = 9L,
             role = MemberRole.USER,
@@ -241,7 +240,9 @@ class AuthServiceTest {
 
         verify(exactly = 1) {
             memberWriter.write(withArg { member ->
-                member.profileImage shouldBe Member.DEFAULT_PROFILE_IMAGE_URL
+                member.profileImage.rawUrl shouldBe Member.DEFAULT_PROFILE_IMAGE_URL
+                member.profileImage.publicUrl shouldBe Member.DEFAULT_PROFILE_PUBLIC_URL
+                member.profileImage.thumbnailUrl shouldBe Member.DEFAULT_PROFILE_THUMBNAIL_URL
             })
         }
     }
@@ -309,7 +310,7 @@ class AuthServiceTest {
             username = "tester-username",
             provider = MemberProvider.GOOGLE,
             providerKey = "provider-key",
-            profileImage = "",
+            profileImage = Member.defaultProfileImage(),
             description = "",
             preferredTeamId = 1L,
             role = MemberRole.USER,
