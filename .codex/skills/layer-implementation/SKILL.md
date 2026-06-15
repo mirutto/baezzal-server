@@ -1,9 +1,11 @@
 ---
 name: layer-implementation
 description: >
-  Apply the implementation-layer rules for `baezzal-curation`. Use when
-  creating or reviewing internal feature collaborators that support
-  application-layer flows under `server.<feature>.implementation`.
+  Apply the standard implementation-layer rules for `baezzal-community`,
+  `baezzal-recommendation`, `baezzal-notification`, and `baezzal-media`. Use
+  when creating or reviewing internal feature collaborators that support
+  application-layer flows under `server.<feature>.implementation`. Do not use
+  for `baezzal-feed`; use the feed-layer skill there instead.
 ---
 
 # Implementation Layer

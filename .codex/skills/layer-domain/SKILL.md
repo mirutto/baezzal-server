@@ -1,8 +1,11 @@
 ---
 name: layer-domain
 description: >
-  Apply the domain-layer rules for `baezzal-curation`. Use when creating or
-  reviewing JPA entities and domain models under `server.<feature>.domain`.
+  Apply the standard domain-layer rules for `baezzal-community`,
+  `baezzal-recommendation`, `baezzal-notification`, and `baezzal-media`. Use
+  when creating or reviewing JPA entities and domain models under
+  `server.<feature>.domain`. Do not use for `baezzal-feed`; use the
+  feed-layer skill there instead.
 ---
 
 # Domain Layer

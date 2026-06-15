@@ -1,9 +1,11 @@
 ---
 name: layer-presentation
 description: >
-  Apply the presentation-layer rules for `baezzal-curation`. Use when creating
-  or reviewing controllers, event handlers, request/response shapes, and other
-  entrypoint code under `server.<feature>.presentation`.
+  Apply the standard presentation-layer rules for `baezzal-community`,
+  `baezzal-recommendation`, `baezzal-notification`, and `baezzal-media`. Use
+  when creating or reviewing controllers, event handlers, request/response
+  shapes, and other entrypoint code under `server.<feature>.presentation`. Do
+  not use for `baezzal-feed`; use the feed-layer skill there instead.
 ---
 
 # Presentation Layer

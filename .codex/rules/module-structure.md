@@ -1,6 +1,6 @@
 # Baezzal Module Structure
 
-This project is organized into role-based modules with clear responsibilities. The entire system starts from `baezzal-application`, and both executable modules, `curation` and `media`, are started together within the same application process.
+This project is organized into role-based modules with clear responsibilities. The entire system starts from `baezzal-application`, and executable modules are started together within the same application process.
 
 ## Modules
 
@@ -27,32 +27,57 @@ The `platform` modules provide reusable functionality shared by executable modul
 
 These modules should stay domain-neutral. If functionality is shared across executable modules, prefer placing it here instead of duplicating it inside a domain module.
 
-### `curation`
+### `community`
 
-`baezzal-curation` contains the core Baezzal domain logic.
+`baezzal-community` contains the core write-side Baezzal domain logic.
 
-This module owns the business rules, domain flows, and application behavior specific to the Baezzal curation domain. It uses `config` modules for infrastructure wiring and `platform` modules for shared technical capabilities.
+This module owns the original domain data and write-side behavior for members, posts, follows, teams, collections, and related user interactions. It uses `config` modules for infrastructure wiring and `platform` modules for shared technical capabilities.
+
+### `feed`
+
+`baezzal-feed` contains read-side feed queries and display-oriented read models.
+
+This module owns feed APIs, feed query composition, feed caching, and feed-specific read models that mirror source tables for read performance and display use cases.
+
+Unlike the standard feature layering used in `community` and `recommendation`, `feed` uses a read-side package structure:
+
+- `server.feed.presentation`
+- `server.feed.application`
+- `server.feed.query`
+- `server.feed.model`
+
+### `recommendation`
+
+`baezzal-recommendation` contains recommendation signal and ranking-support logic.
+
+This module owns derived recommendation data such as tag relations, user interests, and future recommendation-specific projections. It must not depend on `feed` or `community` executable modules directly. Event payload classes may be duplicated across modules when needed to preserve module independence.
 
 ### `media`
 
 `baezzal-media` is a worker module responsible for thumbnail compression.
 
-It owns the execution path related to media processing. In the current architecture, it is started together with `curation` through the main `application` module.
+It owns the execution path related to media processing. In the current architecture, it is started together with other executable modules through the main `application` module.
 
 ### `application`
 
 `baezzal-application` is the composition and bootstrap module.
 
-It does not exist to hold core domain logic. Its main responsibility is to assemble executable modules and start them as a single application. At the moment, it starts both `curation` and `media` together.
+It does not exist to hold core domain logic. Its main responsibility is to assemble executable modules and start them as a single application.
 
 ## Dependency Structure
 
 The dependency flow is:
 
-- `application -> curation`
+- `application -> community`
+- `application -> feed`
+- `application -> recommendation`
 - `application -> media`
-- `curation -> config`
-- `curation -> platform`
+- `community -> config`
+- `community -> platform`
+- `feed -> config`
+- `feed -> platform`
+- `recommendation -> config`
+- `recommendation -> platform`
 - `media -> config`
 - `media -> platform`
 
@@ -63,4 +88,6 @@ The dependency flow is:
 - Keep `platform` limited to reusable, domain-neutral shared functionality.
 - Keep domain-specific logic inside the executable module that owns it.
 - Minimize direct coupling between executable modules.
+- `community`, `feed`, and `recommendation` should not depend on each other directly.
+- When a schema change affects original write-side tables, update `feed` read models and `recommendation` mirrored models explicitly instead of assuming they stay aligned automatically.
 - When multiple executable modules need the same technical capability, prefer promoting it into `platform`.

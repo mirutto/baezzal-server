@@ -1,9 +1,11 @@
 ---
 name: layer-infrastructure
 description: >
-  Apply the infrastructure-layer rules for `baezzal-curation`. Use when
-  creating or reviewing repositories, caches, and external adapters under
-  `server.<feature>.infrastructure`.
+  Apply the standard infrastructure-layer rules for `baezzal-community`,
+  `baezzal-recommendation`, `baezzal-notification`, and `baezzal-media`. Use
+  when creating or reviewing repositories, caches, and external adapters
+  under `server.<feature>.infrastructure`. Do not use for `baezzal-feed`; use
+  the feed-layer skill there instead.
 ---
 
 # Infrastructure Layer

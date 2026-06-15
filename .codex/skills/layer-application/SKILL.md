@@ -1,9 +1,11 @@
 ---
 name: layer-application
 description: >
-  Apply the application-layer rules for `baezzal-curation`. Use when creating
-  or reviewing business flow orchestration, services, DTO files, and
-  application events under `server.<feature>.application`.
+  Apply the standard application-layer rules for `baezzal-community`,
+  `baezzal-recommendation`, `baezzal-notification`, and `baezzal-media`. Use
+  when creating or reviewing business flow orchestration, services, DTO
+  files, and application events under `server.<feature>.application`. Do not
+  use for `baezzal-feed`; use the feed-layer skill there instead.
 ---
 
 # Application Layer

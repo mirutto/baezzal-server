@@ -1,15 +1,18 @@
 ---
 name: layer-architecture
 description: >
-  Apply the high-level layer package and dependency rules for `baezzal-curation`.
-  Use when adding, moving, or reviewing server-side feature code under
-  `baezzal-curation/src/main/kotlin/server`, or when updating related
-  ArchUnit tests, package layout, and architecture constraints.
+  Apply the standard high-level layer package and dependency rules for
+  `baezzal-community`, `baezzal-recommendation`, `baezzal-notification`, and
+  `baezzal-media`. Use when adding, moving, or reviewing server-side feature
+  code under those modules, or when updating related ArchUnit tests, package
+  layout, and architecture constraints. Do not use for `baezzal-feed`; use
+  the feed-layer skill there instead.
 ---
 
 # Layer Architecture
 
-Use this skill when working on feature code inside `baezzal-curation`.
+Use this skill when working on feature code inside `baezzal-community`,
+`baezzal-recommendation`, `baezzal-notification`, or `baezzal-media`.
 For layer-specific implementation guidance, pair this skill with the relevant
 `layer-presentation`, `layer-application`, `layer-implementation`,
 `layer-infrastructure`, or `layer-domain` skill.
