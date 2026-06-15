@@ -1,11 +1,6 @@
-package server.feed.application
+package server.userinterest.application
 
 import java.time.LocalDateTime
-
-data class PostCreatedEvent(
-    val postId: Long,
-    val imageUrl: String,
-)
 
 data class PostViewedEvent(
     val userId: Long,

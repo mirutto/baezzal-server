@@ -4,25 +4,25 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
-import server.feed.implementation.FeedCollectionReader
-import server.feed.implementation.FeedPostViewEventPublisher
-import server.feed.implementation.FeedPostViewRecorder
-import server.feed.implementation.FeedReader
-import server.feed.implementation.FeedTeamReader
+import server.feed.application.event.FeedEventPublisher
+import server.feed.query.FeedCollectionQuery
+import server.feed.query.FeedPostQuery
+import server.feed.query.FeedPostViewCache
+import server.feed.query.FeedTeamQuery
 import java.time.LocalDateTime
 
 class FeedServiceTest {
-    private val feedReader = mockk<FeedReader>()
-    private val feedCollectionReader = mockk<FeedCollectionReader>()
-    private val feedTeamReader = mockk<FeedTeamReader>()
-    private val feedPostViewRecorder = mockk<FeedPostViewRecorder>()
-    private val feedPostViewEventPublisher = mockk<FeedPostViewEventPublisher>()
+    private val feedPostQuery = mockk<FeedPostQuery>()
+    private val feedCollectionQuery = mockk<FeedCollectionQuery>()
+    private val feedTeamQuery = mockk<FeedTeamQuery>()
+    private val feedPostViewCache = mockk<FeedPostViewCache>()
+    private val feedEventPublisher = mockk<FeedEventPublisher>()
     private val feedService = FeedService(
-        feedReader = feedReader,
-        feedCollectionReader = feedCollectionReader,
-        feedTeamReader = feedTeamReader,
-        feedPostViewRecorder = feedPostViewRecorder,
-        feedPostViewEventPublisher = feedPostViewEventPublisher,
+        feedPostQuery = feedPostQuery,
+        feedCollectionQuery = feedCollectionQuery,
+        feedTeamQuery = feedTeamQuery,
+        feedPostViewCache = feedPostViewCache,
+        feedEventPublisher = feedEventPublisher,
     )
 
     @Test
@@ -38,7 +38,7 @@ class FeedServiceTest {
                 ),
             ),
         )
-        every { feedTeamReader.readTeams() } returns expected
+        every { feedTeamQuery.readTeams() } returns expected
 
         val result = feedService.findTeams()
 
@@ -57,7 +57,7 @@ class FeedServiceTest {
                 isPublic = false,
             ),
         )
-        every { feedCollectionReader.readAllByMemberId(7L) } returns expected
+        every { feedCollectionQuery.readAllByMemberId(7L) } returns expected
 
         val result = feedService.findMyCollections(7L)
 
@@ -76,7 +76,7 @@ class FeedServiceTest {
                 isPublic = true,
             ),
         )
-        every { feedCollectionReader.readPublishedAllByUsername("baezzal") } returns expected
+        every { feedCollectionQuery.readPublishedAllByUsername("baezzal") } returns expected
 
         val result = feedService.findCollectionsByUsername("baezzal")
 

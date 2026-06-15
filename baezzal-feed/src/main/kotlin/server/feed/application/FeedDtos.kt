@@ -1,6 +1,6 @@
 package server.feed.application
 
-import server.feed.domain.FeedThumbnailStatus
+import server.feed.model.post.FeedThumbnailStatus
 import java.time.LocalDateTime
 
 data class FeedPostData(
