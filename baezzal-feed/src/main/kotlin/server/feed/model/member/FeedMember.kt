@@ -18,8 +18,8 @@ class FeedMember(
     @Column(name = "username", nullable = false, length = 36)
     val username: String = "",
 
-    @Column(name = "profile_image", nullable = false, length = 500)
-    val profileImage: String = "",
+    @Column(name = "thumbnail_profile_image", nullable = false, length = 2048)
+    val thumbnailProfileImage: String = "",
 
     @Column(name = "preferred_team_id")
     val preferredTeamId: Long? = null,

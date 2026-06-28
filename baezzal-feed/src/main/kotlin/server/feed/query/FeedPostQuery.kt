@@ -92,7 +92,7 @@ class FeedPostQuery(
                 memberId = member.memberId,
                 nickname = member.nickname,
                 username = member.username,
-                profileImage = member.profileImage,
+                thumbnailProfileImage = member.thumbnailProfileImage,
                 preferredTeam = member.preferredTeamId?.let(::readTeam),
             ),
             description = post.description,
@@ -150,7 +150,7 @@ class FeedPostQuery(
                         path(FeedMember::id),
                         path(FeedMember::nickname),
                         path(FeedMember::username),
-                        path(FeedMember::profileImage),
+                        path(FeedMember::thumbnailProfileImage),
                         path(FeedMember::preferredTeamId),
                     ).from(
                         entity(FeedMember::class),

@@ -43,7 +43,7 @@ data class FeedAuthorData(
     val memberId: Long,
     val nickname: String,
     val username: String,
-    val profileImage: String,
+    val thumbnailProfileImage: String,
     val preferredTeam: FeedTeamData?,
 )
 
@@ -82,7 +82,7 @@ data class FeedMemberRowData(
     val memberId: Long,
     val nickname: String,
     val username: String,
-    val profileImage: String,
+    val thumbnailProfileImage: String,
     val preferredTeamId: Long?,
 )
 
