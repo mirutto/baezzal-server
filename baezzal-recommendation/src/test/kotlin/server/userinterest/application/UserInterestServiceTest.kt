@@ -6,19 +6,19 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Test
-import server.posttag.domain.RecommendationPostTag
-import server.posttag.implementation.RecommendationPostTagReader
+import server.posttag.domain.PostTag
+import server.posttag.implementation.PostTagReader
 import server.userinterest.domain.UserInterest
 import server.userinterest.implementation.UserInterestReader
 import server.userinterest.implementation.UserInterestWriter
 import java.time.LocalDateTime
 
 class UserInterestServiceTest {
-    private val recommendationPostTagReader = mockk<RecommendationPostTagReader>()
+    private val postTagReader = mockk<PostTagReader>()
     private val userInterestReader = mockk<UserInterestReader>()
     private val userInterestWriter = mockk<UserInterestWriter>()
     private val userInterestService = UserInterestService(
-        recommendationPostTagReader = recommendationPostTagReader,
+        postTagReader = postTagReader,
         userInterestReader = userInterestReader,
         userInterestWriter = userInterestWriter,
     )
@@ -28,9 +28,9 @@ class UserInterestServiceTest {
         val capturedInterests = slot<Collection<UserInterest>>()
         val viewedAt = LocalDateTime.of(2026, 6, 3, 10, 30, 0)
 
-        every { recommendationPostTagReader.readAllByPostId(100L) } returns listOf(
-            RecommendationPostTag(id = 1L, postId = 100L, tagId = 10L),
-            RecommendationPostTag(id = 2L, postId = 100L, tagId = 20L),
+        every { postTagReader.readAllByPostId(100L) } returns listOf(
+            PostTag(id = 1L, postId = 100L, tagId = 10L),
+            PostTag(id = 2L, postId = 100L, tagId = 20L),
         )
         every { userInterestReader.readAllByUserIdAndTagIds(7L, listOf(10L, 20L)) } returns emptyList()
         every {
@@ -64,9 +64,9 @@ class UserInterestServiceTest {
             lastInteractedAt = LocalDateTime.of(2026, 6, 2, 9, 0, 0),
         )
 
-        every { recommendationPostTagReader.readAllByPostId(100L) } returns listOf(
-            RecommendationPostTag(id = 1L, postId = 100L, tagId = 10L),
-            RecommendationPostTag(id = 2L, postId = 100L, tagId = 20L),
+        every { postTagReader.readAllByPostId(100L) } returns listOf(
+            PostTag(id = 1L, postId = 100L, tagId = 10L),
+            PostTag(id = 2L, postId = 100L, tagId = 20L),
         )
         every { userInterestReader.readAllByUserIdAndTagIds(7L, listOf(10L, 20L)) } returns listOf(existing)
         every { userInterestWriter.writeAll(any()) } answers { firstArg<List<UserInterest>>() }

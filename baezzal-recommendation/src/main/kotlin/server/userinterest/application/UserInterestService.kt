@@ -2,14 +2,14 @@ package server.userinterest.application
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import server.posttag.implementation.RecommendationPostTagReader
+import server.posttag.implementation.PostTagReader
 import server.userinterest.domain.UserInterest
 import server.userinterest.implementation.UserInterestReader
 import server.userinterest.implementation.UserInterestWriter
 
 @Service
 class UserInterestService(
-    private val recommendationPostTagReader: RecommendationPostTagReader,
+    private val postTagReader: PostTagReader,
     private val userInterestReader: UserInterestReader,
     private val userInterestWriter: UserInterestWriter,
 ) {
@@ -39,7 +39,7 @@ class UserInterestService(
         deltaScore: Int,
         interactedAt: java.time.LocalDateTime,
     ) {
-        val tagIds = recommendationPostTagReader.readAllByPostId(postId)
+        val tagIds = postTagReader.readAllByPostId(postId)
             .map { it.tagId }
             .distinct()
 

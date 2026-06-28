@@ -2,7 +2,7 @@ package server.tagrelation.application
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import server.posttag.implementation.RecommendationPostTagReader
+import server.posttag.implementation.PostTagReader
 import server.tagrelation.domain.TagRelation
 import server.tagrelation.domain.TagRelationType
 import server.tagrelation.implementation.TagRelationReader
@@ -10,13 +10,13 @@ import server.tagrelation.implementation.TagRelationWriter
 
 @Service
 class TagRelationService(
-    private val recommendationPostTagReader: RecommendationPostTagReader,
+    private val postTagReader: PostTagReader,
     private val tagRelationReader: TagRelationReader,
     private val tagRelationWriter: TagRelationWriter,
 ) {
     @Transactional
     fun recordPostCreated(event: PostCreatedEvent) {
-        val tagIds = recommendationPostTagReader.readAllByPostId(event.postId)
+        val tagIds = postTagReader.readAllByPostId(event.postId)
             .map { it.tagId }
             .distinct()
             .sorted()

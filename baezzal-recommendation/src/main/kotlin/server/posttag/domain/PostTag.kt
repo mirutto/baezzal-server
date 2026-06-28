@@ -7,7 +7,7 @@ import jakarta.persistence.Table
 
 @Entity
 @Table(name = "post_tag")
-class RecommendationPostTag(
+class PostTag(
     @Id
     @Column(name = "post_tag_id", nullable = false)
     val id: Long = 0,

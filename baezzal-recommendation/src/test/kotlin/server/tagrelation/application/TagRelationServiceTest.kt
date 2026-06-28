@@ -5,19 +5,19 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import org.junit.jupiter.api.Test
-import server.posttag.domain.RecommendationPostTag
-import server.posttag.implementation.RecommendationPostTagReader
+import server.posttag.domain.PostTag
+import server.posttag.implementation.PostTagReader
 import server.tagrelation.domain.TagRelation
 import server.tagrelation.domain.TagRelationType
 import server.tagrelation.implementation.TagRelationReader
 import server.tagrelation.implementation.TagRelationWriter
 
 class TagRelationServiceTest {
-    private val recommendationPostTagReader = mockk<RecommendationPostTagReader>()
+    private val postTagReader = mockk<PostTagReader>()
     private val tagRelationReader = mockk<TagRelationReader>()
     private val tagRelationWriter = mockk<TagRelationWriter>()
     private val tagRelationService = TagRelationService(
-        recommendationPostTagReader = recommendationPostTagReader,
+        postTagReader = postTagReader,
         tagRelationReader = tagRelationReader,
         tagRelationWriter = tagRelationWriter,
     )
@@ -33,11 +33,11 @@ class TagRelationServiceTest {
             score = 4,
         )
 
-        every { recommendationPostTagReader.readAllByPostId(100L) } returns listOf(
-            RecommendationPostTag(id = 1L, postId = 100L, tagId = 30L),
-            RecommendationPostTag(id = 2L, postId = 100L, tagId = 10L),
-            RecommendationPostTag(id = 3L, postId = 100L, tagId = 20L),
-            RecommendationPostTag(id = 4L, postId = 100L, tagId = 20L),
+        every { postTagReader.readAllByPostId(100L) } returns listOf(
+            PostTag(id = 1L, postId = 100L, tagId = 30L),
+            PostTag(id = 2L, postId = 100L, tagId = 10L),
+            PostTag(id = 3L, postId = 100L, tagId = 20L),
+            PostTag(id = 4L, postId = 100L, tagId = 20L),
         )
         every {
             tagRelationReader.readAllByRelationTypeAndPairs(
@@ -64,8 +64,8 @@ class TagRelationServiceTest {
 
     @Test
     fun `태그가 하나 이하면 태그 관계를 저장하지 않는다`() {
-        every { recommendationPostTagReader.readAllByPostId(101L) } returns listOf(
-            RecommendationPostTag(id = 1L, postId = 101L, tagId = 10L),
+        every { postTagReader.readAllByPostId(101L) } returns listOf(
+            PostTag(id = 1L, postId = 101L, tagId = 10L),
         )
 
         tagRelationService.recordPostCreated(
