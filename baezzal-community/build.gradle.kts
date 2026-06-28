@@ -13,7 +13,6 @@ dependencies {
     implementation(project(":baezzal-platform:cache"))
     implementation(project(":baezzal-platform:lock"))
     implementation(project(":baezzal-platform:queue"))
-    implementation(project(":baezzal-platform:set"))
     implementation(project(":baezzal-platform:messaging"))
     implementation(project(":baezzal-platform:token"))
     implementation(project(":baezzal-platform:web"))

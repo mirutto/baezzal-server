@@ -11,14 +11,4 @@ class PostWriter(
 ) {
     @Transactional
     fun write(post: Post): Post = postRepository.save(post)
-
-    @Transactional
-    fun increaseViewCounts(viewCountByPostId: Map<Long, Long>) {
-        viewCountByPostId.forEach { (postId, viewCount) ->
-            postRepository.increaseViewCount(
-                postId = postId,
-                delta = viewCount,
-            )
-        }
-    }
 }

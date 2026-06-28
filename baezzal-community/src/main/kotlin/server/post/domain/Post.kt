@@ -51,9 +51,6 @@ class Post(
 
     @Column(name = "team_id")
     var teamId: Long? = null,
-
-    @Column(name = "view_count", nullable = false)
-    var viewCount: Long = 0,
 ) : BaseEntity() {
     val rawImageUrl: String
         get() = image.rawUrl
@@ -85,10 +82,6 @@ class Post(
 
     fun updateDescription(description: String) {
         this.description = description
-    }
-
-    fun increaseViewCount(delta: Long) {
-        this.viewCount += delta
     }
 
     override fun equals(other: Any?): Boolean {

@@ -40,9 +40,6 @@ class FeedPost(
     @Column(name = "team_id")
     val teamId: Long? = null,
 
-    @Column(name = "view_count", nullable = false)
-    val viewCount: Long = 0,
-
     @Column(
         name = "created_at",
         nullable = false,

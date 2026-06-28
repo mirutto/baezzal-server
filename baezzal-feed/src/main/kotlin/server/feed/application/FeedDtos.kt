@@ -28,7 +28,6 @@ data class FeedCollectionData(
 
 data class FeedPostDetailData(
     val postId: Long,
-    val viewCount: Long,
     val rawImageUrl: String,
     val publicImageUrl: String,
     val imageAspectRatio: Double,
@@ -70,7 +69,6 @@ data class FeedPostRowData(
 data class FeedPostDetailRowData(
     val postId: Long,
     val memberId: Long,
-    val viewCount: Long,
     val rawImageUrl: String,
     val publicImageUrl: String,
     val imageAspectRatio: Double,

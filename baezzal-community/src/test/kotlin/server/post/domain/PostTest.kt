@@ -19,7 +19,6 @@ class PostTest {
         post.imageStatus shouldBe ImageStatus.PROCESSING
         post.description shouldBe ""
         post.teamId shouldBe null
-        post.viewCount shouldBe 0L
         post.memberId shouldBe 1L
     }
 
@@ -41,17 +40,5 @@ class PostTest {
         post.thumbnailUrl shouldBe "https://static.wowan.me/thumbnails/post.webp"
         post.imageStatus shouldBe ImageStatus.SUCCESS
         post.image.aspectRatio shouldBe 16.0 / 9.0
-    }
-
-    @Test
-    fun `view count 를 증가시킨다`() {
-        val post = Post(
-            memberId = 1L,
-            image = ImageVersions(rawUrl = "https://cdn.example.com/post.png"),
-        )
-
-        post.increaseViewCount(3L)
-
-        post.viewCount shouldBe 3L
     }
 }

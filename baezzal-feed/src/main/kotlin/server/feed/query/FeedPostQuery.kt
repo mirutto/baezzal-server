@@ -83,7 +83,6 @@ class FeedPostQuery(
 
         return FeedPostDetailData(
             postId = post.postId,
-            viewCount = post.viewCount,
             rawImageUrl = post.rawImageUrl,
             publicImageUrl = post.publicImageUrl,
             imageAspectRatio = post.imageAspectRatio,
@@ -125,7 +124,6 @@ class FeedPostQuery(
                     selectNew<FeedPostDetailRowData>(
                         path(FeedPost::id),
                         path(FeedPost::memberId),
-                        path(FeedPost::viewCount),
                         path(FeedPost::rawImageUrl),
                         path(FeedPost::publicImageUrl),
                         path(FeedPost::imageAspectRatio),

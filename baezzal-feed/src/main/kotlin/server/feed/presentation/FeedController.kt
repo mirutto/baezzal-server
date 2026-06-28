@@ -58,12 +58,12 @@ class FeedController(
 
     @GetMapping("/posts/{postId}")
     fun findById(
-        @RequestPassport passport: Passport?,
+        @RequestPassport passport: Passport,
         @PathVariable postId: Long,
     ): ApiResponse<FeedPostDetailData> = ApiResponse.of(
         feedService.findById(
             postId = postId,
-            memberId = passport?.memberId,
+            memberId = passport.memberId,
         ),
     )
 }

@@ -5,7 +5,6 @@ import org.springframework.transaction.annotation.Transactional
 import server.feed.application.event.FeedEventPublisher
 import server.feed.query.FeedCollectionQuery
 import server.feed.query.FeedPostQuery
-import server.feed.query.FeedPostViewCache
 import server.feed.query.FeedTeamQuery
 
 @Service
@@ -13,7 +12,6 @@ class FeedService(
     private val feedPostQuery: FeedPostQuery,
     private val feedCollectionQuery: FeedCollectionQuery,
     private val feedTeamQuery: FeedTeamQuery,
-    private val feedPostViewCache: FeedPostViewCache,
     private val feedEventPublisher: FeedEventPublisher,
 ) {
     @Transactional(readOnly = true)
@@ -38,11 +36,10 @@ class FeedService(
     @Transactional(readOnly = true)
     fun findById(
         postId: Long,
-        memberId: Long?,
+        memberId: Long,
     ): FeedPostDetailData {
         val post = feedPostQuery.readDetail(postId)
-        val cachedViewCount = feedPostViewCache.recordView(postId)
-        memberId?.let { feedEventPublisher.publishPostViewed(memberId = it, postId = postId) }
-        return post.copy(viewCount = post.viewCount + cachedViewCount)
+        feedEventPublisher.publishPostViewed(memberId = memberId, postId = postId)
+        return post
     }
 }

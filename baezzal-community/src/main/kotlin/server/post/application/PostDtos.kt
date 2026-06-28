@@ -15,8 +15,3 @@ data class PostIdResult(
 ) {
     constructor(post: Post) : this(postId = post.id)
 }
-
-data class PostBatchResult(
-    val postCount: Int,
-    val viewCount: Long,
-)
