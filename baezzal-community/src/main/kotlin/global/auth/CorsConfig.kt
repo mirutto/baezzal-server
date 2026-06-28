@@ -10,7 +10,9 @@ class CorsConfig : WebMvcConfigurer {
         registry.addMapping("/**")
             .allowedOrigins(
                 "http://localhost:5173",
+                "http://localhost:8082",
                 "https://baezzal-frontend.pages.dev",
+                "https://baezzal-mobile.pages.dev",
             ).allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
             .allowCredentials(true)
