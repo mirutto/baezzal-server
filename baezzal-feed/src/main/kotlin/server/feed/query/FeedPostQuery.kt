@@ -5,11 +5,8 @@ import global.error.NotFoundException
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import server.feed.application.FeedAuthorData
-import server.feed.application.FeedMemberRowData
 import server.feed.application.FeedPostData
 import server.feed.application.FeedPostDetailData
-import server.feed.application.FeedPostDetailRowData
-import server.feed.application.FeedPostRowData
 import server.feed.application.FeedTeamData
 import server.feed.model.collection.FeedCollectionPost
 import server.feed.model.member.FeedMember
@@ -28,7 +25,7 @@ class FeedPostQuery(
         jdslExecutor
             .createQuery(
                 jpql {
-                    selectNew<FeedPostRowData>(
+                    selectNew<FeedPostData>(
                         path(FeedPost::id),
                         path(FeedPost::thumbnailImageUrl),
                         path(FeedPost::publicImageUrl),
@@ -42,16 +39,15 @@ class FeedPostQuery(
                         path(FeedPost::id).desc(),
                     )
                 },
-                FeedPostRowData::class.java,
+                FeedPostData::class.java,
             ).resultList
-            .map(FeedPostRowData::toFeedPostData)
 
     @Transactional(readOnly = true)
     fun readAllByMemberId(memberId: Long): List<FeedPostData> =
         jdslExecutor
             .createQuery(
                 jpql {
-                    selectNew<FeedPostRowData>(
+                    selectNew<FeedPostData>(
                         path(FeedPost::id),
                         path(FeedPost::thumbnailImageUrl),
                         path(FeedPost::publicImageUrl),
@@ -66,9 +62,8 @@ class FeedPostQuery(
                         path(FeedPost::id).desc(),
                     )
                 },
-                FeedPostRowData::class.java,
+                FeedPostData::class.java,
             ).resultList
-            .map(FeedPostRowData::toFeedPostData)
 
     @Transactional(readOnly = true)
     fun readAllByUsername(username: String): List<FeedPostData> {
@@ -117,11 +112,11 @@ class FeedPostQuery(
             ).resultList
             .firstOrNull()
 
-    private fun readPostDetailRow(postId: Long): FeedPostDetailRowData =
+    private fun readPostDetailRow(postId: Long): FeedPostDetailQueryRow =
         jdslExecutor
             .createQuery(
                 jpql {
-                    selectNew<FeedPostDetailRowData>(
+                    selectNew<FeedPostDetailQueryRow>(
                         path(FeedPost::id),
                         path(FeedPost::memberId),
                         path(FeedPost::rawImageUrl),
@@ -135,16 +130,16 @@ class FeedPostQuery(
                         path(FeedPost::id).eq(postId),
                     )
                 },
-                FeedPostDetailRowData::class.java,
+                FeedPostDetailQueryRow::class.java,
             ).resultList
             .firstOrNull()
             ?: throw NotFoundException("게시글을 찾을 수 없습니다")
 
-    private fun readMemberRow(memberId: Long): FeedMemberRowData =
+    private fun readMemberRow(memberId: Long): FeedAuthorQueryRow =
         jdslExecutor
             .createQuery(
                 jpql {
-                    selectNew<FeedMemberRowData>(
+                    selectNew<FeedAuthorQueryRow>(
                         path(FeedMember::id),
                         path(FeedMember::nickname),
                         path(FeedMember::username),
@@ -156,7 +151,7 @@ class FeedPostQuery(
                         path(FeedMember::id).eq(memberId),
                     )
                 },
-                FeedMemberRowData::class.java,
+                FeedAuthorQueryRow::class.java,
             ).resultList
             .firstOrNull()
             ?: throw NotFoundException("회원을 찾을 수 없습니다")

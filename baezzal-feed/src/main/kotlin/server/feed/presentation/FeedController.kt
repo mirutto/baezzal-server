@@ -5,8 +5,11 @@ import global.auth.RequestPassport
 import global.web.ApiResponse
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import server.feed.application.DailyPopularPostSliceResult
+import server.feed.application.DailyPopularTagData
 import server.feed.application.FeedCollectionData
 import server.feed.application.FeedPostData
 import server.feed.application.FeedPostDetailData
@@ -54,6 +57,21 @@ class FeedController(
     @GetMapping("/teams")
     fun findTeams(): ApiResponse<List<FeedTeamSummaryData>> = ApiResponse.of(
         feedService.findTeams(),
+    )
+
+    @GetMapping("/tags/daily-popular")
+    fun findDailyPopularTags(
+        @RequestParam(required = false) limit: Int?,
+    ): ApiResponse<List<DailyPopularTagData>> = ApiResponse.of(
+        feedService.findDailyPopularTags(limit),
+    )
+
+    @GetMapping("/posts/daily-popular")
+    fun findDailyPopularPosts(
+        @RequestParam(required = false) cursor: String?,
+        @RequestParam(required = false) limit: Int?,
+    ): ApiResponse<DailyPopularPostSliceResult> = ApiResponse.of(
+        feedService.findDailyPopularPosts(cursor = cursor, limit = limit),
     )
 
     @GetMapping("/posts/{postId}")

@@ -1,7 +1,7 @@
 package server.feed.application
 
-import server.feed.model.post.FeedThumbnailStatus
 import java.time.LocalDateTime
+import java.util.Base64
 
 data class FeedPostData(
     val postId: Long,
@@ -15,6 +15,19 @@ data class FeedTeamSummaryData(
     val name: String,
     val postCount: Long,
     val thumbnailUrls: List<String>,
+)
+
+data class DailyPopularTagData(
+    val rank: Int,
+    val tagId: Long,
+    val title: String,
+    val searchCount: Long,
+)
+
+data class DailyPopularPostSliceResult(
+    val posts: List<FeedPostData>,
+    val hasNext: Boolean,
+    val nextCursor: String?,
 )
 
 data class FeedCollectionData(
@@ -51,64 +64,24 @@ data class FeedTeamData(
     val name: String,
 )
 
-data class FeedPostRowData(
+data class DailyPopularPostCursor(
+    val score: Long,
+    val createdAt: LocalDateTime,
     val postId: Long,
-    val thumbnailImageUrl: String,
-    val publicImageUrl: String,
-    val imageAspectRatio: Double,
 ) {
-    fun toFeedPostData(): FeedPostData =
-        FeedPostData(
-            postId = postId,
-            thumbnailImageUrl = thumbnailImageUrl,
-            publicImageUrl = publicImageUrl,
-            imageAspectRatio = imageAspectRatio,
-        )
+    fun encode(): String = Base64.getUrlEncoder()
+        .withoutPadding()
+        .encodeToString("$score|$createdAt|$postId".toByteArray())
+
+    companion object {
+        fun decode(cursor: String): DailyPopularPostCursor {
+            val decoded = String(Base64.getUrlDecoder().decode(cursor))
+            val (score, createdAt, postId) = decoded.split("|", limit = 3)
+            return DailyPopularPostCursor(
+                score = score.toLong(),
+                createdAt = LocalDateTime.parse(createdAt),
+                postId = postId.toLong(),
+            )
+        }
+    }
 }
-
-data class FeedPostDetailRowData(
-    val postId: Long,
-    val memberId: Long,
-    val rawImageUrl: String,
-    val publicImageUrl: String,
-    val imageAspectRatio: Double,
-    val status: FeedThumbnailStatus,
-    val description: String,
-)
-
-data class FeedMemberRowData(
-    val memberId: Long,
-    val nickname: String,
-    val username: String,
-    val thumbnailProfileImage: String,
-    val preferredTeamId: Long?,
-)
-
-data class FeedTeamSummaryRowData(
-    val teamId: Long,
-    val teamCode: String,
-    val name: String,
-)
-
-data class FeedTeamPostCountRowData(
-    val teamId: Long,
-    val postCount: Long,
-)
-
-data class FeedTeamThumbnailRowData(
-    val teamId: Long,
-    val thumbnailUrl: String,
-)
-
-data class FeedCollectionRowData(
-    val collectionId: Long,
-    val name: String,
-    val lastPostRuleModifiedAt: LocalDateTime,
-    val thumbnailUrl: String,
-    val isPublic: Boolean,
-)
-
-data class FeedCollectionPostCountRowData(
-    val collectionId: Long,
-    val postCount: Long,
-)

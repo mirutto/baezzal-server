@@ -5,8 +5,6 @@ import global.error.NotFoundException
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import server.feed.application.FeedCollectionData
-import server.feed.application.FeedCollectionPostCountRowData
-import server.feed.application.FeedCollectionRowData
 import server.feed.model.collection.FeedCollection
 import server.feed.model.collection.FeedCollectionPost
 import server.feed.model.member.FeedMember
@@ -26,12 +24,12 @@ class FeedCollectionQuery(
             readPublishedCollectionRowsByMemberId(readMemberIdByUsername(username)),
         )
 
-    private fun readCollectionData(collectionRows: List<FeedCollectionRowData>): List<FeedCollectionData> {
+    private fun readCollectionData(collectionRows: List<FeedCollectionQueryRow>): List<FeedCollectionData> {
         if (collectionRows.isEmpty()) {
             return emptyList()
         }
 
-        val postCounts = readPostCounts(collectionRows.map(FeedCollectionRowData::collectionId))
+        val postCounts = readPostCounts(collectionRows.map(FeedCollectionQueryRow::collectionId))
 
         return collectionRows.map { collection ->
             FeedCollectionData(
@@ -45,11 +43,11 @@ class FeedCollectionQuery(
         }
     }
 
-    private fun readCollectionRowsByMemberId(memberId: Long): List<FeedCollectionRowData> =
+    private fun readCollectionRowsByMemberId(memberId: Long): List<FeedCollectionQueryRow> =
         jdslExecutor
             .createQuery(
                 jpql {
-                    selectNew<FeedCollectionRowData>(
+                    selectNew<FeedCollectionQueryRow>(
                         path(FeedCollection::id),
                         path(FeedCollection::name),
                         path(FeedCollection::lastPostRuleModifiedAt),
@@ -64,14 +62,14 @@ class FeedCollectionQuery(
                         path(FeedCollection::id).desc(),
                     )
                 },
-                FeedCollectionRowData::class.java,
+                FeedCollectionQueryRow::class.java,
             ).resultList
 
-    private fun readPublishedCollectionRowsByMemberId(memberId: Long): List<FeedCollectionRowData> =
+    private fun readPublishedCollectionRowsByMemberId(memberId: Long): List<FeedCollectionQueryRow> =
         jdslExecutor
             .createQuery(
                 jpql {
-                    selectNew<FeedCollectionRowData>(
+                    selectNew<FeedCollectionQueryRow>(
                         path(FeedCollection::id),
                         path(FeedCollection::name),
                         path(FeedCollection::lastPostRuleModifiedAt),
@@ -87,14 +85,14 @@ class FeedCollectionQuery(
                         path(FeedCollection::id).desc(),
                     )
                 },
-                FeedCollectionRowData::class.java,
+                FeedCollectionQueryRow::class.java,
             ).resultList
 
     private fun readPostCounts(collectionIds: List<Long>): Map<Long, Long> =
         jdslExecutor
             .createQuery(
                 jpql {
-                    selectNew<FeedCollectionPostCountRowData>(
+                    selectNew<FeedCollectionPostCountQueryRow>(
                         path(FeedCollectionPost::collectionId),
                         count(path(FeedCollectionPost::id)),
                     ).from(
@@ -105,7 +103,7 @@ class FeedCollectionQuery(
                         path(FeedCollectionPost::collectionId),
                     )
                 },
-                FeedCollectionPostCountRowData::class.java,
+                FeedCollectionPostCountQueryRow::class.java,
             ).resultList
             .associate { row -> row.collectionId to row.postCount }
 

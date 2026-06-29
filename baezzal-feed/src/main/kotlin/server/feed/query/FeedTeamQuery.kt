@@ -3,10 +3,7 @@ package server.feed.query
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import server.feed.application.FeedTeamPostCountRowData
 import server.feed.application.FeedTeamSummaryData
-import server.feed.application.FeedTeamSummaryRowData
-import server.feed.application.FeedTeamThumbnailRowData
 import server.feed.model.post.FeedPost
 import server.feed.model.post.FeedThumbnailStatus
 import server.feed.model.team.FeedTeam
@@ -18,7 +15,7 @@ class FeedTeamQuery(
     @Transactional(readOnly = true)
     fun readTeams(): List<FeedTeamSummaryData> {
         val teams = readTeamSummaries()
-        val teamIds = teams.map(FeedTeamSummaryRowData::teamId)
+        val teamIds = teams.map(FeedTeamSummaryQueryRow::teamId)
         val postCounts = readTeamPostCounts(teamIds)
         val thumbnailUrls = readTeamThumbnailUrls(teamIds)
 
@@ -32,11 +29,11 @@ class FeedTeamQuery(
         }
     }
 
-    private fun readTeamSummaries(): List<FeedTeamSummaryRowData> =
+    private fun readTeamSummaries(): List<FeedTeamSummaryQueryRow> =
         jdslExecutor
             .createQuery(
                 jpql {
-                    selectNew<FeedTeamSummaryRowData>(
+                    selectNew<FeedTeamSummaryQueryRow>(
                         path(FeedTeam::id),
                         path(FeedTeam::code),
                         path(FeedTeam::name),
@@ -46,7 +43,7 @@ class FeedTeamQuery(
                         path(FeedTeam::sortOrder).asc(),
                     )
                 },
-                FeedTeamSummaryRowData::class.java,
+                FeedTeamSummaryQueryRow::class.java,
             ).resultList
 
     private fun readTeamPostCounts(teamIds: List<Long>): Map<Long, Long> {
@@ -57,7 +54,7 @@ class FeedTeamQuery(
         return jdslExecutor
             .createQuery(
                 jpql {
-                    selectNew<FeedTeamPostCountRowData>(
+                    selectNew<FeedTeamPostCountQueryRow>(
                         path(FeedPost::teamId),
                         count(path(FeedPost::id)),
                     ).from(
@@ -68,7 +65,7 @@ class FeedTeamQuery(
                         path(FeedPost::teamId),
                     )
                 },
-                FeedTeamPostCountRowData::class.java,
+                FeedTeamPostCountQueryRow::class.java,
             ).resultList
             .associate { row -> row.teamId to row.postCount }
     }
@@ -81,7 +78,7 @@ class FeedTeamQuery(
         return jdslExecutor
             .createQuery(
                 jpql {
-                    selectNew<FeedTeamThumbnailRowData>(
+                    selectNew<FeedTeamThumbnailQueryRow>(
                         path(FeedPost::teamId),
                         path(FeedPost::thumbnailImageUrl),
                     ).from(
@@ -96,11 +93,11 @@ class FeedTeamQuery(
                         path(FeedPost::id).desc(),
                     )
                 },
-                FeedTeamThumbnailRowData::class.java,
+                FeedTeamThumbnailQueryRow::class.java,
             ).resultList
             .groupBy(
-                keySelector = FeedTeamThumbnailRowData::teamId,
-                valueTransform = FeedTeamThumbnailRowData::thumbnailUrl,
+                keySelector = FeedTeamThumbnailQueryRow::teamId,
+                valueTransform = FeedTeamThumbnailQueryRow::thumbnailUrl,
             ).mapValues { (_, urls) -> urls.take(TEAM_THUMBNAIL_LIMIT) }
     }
 
