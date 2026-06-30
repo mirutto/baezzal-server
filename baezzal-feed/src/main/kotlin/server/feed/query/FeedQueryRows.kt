@@ -56,6 +56,11 @@ data class DailyPopularTagQueryRow(
     val searchCount: Long,
 )
 
+data class TagAutocompleteQueryRow(
+    val tagId: Long,
+    val title: String,
+)
+
 data class DailyPopularPostQueryRow(
     val postId: Long,
     val thumbnailImageUrl: String,

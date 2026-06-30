@@ -24,6 +24,11 @@ data class DailyPopularTagData(
     val searchCount: Long,
 )
 
+data class TagAutocompleteData(
+    val tagId: Long,
+    val title: String,
+)
+
 data class DailyPopularPostSliceResult(
     val posts: List<FeedPostData>,
     val hasNext: Boolean,

@@ -6,6 +6,8 @@ import server.feed.application.event.FeedEventPublisher
 import server.feed.query.FeedCollectionQuery
 import server.feed.query.FeedPostEngagementStatDailyQuery
 import server.feed.query.FeedPostQuery
+import server.feed.query.FeedTagQuery
+import server.feed.query.FeedTagRelationQuery
 import server.feed.query.FeedTagSearchStatDailyQuery
 import server.feed.query.FeedTeamQuery
 
@@ -16,6 +18,8 @@ class FeedService(
     private val feedTeamQuery: FeedTeamQuery,
     private val feedPostEngagementStatDailyQuery: FeedPostEngagementStatDailyQuery,
     private val feedTagSearchStatDailyQuery: FeedTagSearchStatDailyQuery,
+    private val feedTagQuery: FeedTagQuery,
+    private val feedTagRelationQuery: FeedTagRelationQuery,
     private val feedEventPublisher: FeedEventPublisher,
 ) {
     @Transactional(readOnly = true)
@@ -65,6 +69,39 @@ class FeedService(
                     searchCount = row.searchCount,
                 )
             }
+    }
+
+    @Transactional(readOnly = true)
+    fun autocompleteTags(
+        keyword: String,
+        limit: Int?,
+    ): List<TagAutocompleteData> {
+        val normalizedKeyword = keyword.trim()
+        if (normalizedKeyword.isBlank()) {
+            return emptyList()
+        }
+
+        val normalizedLimit = normalizeLimit(limit)
+        val matchedTags = feedTagQuery.readAutocompleteByKeyword(
+            keyword = normalizedKeyword,
+            limit = normalizedLimit,
+        )
+        val fallbackTags = if (matchedTags.isEmpty() || matchedTags.size >= normalizedLimit) {
+            emptyList()
+        } else {
+            feedTagRelationQuery.readAutocompleteFallbackTags(
+                seedTagIds = matchedTags.map { it.tagId },
+                excludeTagIds = matchedTags.map { it.tagId },
+                limit = normalizedLimit - matchedTags.size,
+            )
+        }
+
+        return (matchedTags + fallbackTags).map {
+            TagAutocompleteData(
+                tagId = it.tagId,
+                title = it.title,
+            )
+        }
     }
 
     @Transactional(readOnly = true)

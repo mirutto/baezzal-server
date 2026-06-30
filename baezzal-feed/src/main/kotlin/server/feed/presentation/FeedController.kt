@@ -15,6 +15,7 @@ import server.feed.application.FeedPostData
 import server.feed.application.FeedPostDetailData
 import server.feed.application.FeedService
 import server.feed.application.FeedTeamSummaryData
+import server.feed.application.TagAutocompleteData
 
 @RestController
 @RequestMapping("/feed")
@@ -64,6 +65,17 @@ class FeedController(
         @RequestParam(required = false) limit: Int?,
     ): ApiResponse<List<DailyPopularTagData>> = ApiResponse.of(
         feedService.findDailyPopularTags(limit),
+    )
+
+    @GetMapping("/tags/autocomplete")
+    fun autocompleteTags(
+        @RequestParam keyword: String,
+        @RequestParam(required = false) limit: Int?,
+    ): ApiResponse<List<TagAutocompleteData>> = ApiResponse.of(
+        feedService.autocompleteTags(
+            keyword = keyword,
+            limit = limit,
+        ),
     )
 
     @GetMapping("/posts/daily-popular")
