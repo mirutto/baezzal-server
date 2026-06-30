@@ -35,6 +35,12 @@ data class DailyPopularPostSliceResult(
     val nextCursor: String?,
 )
 
+data class RelatedTeamPostSliceResult(
+    val posts: List<FeedPostData>,
+    val hasNext: Boolean,
+    val nextCursor: String?,
+)
+
 data class FeedCollectionData(
     val collectionId: Long,
     val name: String,

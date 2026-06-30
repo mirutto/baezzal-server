@@ -14,13 +14,16 @@ import server.feed.application.FeedCollectionData
 import server.feed.application.FeedPostData
 import server.feed.application.FeedPostDetailData
 import server.feed.application.FeedService
+import server.feed.application.FeedTagService
 import server.feed.application.FeedTeamSummaryData
+import server.feed.application.RelatedTeamPostSliceResult
 import server.feed.application.TagAutocompleteData
 
 @RestController
 @RequestMapping("/feed")
 class FeedController(
     private val feedService: FeedService,
+    private val feedTagService: FeedTagService,
 ) {
     @GetMapping
     fun findAll(): ApiResponse<List<FeedPostData>> = ApiResponse.of(
@@ -60,11 +63,24 @@ class FeedController(
         feedService.findTeams(),
     )
 
+    @GetMapping("/teams/{teamCode}/related-posts")
+    fun findRelatedPostsByTeamCode(
+        @PathVariable teamCode: String,
+        @RequestParam(required = false) cursor: String?,
+        @RequestParam(required = false) limit: Int?,
+    ): ApiResponse<RelatedTeamPostSliceResult> = ApiResponse.of(
+        feedService.findRelatedPostsByTeamCode(
+            teamCode = teamCode,
+            cursor = cursor,
+            limit = limit,
+        ),
+    )
+
     @GetMapping("/tags/daily-popular")
     fun findDailyPopularTags(
         @RequestParam(required = false) limit: Int?,
     ): ApiResponse<List<DailyPopularTagData>> = ApiResponse.of(
-        feedService.findDailyPopularTags(limit),
+        feedTagService.findDailyPopularTags(limit),
     )
 
     @GetMapping("/tags/autocomplete")
@@ -72,7 +88,7 @@ class FeedController(
         @RequestParam keyword: String,
         @RequestParam(required = false) limit: Int?,
     ): ApiResponse<List<TagAutocompleteData>> = ApiResponse.of(
-        feedService.autocompleteTags(
+        feedTagService.autocompleteTags(
             keyword = keyword,
             limit = limit,
         ),

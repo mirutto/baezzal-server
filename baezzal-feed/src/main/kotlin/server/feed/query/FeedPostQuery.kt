@@ -206,4 +206,5 @@ class FeedPostQuery(
                 Long::class.javaObjectType,
             ).singleResult
             .toLong()
+
 }

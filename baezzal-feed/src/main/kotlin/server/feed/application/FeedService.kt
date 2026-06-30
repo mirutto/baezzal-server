@@ -6,20 +6,16 @@ import server.feed.application.event.FeedEventPublisher
 import server.feed.query.FeedCollectionQuery
 import server.feed.query.FeedPostEngagementStatDailyQuery
 import server.feed.query.FeedPostQuery
-import server.feed.query.FeedTagQuery
-import server.feed.query.FeedTagRelationQuery
-import server.feed.query.FeedTagSearchStatDailyQuery
+import server.feed.query.FeedRelatedPostQuery
 import server.feed.query.FeedTeamQuery
 
 @Service
 class FeedService(
     private val feedPostQuery: FeedPostQuery,
+    private val feedRelatedPostQuery: FeedRelatedPostQuery,
     private val feedCollectionQuery: FeedCollectionQuery,
     private val feedTeamQuery: FeedTeamQuery,
     private val feedPostEngagementStatDailyQuery: FeedPostEngagementStatDailyQuery,
-    private val feedTagSearchStatDailyQuery: FeedTagSearchStatDailyQuery,
-    private val feedTagQuery: FeedTagQuery,
-    private val feedTagRelationQuery: FeedTagRelationQuery,
     private val feedEventPublisher: FeedEventPublisher,
 ) {
     @Transactional(readOnly = true)
@@ -58,50 +54,40 @@ class FeedService(
     }
 
     @Transactional(readOnly = true)
-    fun findDailyPopularTags(limit: Int?): List<DailyPopularTagData> {
-        val normalizedLimit = normalizeLimit(limit)
-        return feedTagSearchStatDailyQuery.readDailyPopularTags(normalizedLimit)
-            .mapIndexed { index, row ->
-                DailyPopularTagData(
-                    rank = index + 1,
-                    tagId = row.tagId,
-                    title = row.title,
-                    searchCount = row.searchCount,
-                )
-            }
-    }
-
-    @Transactional(readOnly = true)
-    fun autocompleteTags(
-        keyword: String,
+    fun findRelatedPostsByTeamCode(
+        teamCode: String,
+        cursor: String?,
         limit: Int?,
-    ): List<TagAutocompleteData> {
-        val normalizedKeyword = keyword.trim()
-        if (normalizedKeyword.isBlank()) {
-            return emptyList()
-        }
-
+    ): RelatedTeamPostSliceResult {
         val normalizedLimit = normalizeLimit(limit)
-        val matchedTags = feedTagQuery.readAutocompleteByKeyword(
-            keyword = normalizedKeyword,
-            limit = normalizedLimit,
+        val rows = feedRelatedPostQuery.readRelatedPostsByTeamCode(
+            teamCode = teamCode,
+            cursor = cursor?.let(DailyPopularPostCursor::decode),
+            limit = normalizedLimit + 1,
         )
-        val fallbackTags = if (matchedTags.isEmpty() || matchedTags.size >= normalizedLimit) {
-            emptyList()
-        } else {
-            feedTagRelationQuery.readAutocompleteFallbackTags(
-                seedTagIds = matchedTags.map { it.tagId },
-                excludeTagIds = matchedTags.map { it.tagId },
-                limit = normalizedLimit - matchedTags.size,
-            )
-        }
+        val hasNext = rows.size > normalizedLimit
+        val pageRows = rows.take(normalizedLimit)
 
-        return (matchedTags + fallbackTags).map {
-            TagAutocompleteData(
-                tagId = it.tagId,
-                title = it.title,
-            )
-        }
+        return RelatedTeamPostSliceResult(
+            posts = pageRows.map {
+                FeedPostData(
+                    postId = it.postId,
+                    thumbnailImageUrl = it.thumbnailImageUrl,
+                    publicImageUrl = it.publicImageUrl,
+                    imageAspectRatio = it.imageAspectRatio,
+                )
+            },
+            hasNext = hasNext,
+            nextCursor = pageRows.lastOrNull()
+                ?.takeIf { hasNext }
+                ?.let {
+                    DailyPopularPostCursor(
+                        score = it.score,
+                        createdAt = it.createdAt,
+                        postId = it.postId,
+                    ).encode()
+                },
+        )
     }
 
     @Transactional(readOnly = true)

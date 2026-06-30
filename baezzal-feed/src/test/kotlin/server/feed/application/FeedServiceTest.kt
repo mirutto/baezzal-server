@@ -7,34 +7,26 @@ import io.mockk.verify
 import org.junit.jupiter.api.Test
 import server.feed.application.event.FeedEventPublisher
 import server.feed.query.DailyPopularPostQueryRow
-import server.feed.query.DailyPopularTagQueryRow
 import server.feed.query.FeedCollectionQuery
 import server.feed.query.FeedPostEngagementStatDailyQuery
 import server.feed.query.FeedPostQuery
-import server.feed.query.FeedTagQuery
-import server.feed.query.FeedTagRelationQuery
-import server.feed.query.FeedTagSearchStatDailyQuery
+import server.feed.query.FeedRelatedPostQuery
 import server.feed.query.FeedTeamQuery
-import server.feed.query.TagAutocompleteQueryRow
 import java.time.LocalDateTime
 
 class FeedServiceTest {
     private val feedPostQuery = mockk<FeedPostQuery>()
+    private val feedRelatedPostQuery = mockk<FeedRelatedPostQuery>()
     private val feedCollectionQuery = mockk<FeedCollectionQuery>()
     private val feedTeamQuery = mockk<FeedTeamQuery>()
     private val feedPostEngagementStatDailyQuery = mockk<FeedPostEngagementStatDailyQuery>()
-    private val feedTagSearchStatDailyQuery = mockk<FeedTagSearchStatDailyQuery>()
-    private val feedTagQuery = mockk<FeedTagQuery>()
-    private val feedTagRelationQuery = mockk<FeedTagRelationQuery>()
     private val feedEventPublisher = mockk<FeedEventPublisher>()
     private val feedService = FeedService(
         feedPostQuery = feedPostQuery,
+        feedRelatedPostQuery = feedRelatedPostQuery,
         feedCollectionQuery = feedCollectionQuery,
         feedTeamQuery = feedTeamQuery,
         feedPostEngagementStatDailyQuery = feedPostEngagementStatDailyQuery,
-        feedTagSearchStatDailyQuery = feedTagSearchStatDailyQuery,
-        feedTagQuery = feedTagQuery,
-        feedTagRelationQuery = feedTagRelationQuery,
         feedEventPublisher = feedEventPublisher,
     )
 
@@ -143,183 +135,125 @@ class FeedServiceTest {
     }
 
     @Test
-    fun `일간 인기 태그를 조회한다`() {
-        every { feedTagSearchStatDailyQuery.readDailyPopularTags(10) } returns listOf(
-            DailyPopularTagQueryRow(
-                tagId = 3L,
-                title = "잠실",
-                searchCount = 12L,
-            ),
-            DailyPopularTagQueryRow(
-                tagId = 8L,
-                title = "엘지트윈스",
-                searchCount = 8L,
-            ),
-        )
-
-        val result = feedService.findDailyPopularTags(limit = null)
-
-        result shouldBe listOf(
-            DailyPopularTagData(
-                rank = 1,
-                tagId = 3L,
-                title = "잠실",
-                searchCount = 12L,
-            ),
-            DailyPopularTagData(
-                rank = 2,
-                tagId = 8L,
-                title = "엘지트윈스",
-                searchCount = 8L,
-            ),
-        )
-    }
-
-    @Test
-    fun `일간 인기 태그는 통계가 없으면 최신 태그도 내려준다`() {
-        every { feedTagSearchStatDailyQuery.readDailyPopularTags(10) } returns listOf(
-            DailyPopularTagQueryRow(
-                tagId = 18L,
-                title = "신규태그",
-                searchCount = 0L,
-            ),
-            DailyPopularTagQueryRow(
-                tagId = 17L,
-                title = "방금생김",
-                searchCount = 0L,
-            ),
-        )
-
-        val result = feedService.findDailyPopularTags(limit = null)
-
-        result shouldBe listOf(
-            DailyPopularTagData(
-                rank = 1,
-                tagId = 18L,
-                title = "신규태그",
-                searchCount = 0L,
-            ),
-            DailyPopularTagData(
-                rank = 2,
-                tagId = 17L,
-                title = "방금생김",
-                searchCount = 0L,
-            ),
-        )
-    }
-
-    @Test
-    fun `일간 인기 태그 조회 limit 을 보정한다`() {
-        every { feedTagSearchStatDailyQuery.readDailyPopularTags(1) } returns emptyList()
-        every { feedTagSearchStatDailyQuery.readDailyPopularTags(20) } returns emptyList()
-
-        feedService.findDailyPopularTags(limit = 0)
-        feedService.findDailyPopularTags(limit = 30)
-
-        verify(exactly = 1) { feedTagSearchStatDailyQuery.readDailyPopularTags(1) }
-        verify(exactly = 1) { feedTagSearchStatDailyQuery.readDailyPopularTags(20) }
-    }
-
-    @Test
-    fun `tag 자동완성을 조회한다`() {
+    fun `team code 로 연관 post 를 조회한다`() {
         every {
-            feedTagQuery.readAutocompleteByKeyword(
-                keyword = "잠",
-                limit = 10,
+            feedRelatedPostQuery.readRelatedPostsByTeamCode(
+                teamCode = "LG",
+                cursor = null,
+                limit = 11,
             )
         } returns listOf(
-            TagAutocompleteQueryRow(
-                tagId = 3L,
-                title = "잠실",
+            DailyPopularPostQueryRow(
+                postId = 11L,
+                thumbnailImageUrl = "https://cdn.example.com/posts/11-thumb.webp",
+                publicImageUrl = "https://cdn.example.com/posts/11.webp",
+                imageAspectRatio = 1.4,
+                score = 15L,
+                createdAt = LocalDateTime.of(2026, 6, 29, 18, 0, 0),
             ),
-            TagAutocompleteQueryRow(
-                tagId = 8L,
-                title = "잠실야구장",
+            DailyPopularPostQueryRow(
+                postId = 21L,
+                thumbnailImageUrl = "https://cdn.example.com/posts/21-thumb.webp",
+                publicImageUrl = "https://cdn.example.com/posts/21.webp",
+                imageAspectRatio = 1.2,
+                score = 12L,
+                createdAt = LocalDateTime.of(2026, 6, 29, 17, 0, 0),
             ),
+        )
+
+        val result = feedService.findRelatedPostsByTeamCode(
+            teamCode = "LG",
+            cursor = null,
+            limit = null,
+        )
+
+        result shouldBe RelatedTeamPostSliceResult(
+            posts = listOf(
+                FeedPostData(
+                    postId = 11L,
+                    thumbnailImageUrl = "https://cdn.example.com/posts/11-thumb.webp",
+                    publicImageUrl = "https://cdn.example.com/posts/11.webp",
+                    imageAspectRatio = 1.4,
+                ),
+                FeedPostData(
+                    postId = 21L,
+                    thumbnailImageUrl = "https://cdn.example.com/posts/21-thumb.webp",
+                    publicImageUrl = "https://cdn.example.com/posts/21.webp",
+                    imageAspectRatio = 1.2,
+                ),
+            ),
+            hasNext = false,
+            nextCursor = null,
+        )
+    }
+
+    @Test
+    fun `team 연관 post 조회는 다음 커서를 반환한다`() {
+        val cursor = encodedCursor(
+            score = 200L,
+            createdAt = LocalDateTime.of(2026, 6, 29, 19, 0, 0),
+            postId = 99L,
         )
         every {
-            feedTagRelationQuery.readAutocompleteFallbackTags(
-                seedTagIds = listOf(3L, 8L),
-                excludeTagIds = listOf(3L, 8L),
-                limit = 8,
+            feedRelatedPostQuery.readRelatedPostsByTeamCode(
+                teamCode = "LG",
+                cursor = DailyPopularPostCursor(
+                    score = 200L,
+                    createdAt = LocalDateTime.of(2026, 6, 29, 19, 0, 0),
+                    postId = 99L,
+                ),
+                limit = 3,
             )
-        } returns listOf(
-            TagAutocompleteQueryRow(
-                tagId = 9L,
-                title = "서울야구",
-            ),
+        } returns dailyPopularRows()
+
+        val result = feedService.findRelatedPostsByTeamCode(
+            teamCode = "LG",
+            cursor = cursor,
+            limit = 2,
         )
 
-        val result = feedService.autocompleteTags(keyword = " 잠 ", limit = null)
-
-        result shouldBe listOf(
-            TagAutocompleteData(
-                tagId = 3L,
-                title = "잠실",
+        result shouldBe RelatedTeamPostSliceResult(
+            posts = listOf(
+                FeedPostData(
+                    postId = 11L,
+                    thumbnailImageUrl = "https://cdn.example.com/posts/11-thumb.webp",
+                    publicImageUrl = "https://cdn.example.com/posts/11.webp",
+                    imageAspectRatio = 1.4,
+                ),
+                FeedPostData(
+                    postId = 21L,
+                    thumbnailImageUrl = "https://cdn.example.com/posts/21-thumb.webp",
+                    publicImageUrl = "https://cdn.example.com/posts/21.webp",
+                    imageAspectRatio = 1.2,
+                ),
             ),
-            TagAutocompleteData(
-                tagId = 8L,
-                title = "잠실야구장",
-            ),
-            TagAutocompleteData(
-                tagId = 9L,
-                title = "서울야구",
+            hasNext = true,
+            nextCursor = encodedCursor(
+                score = 95L,
+                createdAt = LocalDateTime.of(2026, 6, 29, 17, 30, 0),
+                postId = 21L,
             ),
         )
     }
 
     @Test
-    fun `tag 자동완성 결과가 limit 을 채우면 relation 조회를 하지 않는다`() {
+    fun `team 연관 post 조회 limit 을 보정한다`() {
         every {
-            feedTagQuery.readAutocompleteByKeyword(
-                keyword = "잠",
-                limit = 2,
-            )
-        } returns listOf(
-            TagAutocompleteQueryRow(
-                tagId = 3L,
-                title = "잠실",
-            ),
-            TagAutocompleteQueryRow(
-                tagId = 8L,
-                title = "잠실야구장",
-            ),
-        )
+            feedRelatedPostQuery.readRelatedPostsByTeamCode(teamCode = "LG", cursor = null, limit = 2)
+        } returns emptyList()
+        every {
+            feedRelatedPostQuery.readRelatedPostsByTeamCode(teamCode = "LG", cursor = null, limit = 21)
+        } returns emptyList()
 
-        val result = feedService.autocompleteTags(keyword = "잠", limit = 2)
+        feedService.findRelatedPostsByTeamCode(teamCode = "LG", cursor = null, limit = 0)
+        feedService.findRelatedPostsByTeamCode(teamCode = "LG", cursor = null, limit = 30)
 
-        result shouldBe listOf(
-            TagAutocompleteData(
-                tagId = 3L,
-                title = "잠실",
-            ),
-            TagAutocompleteData(
-                tagId = 8L,
-                title = "잠실야구장",
-            ),
-        )
-        verify(exactly = 0) { feedTagRelationQuery.readAutocompleteFallbackTags(any(), any(), any()) }
-    }
-
-    @Test
-    fun `tag 자동완성은 빈 검색어면 빈 목록을 반환한다`() {
-        val result = feedService.autocompleteTags(keyword = "   ", limit = null)
-
-        result shouldBe emptyList()
-        verify(exactly = 0) { feedTagQuery.readAutocompleteByKeyword(any(), any()) }
-        verify(exactly = 0) { feedTagRelationQuery.readAutocompleteFallbackTags(any(), any(), any()) }
-    }
-
-    @Test
-    fun `tag 자동완성 조회 limit 을 보정한다`() {
-        every { feedTagQuery.readAutocompleteByKeyword(keyword = "잠", limit = 1) } returns emptyList()
-        every { feedTagQuery.readAutocompleteByKeyword(keyword = "잠", limit = 20) } returns emptyList()
-
-        feedService.autocompleteTags(keyword = "잠", limit = 0)
-        feedService.autocompleteTags(keyword = "잠", limit = 30)
-
-        verify(exactly = 1) { feedTagQuery.readAutocompleteByKeyword(keyword = "잠", limit = 1) }
-        verify(exactly = 1) { feedTagQuery.readAutocompleteByKeyword(keyword = "잠", limit = 20) }
+        verify(exactly = 1) {
+            feedRelatedPostQuery.readRelatedPostsByTeamCode(teamCode = "LG", cursor = null, limit = 2)
+        }
+        verify(exactly = 1) {
+            feedRelatedPostQuery.readRelatedPostsByTeamCode(teamCode = "LG", cursor = null, limit = 21)
+        }
     }
 
     @Test
